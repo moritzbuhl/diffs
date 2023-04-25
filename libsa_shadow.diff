@@ -1,0 +1,70 @@
+Index: boot/Makefile
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/stand/boot/Makefile,v
+retrieving revision 1.49
+diff -u -p -r1.49 Makefile
+--- boot/Makefile	17 Apr 2023 00:05:35 -0000	1.49
++++ boot/Makefile	23 Apr 2023 19:57:54 -0000
+@@ -50,7 +50,7 @@ SRCS+=	aes_xts.c bcrypt_pbkdf.c blowfish
+ .endif
+ 
+ .PATH:	${S}/lib/libkern
+-SRCS+=	ashldi3.c ashrdi3.c divdi3.c lshrdi3.c moddi3.c qdivrem.c
++SRCS+=	ashldi3.c ashrdi3.c udivdi3.c divdi3.c lshrdi3.c moddi3.c qdivrem.c
+ SRCS+=	strlcpy.c
+ 
+ .PATH:	${S}/lib/libz
+@@ -82,6 +82,7 @@ CPPFLAGS+=-DBOOTMAGIC=$(BOOTMAGIC) ${DEB
+ CPPFLAGS+=-DSLOW -DSMALL -DNOBYFOUR -DNO_GZIP -DDYNAMIC_CRC_TABLE -DBUILDFIXED
+ CPPFLAGS+=-DHIBERNATE
+ CPPFLAGS+=-DHEAP_LIMIT=${HEAP_LIMIT} -I${S}/stand/boot #-DCOMPAT_UFS
++CPPFLAGS+=-DKASAN=1
+ CFLAGS+=-m32 $(SACFLAGS) -D__INTERNAL_LIBSA_CREAD -fno-pie
+ AFLAGS+=${NO_INTEGR_AS}
+ AFLAGS+=-m32 # -Wa,-R
+Index: libsa/memprobe.c
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/stand/libsa/memprobe.c,v
+retrieving revision 1.19
+diff -u -p -r1.19 memprobe.c
+--- libsa/memprobe.c	28 Jan 2021 18:54:52 -0000	1.19
++++ libsa/memprobe.c	23 Apr 2023 19:58:21 -0000
+@@ -437,10 +437,37 @@ mem_add(long long sa, long long ea)
+ void
+ mem_pass(void)
+ {
+-	bios_memmap_t *p;
++	bios_memmap_t	*p;
++#ifdef KASAN
++	bios_shadow_t	 shadow;
++
++	memset(&shadow, 0, sizeof(shadow));
++#endif
+ 
+ 	for (p = bios_memmap; p->type != BIOS_MAP_END; p++)
++#ifdef KASAN
++		shadow.size += p->size;
++#else
+ 		;
++#endif
++
++#ifdef KASAN
++	shadow.size = (shadow.size + 8) / 9; /* +8 to ceil */
++
++	for (p = bios_memmap; p->type != BIOS_MAP_END; p++)
++		if (p->type == BIOS_MAP_FREE &&
++		    p->size > shadow.size) {
++			p->size -= shadow.size;
++			shadow.addr = p->addr + p->size;
++		}
++
++	if (shadow.addr == 0) {
++		printf("No continious memory region for shadow memory found.");
++	} else {
++		addbootarg(BOOTARG_SHADOW, sizeof(bios_shadow_t), &shadow);
++	}
++#endif
++
+ 	addbootarg(BOOTARG_MEMMAP, (p - bios_memmap + 1) * sizeof *bios_memmap,
+ 	    bios_memmap);
+ }
