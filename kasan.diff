@@ -132,24 +132,6 @@ diff -u -p -r1.284 machdep.c
  	pmap_growkernel(VM_MIN_KERNEL_ADDRESS + 32 * 1024 * 1024);
  
  	pmap_kenter_pa(idt_vaddr, idt_paddr, PROT_READ | PROT_WRITE);
-Index: arch/amd64/conf/GENERIC
-===================================================================
-RCS file: /cvs/src/sys/arch/amd64/conf/GENERIC,v
-retrieving revision 1.517
-diff -u -p -r1.517 GENERIC
---- arch/amd64/conf/GENERIC	23 Apr 2023 00:50:29 -0000	1.517
-+++ arch/amd64/conf/GENERIC	25 Apr 2023 19:22:44 -0000
-@@ -159,8 +159,8 @@ iic*	at amdpm?
- dwiic*	at acpi?		# DesignWare Synopsys i2c controller
- dwiic*	at pci?
- iic*	at dwiic?
--iosf*	at acpi?		# Intel OnChip System Fabric
--iosf*	at pci?
-+#iosf*	at acpi?		# Intel OnChip System Fabric
-+#iosf*	at pci?
- 
- itherm*	at pci?			# Intel 3400 Thermal Sensor
- adc*	at iic?			# Analog Devices AD7416/AD7417/7418
 Index: arch/amd64/conf/files.amd64
 ===================================================================
 RCS file: /cvs/src/sys/arch/amd64/conf/files.amd64,v
@@ -242,7 +224,7 @@ RCS file: /cvs/src/sys/kern/kern_malloc.c,v
 retrieving revision 1.148
 diff -u -p -r1.148 kern_malloc.c
 --- kern/kern_malloc.c	14 Aug 2022 01:58:27 -0000	1.148
-+++ kern/kern_malloc.c	26 Apr 2023 11:39:44 -0000
++++ kern/kern_malloc.c	26 Apr 2023 13:11:49 -0000
 @@ -50,6 +50,11 @@
  #include <ddb/db_output.h>
  #endif
@@ -275,7 +257,17 @@ diff -u -p -r1.148 kern_malloc.c
  	return (va);
  }
  
-@@ -494,6 +505,9 @@ free(void *addr, int type, size_t freeds
+@@ -378,6 +389,9 @@ free(void *addr, int type, size_t freeds
+ #ifdef DIAGNOSTIC
+ 	long alloc;
+ #endif
++#ifdef KASAN
++	kasan_add_redzone(&freedsize);
++#endif
+ #ifdef KMEMSTATS
+ 	struct kmemstats *ksp = &kmemstats[type];
+ 	int wake;
+@@ -494,6 +508,9 @@ free(void *addr, int type, size_t freeds
  #endif
  	XSIMPLEQ_INSERT_TAIL(&kbp->kb_freelist, freep, kf_flist);
  	mtx_leave(&malloc_mtx);
@@ -290,8 +282,8 @@ Index: kern/subr_kasan.c
 RCS file: kern/subr_kasan.c
 diff -N kern/subr_kasan.c
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ kern/subr_kasan.c	26 Apr 2023 12:59:23 -0000
-@@ -0,0 +1,378 @@
++++ kern/subr_kasan.c	26 Apr 2023 13:05:30 -0000
+@@ -0,0 +1,392 @@
 +/*	$OpenBSD: subr_kasan.c $	*/
 +
 +#include <sys/param.h>
@@ -405,6 +397,13 @@ diff -N kern/subr_kasan.c
 +void
 +kasan_alloc(vaddr_t addr, size_t size, size_t sz_with_redz)
 +{
++	if (!kasan_enabled)
++		return;
++	if (size == 0)
++		return;
++	if (kasan_unsupported(addr))
++		return;
++
 +	kasan_markmem(addr, sz_with_redz, 0);
 +	kasan_markmem(addr, size, 1);
 +}
@@ -412,6 +411,13 @@ diff -N kern/subr_kasan.c
 +void
 +kasan_free(vaddr_t addr, size_t sz_with_redz)
 +{
++	if (!kasan_enabled)
++		return;
++	if (sz_with_redz == 0)
++		return;
++	if (kasan_unsupported(addr))
++		return;
++
 +	kasan_markmem(addr, sz_with_redz, 1);
 +}
 +
