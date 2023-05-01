@@ -28,8 +28,8 @@ RCS file: /cvs/src/sys/arch/amd64/stand/libsa/memprobe.c,v
 retrieving revision 1.19
 diff -u -p -r1.19 memprobe.c
 --- libsa/memprobe.c	28 Jan 2021 18:54:52 -0000	1.19
-+++ libsa/memprobe.c	23 Apr 2023 20:05:27 -0000
-@@ -437,10 +437,34 @@ mem_add(long long sa, long long ea)
++++ libsa/memprobe.c	23 Apr 2023 20:08:43 -0000
+@@ -437,10 +437,32 @@ mem_add(long long sa, long long ea)
  void
  mem_pass(void)
  {
@@ -52,9 +52,7 @@ diff -u -p -r1.19 memprobe.c
 +			shadow.addr = p->addr + p->size;
 +		}
 +
-+	if (shadow.addr == 0) {
-+		printf("No continious memory region for shadow memory found.");
-+	} else {
++	if (shadow.addr != 0) {
 +		addbootarg(BOOTARG_SHADOW, sizeof(bios_shadow_t), &shadow);
 +	}
 +#else
