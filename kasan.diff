@@ -3,7 +3,7 @@ Index: arch/amd64/amd64/kasan.c
 RCS file: arch/amd64/amd64/kasan.c
 diff -N arch/amd64/amd64/kasan.c
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ arch/amd64/amd64/kasan.c	26 Apr 2023 10:55:03 -0000
++++ arch/amd64/amd64/kasan.c	26 Apr 2023 11:10:16 -0000
 @@ -0,0 +1,102 @@
 +/*	$OpenBSD: kasan.c $	*/
 +
@@ -145,7 +145,7 @@ Index: arch/amd64/include/kasan.h
 RCS file: arch/amd64/include/kasan.h
 diff -N arch/amd64/include/kasan.h
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ arch/amd64/include/kasan.h	26 Apr 2023 10:54:49 -0000
++++ arch/amd64/include/kasan.h	26 Apr 2023 11:10:15 -0000
 @@ -0,0 +1,9 @@
 +/*	$OpenBSD: kasan.h $	*/
 +
@@ -192,13 +192,62 @@ diff -u -p -r1.723 files
  file kern/subr_kubsan.c			kubsan
  file kern/subr_log.c
  file kern/subr_percpu.c
+Index: kern/kern_malloc.c
+===================================================================
+RCS file: /cvs/src/sys/kern/kern_malloc.c,v
+retrieving revision 1.148
+diff -u -p -r1.148 kern_malloc.c
+--- kern/kern_malloc.c	14 Aug 2022 01:58:27 -0000	1.148
++++ kern/kern_malloc.c	26 Apr 2023 11:39:44 -0000
+@@ -50,6 +50,11 @@
+ #include <ddb/db_output.h>
+ #endif
+ 
++#ifdef KASAN
++#include <machine/vmmvar.h>
++#include <sys/kasan.h>
++#endif
++
+ static
+ #ifndef SMALL_KERNEL
+ __inline__
+@@ -165,6 +170,11 @@ malloc(size_t size, int type, int flags)
+ 	int freshalloc;
+ 	char *savedtype;
+ #endif
++#ifdef KASAN
++	size_t origsz = size;
++
++	kasan_add_redzone(&size);
++#endif
+ #ifdef KMEMSTATS
+ 	struct kmemstats *ksp = &kmemstats[type];
+ 	int wake;
+@@ -361,6 +371,7 @@ out:
+ 
+ 	TRACEPOINT(uvm, malloc, type, va, size, flags);
+ 
++	kasan_alloc((vaddr_t)va, origsz, size);
+ 	return (va);
+ }
+ 
+@@ -494,6 +505,9 @@ free(void *addr, int type, size_t freeds
+ #endif
+ 	XSIMPLEQ_INSERT_TAIL(&kbp->kb_freelist, freep, kf_flist);
+ 	mtx_leave(&malloc_mtx);
++#ifdef KASAN
++	kasan_free((vaddr_t)addr, size);
++#endif
+ #ifdef KMEMSTATS
+ 	if (wake)
+ 		wakeup(ksp);
 Index: kern/subr_kasan.c
 ===================================================================
 RCS file: kern/subr_kasan.c
 diff -N kern/subr_kasan.c
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ kern/subr_kasan.c	26 Apr 2023 10:58:40 -0000
-@@ -0,0 +1,278 @@
++++ kern/subr_kasan.c	26 Apr 2023 11:19:29 -0000
+@@ -0,0 +1,378 @@
 +/*	$OpenBSD: subr_kasan.c $	*/
 +
 +#include <sys/param.h>
@@ -477,13 +526,113 @@ diff -N kern/subr_kasan.c
 +__asan_unregister_globals(struct __asan_global *globals, size_t size)
 +{
 +}
++
++#define ASAN_LOAD_STORE(size)					\
++	void __asan_load##size(unsigned long);			\
++	void __asan_load##size(unsigned long addr)		\
++	{							\
++		kasan_shadow_check(addr, size, false, __RET_ADDR);\
++	} 							\
++	void __asan_load##size##_noabort(unsigned long);	\
++	void __asan_load##size##_noabort(unsigned long addr)	\
++	{							\
++		kasan_shadow_check(addr, size, false, __RET_ADDR);\
++	}							\
++	void __asan_store##size(unsigned long);			\
++	void __asan_store##size(unsigned long addr)		\
++	{							\
++		kasan_shadow_check(addr, size, true, __RET_ADDR);\
++	}							\
++	void __asan_store##size##_noabort(unsigned long);	\
++	void __asan_store##size##_noabort(unsigned long addr)	\
++	{							\
++		kasan_shadow_check(addr, size, true, __RET_ADDR);\
++	}
++
++ASAN_LOAD_STORE(1);
++ASAN_LOAD_STORE(2);
++ASAN_LOAD_STORE(4);
++ASAN_LOAD_STORE(8);
++ASAN_LOAD_STORE(16);
++
++void
++__asan_loadN(unsigned long addr, size_t size)
++{
++	kasan_shadow_check(addr, size, false, __RET_ADDR);
++}
++
++void
++__asan_loadN_noabort(unsigned long addr, size_t size)
++{
++	kasan_shadow_check(addr, size, false, __RET_ADDR);
++}
++
++void
++__asan_storeN(unsigned long addr, size_t size)
++{
++	kasan_shadow_check(addr, size, true, __RET_ADDR);
++}
++
++void
++__asan_storeN_noabort(unsigned long addr, size_t size)
++{
++	kasan_shadow_check(addr, size, true, __RET_ADDR);
++}
++
++void
++__asan_handle_no_return(void)
++{
++	/* nothing */
++}
++
++void
++__asan_poison_stack_memory(const void *addr, size_t size)
++{
++	vaddr_t va = (vaddr_t)addr;
++	KASSERT(va % KASAN_SHADOW_SCALE_SIZE == 0);
++	kasan_shadow_fill(va, size, KASAN_USE_AFTER_SCOPE);
++}
++
++void
++__asan_unpoison_stack_memory(const void *addr, size_t size)
++{
++	vaddr_t va = (vaddr_t)addr;
++	KASSERT(va % KASAN_SHADOW_SCALE_SIZE == 0);
++	kasan_shadow_fill(va, size, 0);
++}
++
++void
++__asan_alloca_poison(unsigned long addr, size_t size)
++{
++	panic("%s: impossible!", __func__);
++}
++
++void
++__asan_allocas_unpoison(const void *stack_top, const void *stack_bottom)
++{
++	panic("%s: impossible!", __func__);
++}
++
++#define ASAN_SET_SHADOW(byte) \
++	void __asan_set_shadow_##byte(void *, size_t);			\
++	void __asan_set_shadow_##byte(void *addr, size_t size)		\
++	{								\
++		__builtin_memset((void *)addr, 0x##byte, size);		\
++	}
++
++ASAN_SET_SHADOW(00);
++ASAN_SET_SHADOW(f1);
++ASAN_SET_SHADOW(f2);
++ASAN_SET_SHADOW(f3);
++ASAN_SET_SHADOW(f5);
++ASAN_SET_SHADOW(f8);
 Index: sys/kasan.h
 ===================================================================
 RCS file: sys/kasan.h
 diff -N sys/kasan.h
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ sys/kasan.h	26 Apr 2023 10:57:35 -0000
-@@ -0,0 +1,70 @@
++++ sys/kasan.h	26 Apr 2023 11:40:11 -0000
+@@ -0,0 +1,82 @@
 +/*	$OpenBSD: kasan.h $	*/
 +
 +#ifndef _SYS_KASAN_H_
@@ -515,9 +664,24 @@ diff -N sys/kasan.h
 +	    ((va - VM_MIN_KERNEL_ADDRESS) >> KASAN_SHADOW_SCALE_SHIFT));
 +}
 +
-+void	*kasan_memset(void *, int, size_t);
-+void	*kasan_memcpy(void *, const void *, size_t);
-+int	 kasan_memcmp(const void *, const void *, size_t);
++void	 kasan_add_redzone(size_t *);
++void	 kasan_alloc(vaddr_t, size_t, size_t);
++void	 kasan_free(vaddr_t, size_t);
++
++struct __asan_global;
++
++void __asan_register_globals(struct __asan_global *, size_t);
++void __asan_unregister_globals(struct __asan_global *, size_t);
++
++void __asan_loadN(unsigned long, size_t);
++void __asan_loadN_noabort(unsigned long, size_t);
++void __asan_storeN(unsigned long, size_t);
++void __asan_storeN_noabort(unsigned long, size_t);
++void __asan_handle_no_return(void);
++void __asan_poison_stack_memory(const void *, size_t);
++void __asan_unpoison_stack_memory(const void *, size_t);
++void __asan_alloca_poison(unsigned long, size_t);
++void __asan_allocas_unpoison(const void *, const void *);
 +
 +#if defined(__clang__) && (__clang_major__ - 0 >= 6)
 +#define ASAN_ABI_VERSION	8
@@ -550,7 +714,32 @@ diff -N sys/kasan.h
 +#endif
 +};
 +
-+void __asan_register_globals(struct __asan_global *, size_t);
-+void __asan_unregister_globals(struct __asan_global *, size_t);
-+
 +#endif /* !_SYS_KASAN_H_ */
+Index: sys/systm.h
+===================================================================
+RCS file: /cvs/src/sys/sys/systm.h,v
+retrieving revision 1.161
+diff -u -p -r1.161 systm.h
+--- sys/systm.h	31 Jan 2023 15:18:56 -0000	1.161
++++ sys/systm.h	26 Apr 2023 11:37:26 -0000
+@@ -383,10 +383,20 @@ extern int (*mountroot)(void);
+ 
+ #include <lib/libkern/libkern.h>
+ 
++#ifdef KASAN
++void	*kasan_memset(void *, int, size_t);
++int	kasan_memcmp(const void *, const void *, size_t);
++void	*kasan_memcpy(void *, const void *, size_t);
++#define bzero(b, n)		kasan_memset((b), 0, (n))
++#define memcmp(b1, b2, n)	kasan_memcmp((b1), (b2), (n))
++#define memcpy(d, s, n)		kasan_memcpy((d), (s), (n))
++#define memset(b, c, n)		kasan_memset((b), (c), (n))
++#else
+ #define bzero(b, n)		__builtin_bzero((b), (n))
+ #define memcmp(b1, b2, n)	__builtin_memcmp((b1), (b2), (n))
+ #define memcpy(d, s, n)		__builtin_memcpy((d), (s), (n))
+ #define memset(b, c, n)		__builtin_memset((b), (c), (n))
++#endif
+ #if (defined(__GNUC__) && __GNUC__ >= 4)
+ #define memmove(d, s, n)	__builtin_memmove((d), (s), (n))
+ #endif
