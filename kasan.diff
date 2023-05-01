@@ -1,287 +1,351 @@
-Index: arch/amd64//amd64/machdep.c
+Index: arch/amd64/amd64/kasan.c
 ===================================================================
-RCS file: /cvs/src/sys/arch/amd64/amd64/machdep.c,v
-retrieving revision 1.284
-diff -u -p -r1.284 machdep.c
---- arch/amd64//amd64/machdep.c	29 Nov 2022 21:41:39 -0000	1.284
-+++ arch/amd64//amd64/machdep.c	24 Apr 2023 17:42:46 -0000
-@@ -254,6 +254,10 @@ u_int32_t	bios_cksumlen;
- bios_efiinfo_t	*bios_efiinfo;
- bios_ucode_t	*bios_ucode;
- 
-+#ifdef KASAN
-+bios_shadow_t	*kasan_shadow = NULL;
-+#endif
+RCS file: arch/amd64/amd64/kasan.c
+diff -N arch/amd64/amd64/kasan.c
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ arch/amd64/amd64/kasan.c	25 Apr 2023 20:51:34 -0000
+@@ -0,0 +1,98 @@
++/*	$OpenBSD: kasan.c $	*/
 +
- #if NEFI > 0
- EFI_MEMORY_DESCRIPTOR *mmap;
- #endif
-@@ -1452,6 +1456,18 @@ init_x86_64(paddr_t first_avail)
- 		avail_start = HIBERNATE_HIBALLOC_PAGE + PAGE_SIZE;
- #endif /* HIBERNATE */
- 
-+#ifdef KASAN
-+	if (kasan_shadow == NULL)
-+		panic("no shadow memory provided by boot");
++#include <sys/mman.h>
 +
-+	printf("before shadow_init\n");
-+	vaddr_t kasan_virt = pmap_init_pml4_shadow(kasan_shadow->addr,
-+	    kasan_shadow->size);
-+	printf("before memset for %lx\n", kasan_virt);
-+	memset((caddr_t)kasan_virt, 0x80, kasan_shadow->size);
-+	printf("memset done\n");
-+#endif /* KASAN */
++#include <uvm/uvm.h>
 +
- 	/*
- 	 * We need to go through the BIOS memory map given, and
- 	 * fill out mem_clusters and mem_cluster_cnt stuff, taking
-@@ -2040,6 +2056,12 @@ getbootinfo(char *bootinfo, int bootinfo
- 
- 		case BOOTARG_UCODE:
- 			bios_ucode = (bios_ucode_t *)q->ba_arg;
-+			break;
-+		case BOOTARG_SHADOW:
-+			kasan_shadow = (bios_shadow_t *)q->ba_arg;
-+#ifdef BOOTINFO_DEBUG
-+			printf(" shadow %p", kasan_shadow);
-+#endif
- 			break;
- 
- 		default:
-Index: arch/amd64//amd64/pmap.c
-===================================================================
-RCS file: /cvs/src/sys/arch/amd64/amd64/pmap.c,v
-retrieving revision 1.164
-diff -u -p -r1.164 pmap.c
---- arch/amd64//amd64/pmap.c	13 Apr 2023 15:23:21 -0000	1.164
-+++ arch/amd64//amd64/pmap.c	24 Apr 2023 17:27:52 -0000
-@@ -626,6 +626,90 @@ pmap_clear_pml4_early(void)
- 	tlbflush();
- }
- 
-+#ifdef KASAN
-+/*
-+ * pmap_init_pml4_shadow
-+ *
-+ * Like pmap_set_pml4_early but for the KASAN shadow memory.
-+ */
-+vaddr_t
-+pmap_init_pml4_shadow(paddr_t shadow_pte_pages, uint64_t sz)
++#include <machine/cpu.h>
++#include <machine/pmap.h>
++#include <machine/segments.h>
++#include <machine/vmmvar.h>
++
++static paddr_t
++get_physpage(void)
 +{
-+	extern paddr_t		 early_pte_pages;
-+	//paddr_t			 shadow_pa;
-+	pt_entry_t 		*pml4e, *pdpd, *pd;
-+	paddr_t 		 curpa;
-+	vaddr_t			 va;
-+	int 			 i, j, off, np, npd;
++	struct vm_page *ptp;
++	struct pmap *kpm = pmap_kernel();
++	paddr_t paddr;
 +
-+	np = sz / (2 * 1024 * 1024);
-+	npd = (np + 511) / 512;
++	ptp = uvm_pagealloc(NULL, 0, NULL, UVM_PGA_USERESERVE | UVM_PGA_ZERO);
++	if (ptp == NULL)
++		panic("%s: out of memory", __func__);
 +
-+	if (npd > 512)
-+		panic("cannot allocate more than 512GB shadow memory");
++	atomic_clearbits_int(&ptp->pg_flags, PG_BUSY);
++	ptp->wire_count = 1;
++	paddr = VM_PAGE_TO_PHYS(ptp);
 +
-+	pml4e = (pt_entry_t *)(proc0.p_addr->u_pcb.pcb_cr3 + KERNBASE);
-+	pml4e[PDIR_SLOT_SHADOW] = (pd_entry_t)shadow_pte_pages | PG_V | PG_RW;
++	kpm->pm_stats.resident_count++;
 +
-+	off = (shadow_pte_pages + (1 + npd) * NBPG) & PAGE_MASK_L2;
-+	curpa = (shadow_pte_pages + (1 + npd) * NBPG) & L2_FRAME;
++	return (paddr);
++}
 +
-+printf("np: %d\n", np);
-+printf("npd: %d\n", npd);
-+printf("shadow_pte_pages: 0x%lx\n", shadow_pte_pages);
-+printf("off: %d\n", off);
-+printf("curpa: %lx\n", curpa);
++void
++kasan_shadow_map_page(vaddr_t va)
++{
++	paddr_t pg;
 +
-+	pdpd = (pt_entry_t *)PMAP_DIRECT_MAP(shadow_pte_pages);
-+	memset(pdpd, 0, (1 + npd) * NBPG);
-+
-+	for (i = 0; i < npd; i++)
-+		pdpd[i] = (shadow_pte_pages + (1 + i) * NBPG) | PG_V | PG_RW;
-+
-+	pd = (pt_entry_t *)PMAP_DIRECT_MAP(shadow_pte_pages + NBPG); // XXX loop for npd > 1
-+	for (i = 0; i < np; i++) {
-+		for (j = 0; j < 512; j++) {
-+			pd[(i * 512) + j] = curpa | PG_V | PG_RW | PG_PS;
-+			curpa += (2 * 1024 * 1024);
-+		}
++	if (!pmap_valid_entry(L4_BASE[pl4_i(va)])) {
++		pg = get_physpage();
++		L4_BASE[pl4_i(va)] = pg | PG_KW | pg_nx | PG_V;
++i	}
++	if (!pmap_valid_entry(L3_BASE[pl3_i(va)])) {
++		pg = get_physpage();
++		L3_BASE[pl3_i(va)] = pg | PG_KW | pg_nx | PG_V;
 +	}
-+
-+	va = (vaddr_t)((PDIR_SLOT_SHADOW * 512ULL) << L3_SHIFT) + off;
-+	return VA_SIGN_NEG(va);
++	if (!pmap_valid_entry(L2_BASE[pl2_i(va)])) {
++		pg = get_physpage();
++		L2_BASE[pl2_i(va)] = pg | PG_KW | pg_nx | PG_V;
++	}
++	if (!pmap_valid_entry(L1_BASE[pl1_i(va)])) {
++		pg = get_physpage();
++		L1_BASE[pl1_i(va)] = pg | PG_KW | pg_g_kern | pg_nx | PG_V;
++	}
++}
 +
 +/*
-+	shadow_pa = shadow_pte_pages + (npd + 2) * NBPG;
++ * Allocate the necessary stuff in the shadow, so that we can monitor the
++ * passed area.
++ */
++void
++kasan_shadow_map(vaddr_t addr, size_t size)
++{
++	size_t sz, npages, i;
++	vaddr_t va;
 +
-+	printf("shadow_pte_pages: %lx\n", shadow_pte_pages);
-+	printf("sz: %llu\n", sz);
-+	printf("np: %d\n", np);
-+	printf("shadow_pa: %lx\n", shadow_pa);
++	va = (vaddr_t)kasan_addr_to_shad(addr);
++	sz = roundup(size, KASAN_SHADOW_SCALE_SIZE) / KASAN_SHADOW_SCALE_SIZE;
++	va = rounddown(va, PAGE_SIZE);
++	npages = roundup(sz, PAGE_SIZE) / PAGE_SIZE;
 +
-+	pml4e = (pt_entry_t *)(proc0.p_addr->u_pcb.pcb_cr3 + KERNBASE);
-+	pml4e[PDIR_SLOT_SHADOW] = (pd_entry_t)shadow_pte_pages | PG_V | PG_RW;
++	KASSERT(va >= KASAN_SHADOW_START && va < KASAN_SHADOW_END);
 +
-+	off = shadow_pa & PAGE_MASK_L2;
-+	curpa = shadow_pa & L2_FRAME; // XXX why is this rounding down?
-+
-+	pdpd = (pt_entry_t *)PMAP_DIRECT_MAP(shadow_pte_pages);
-+	memset(pdpd, 0, (1 + np) * NBPG);
-+
-+	for (i = 0; i < np; i++)  {
-+		pdpd[i / 512] = shadow_pte_pages + ((i / 512) + 1) * NBPG;
-+		pd = (pt_entry_t *)PMAP_DIRECT_MAP(shadow_pte_pages + ((i / 512) + 1) * NBPG);
-+		for (j = 0; j < MIN(512, np); j++) {
-+//printf("   %lx\n", curpa);
-+			pd[j] = curpa | PG_V | PG_RW | PG_PS;
-+				curpa += (2 * 1024 * 1024);
-+		}
++	for (i = 0; i < npages; i++) {
++		kasan_shadow_map_page(va + i * PAGE_SIZE);
 +	}
-+
-+	va = (vaddr_t)((PDIR_SLOT_SHADOW * 512ULL) << L3_SHIFT) + off;
-+	return VA_SIGN_NEG(va);
-+*/
 +}
-+#endif /* KASAN */
 +
- /*
-  * p m a p   i n i t   f u n c t i o n s
-  *
-Index: arch/amd64//include/biosvar.h
++void
++kasan_ctors(void)
++{
++	extern uint64_t __CTOR_LIST__, __CTOR_END__;
++	size_t nentries, i;
++	uint64_t *ptr;
++
++	nentries = ((size_t)&__CTOR_END__ - (size_t)&__CTOR_LIST__) /
++	    sizeof(uintptr_t);
++
++	ptr = &__CTOR_LIST__;
++	for (i = 0; i < nentries; i++) {
++		void (*func)(void);
++
++		func = (void *)(*ptr);
++		(*func)();
++
++		ptr++;
++	}
++}
++
++
+Index: arch/amd64/conf/files.amd64
 ===================================================================
-RCS file: /cvs/src/sys/arch/amd64/include/biosvar.h,v
-retrieving revision 1.31
-diff -u -p -r1.31 biosvar.h
---- arch/amd64//include/biosvar.h	18 Jan 2023 23:25:32 -0000	1.31
-+++ arch/amd64//include/biosvar.h	23 Apr 2023 19:14:25 -0000
-@@ -233,6 +233,14 @@ typedef struct _bios_ucode {
- 	uint64_t	uc_size;
- } __packed bios_ucode_t;
- 
-+#ifdef KASAN
-+#define	BOOTARG_SHADOW (13)
-+typedef struct _bios_shadow {
-+	uint64_t addr;		/* Beginning of block */
-+	uint64_t size;		/* Size of block */
-+} __packed bios_shadow_t;
-+#endif
+RCS file: /cvs/src/sys/arch/amd64/conf/files.amd64,v
+retrieving revision 1.107
+diff -u -p -r1.107 files.amd64
+--- arch/amd64/conf/files.amd64	14 Jan 2023 12:11:10 -0000	1.107
++++ arch/amd64/conf/files.amd64	25 Apr 2023 19:36:43 -0000
+@@ -10,6 +10,7 @@ file	arch/amd64/amd64/gdt.c			multiproce
+ file	arch/amd64/amd64/machdep.c
+ file	arch/amd64/amd64/hibernate_machdep.c	hibernate
+ file	arch/amd64/amd64/identcpu.c
++file	arch/amd64/amd64/kasan.c		kasan
+ file	arch/amd64/amd64/tsc.c
+ file	arch/amd64/amd64/via.c
+ file	arch/amd64/amd64/locore.S
+Index: arch/amd64/conf/ld.script
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/conf/ld.script,v
+retrieving revision 1.19
+diff -u -p -r1.19 ld.script
+--- arch/amd64/conf/ld.script	7 Nov 2022 01:41:57 -0000	1.19
++++ arch/amd64/conf/ld.script	25 Apr 2023 20:13:16 -0000
+@@ -85,6 +85,10 @@ SECTIONS
+ 	{
+ 		__rodata_start = ABSOLUTE(.);
+ 		*(.rodata .rodata.*)
++		. = ALIGN(64);
++		__CTOR_LIST__ = .;
++		*(.ctors)
++		__CTOR_END__ = .;
+ 		. = ALIGN(8);
+ 		__nofault_start = ABSOLUTE(.);
+ 		*(.nofault.*) *(.nofault)
+Index: arch/amd64/include/kasan.h
+===================================================================
+RCS file: arch/amd64/include/kasan.h
+diff -N arch/amd64/include/kasan.h
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ arch/amd64/include/kasan.h	25 Apr 2023 20:50:37 -0000
+@@ -0,0 +1,9 @@
++/*	$OpenBSD: kasan.h $	*/
 +
- #if defined(_KERNEL) || defined (_STANDALONE)
- 
- #ifdef _LOCORE
-Index: arch/amd64//include/pmap.h
++#ifndef _MACHINE_KASAN_H_
++#define _MACHINE_KASAN_H_
++
++void	kasan_shadow_map(vaddr_t);
++void	kasan_ctors(void);
++
++#endif /* !_MACHINE_KASAN_H_ */
+Index: arch/amd64/include/pmap.h
 ===================================================================
 RCS file: /cvs/src/sys/arch/amd64/include/pmap.h,v
 retrieving revision 1.86
 diff -u -p -r1.86 pmap.h
---- arch/amd64//include/pmap.h	13 Apr 2023 15:23:21 -0000	1.86
-+++ arch/amd64//include/pmap.h	24 Apr 2023 11:34:51 -0000
-@@ -145,11 +145,17 @@
+--- arch/amd64/include/pmap.h	13 Apr 2023 15:23:21 -0000	1.86
++++ arch/amd64/include/pmap.h	25 Apr 2023 20:02:02 -0000
+@@ -145,11 +145,13 @@
  #define NUM_L4_SLOT_DIRECT	4
  #define L4_SLOT_DIRECT		(L4_SLOT_KERNBASE - NUM_L4_SLOT_DIRECT)
  #define L4_SLOT_EARLY		(L4_SLOT_DIRECT - 1)
-+#ifdef KASAN
-+#define L4_SLOT_SHADOW		(L4_SLOT_DIRECT - 2)
-+#endif
++#define L4_SLOT_KASAN		(L4_SLOT_DIRECT - 2)
  
  #define PDIR_SLOT_KERN		L4_SLOT_KERN
  #define PDIR_SLOT_PTE		L4_SLOT_PTE
  #define PDIR_SLOT_DIRECT	L4_SLOT_DIRECT
  #define PDIR_SLOT_EARLY		L4_SLOT_EARLY
-+#ifdef KASAN
-+#define PDIR_SLOT_SHADOW	L4_SLOT_SHADOW
-+#endif
++#define PDIR_SLOT_KASAN		L4_SLOT_KASAN
  
  /*
   * the following defines give the virtual addresses of various MMU
-@@ -407,6 +413,10 @@ void	pmap_convert(struct pmap *, int);
- void	pmap_enter_special(vaddr_t, paddr_t, vm_prot_t);
- vaddr_t	pmap_set_pml4_early(paddr_t pa);
- void	pmap_clear_pml4_early(void);
-+
-+#ifdef KASAN
-+vaddr_t	pmap_init_pml4_shadow(paddr_t pa, uint64_t);
-+#endif
- 
- /*
-  * functions for flushing the cache for vaddrs and pages.
-Index: arch/amd64//stand/boot/Makefile
+Index: conf/files
 ===================================================================
-RCS file: /cvs/src/sys/arch/amd64/stand/boot/Makefile,v
-retrieving revision 1.49
-diff -u -p -r1.49 Makefile
---- arch/amd64//stand/boot/Makefile	17 Apr 2023 00:05:35 -0000	1.49
-+++ arch/amd64//stand/boot/Makefile	24 Apr 2023 07:10:57 -0000
-@@ -50,7 +50,7 @@ SRCS+=	aes_xts.c bcrypt_pbkdf.c blowfish
- .endif
- 
- .PATH:	${S}/lib/libkern
--SRCS+=	ashldi3.c ashrdi3.c divdi3.c lshrdi3.c moddi3.c qdivrem.c
-+SRCS+=	ashldi3.c ashrdi3.c divdi3.c udivdi3.c lshrdi3.c moddi3.c qdivrem.c
- SRCS+=	strlcpy.c
- 
- .PATH:	${S}/lib/libz
-@@ -82,6 +82,7 @@ CPPFLAGS+=-DBOOTMAGIC=$(BOOTMAGIC) ${DEB
- CPPFLAGS+=-DSLOW -DSMALL -DNOBYFOUR -DNO_GZIP -DDYNAMIC_CRC_TABLE -DBUILDFIXED
- CPPFLAGS+=-DHIBERNATE
- CPPFLAGS+=-DHEAP_LIMIT=${HEAP_LIMIT} -I${S}/stand/boot #-DCOMPAT_UFS
-+CPPFLAGS+=-DKASAN=1
- CFLAGS+=-m32 $(SACFLAGS) -D__INTERNAL_LIBSA_CREAD -fno-pie
- AFLAGS+=${NO_INTEGR_AS}
- AFLAGS+=-m32 # -Wa,-R
-Index: arch/amd64//stand/libsa/memprobe.c
+RCS file: /cvs/src/sys/conf/files,v
+retrieving revision 1.723
+diff -u -p -r1.723 files
+--- conf/files	4 Apr 2023 00:38:37 -0000	1.723
++++ conf/files	25 Apr 2023 19:35:36 -0000
+@@ -732,6 +732,7 @@ file kern/subr_evcount.c
+ file kern/subr_extent.c
+ file kern/subr_suspend.c		suspend
+ file kern/subr_hibernate.c		hibernate
++file kern/subr_kasan.c			kasan
+ file kern/subr_kubsan.c			kubsan
+ file kern/subr_log.c
+ file kern/subr_percpu.c
+Index: kern/subr_kasan.c
 ===================================================================
-RCS file: /cvs/src/sys/arch/amd64/stand/libsa/memprobe.c,v
-retrieving revision 1.19
-diff -u -p -r1.19 memprobe.c
---- arch/amd64//stand/libsa/memprobe.c	28 Jan 2021 18:54:52 -0000	1.19
-+++ arch/amd64//stand/libsa/memprobe.c	24 Apr 2023 16:04:48 -0000
-@@ -437,10 +437,48 @@ mem_add(long long sa, long long ea)
- void
- mem_pass(void)
- {
--	bios_memmap_t *p;
-+	bios_memmap_t	*p;
-+#ifdef KASAN
-+	bios_shadow_t	 shadow;
-+	uint64_t	 nl2p, npd, sz = 0;
+RCS file: kern/subr_kasan.c
+diff -N kern/subr_kasan.c
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ kern/subr_kasan.c	25 Apr 2023 20:50:34 -0000
+@@ -0,0 +1,120 @@
++/*	$OpenBSD: subr_kasan.c $	*/
 +
-+	memset(&shadow, 0, sizeof(shadow));
++#include <sys/param.h>
++#include <sys/kasan.h>
++#include <sys/proc.h>
++#include <sys/tree.h>
++#include <sys/types.h>
++#include <sys/systm.h>
 +
-+	for (p = bios_memmap; p->type != BIOS_MAP_END; p++)
-+		if (p->type == BIOS_MAP_FREE)
-+			sz += p->size;
++#include <machine/kasan.h>
++#include <machine/cpu.h>
++#include <machine/segments.h>
 +
-+	sz = (sz + 8) / 9; /* +8 to ceil */
++#include <uvm/uvm_extern.h>
 +
-+	if (sz > 512ULL * 1024 * 1024 * 1024) {
-+		printf("Shadow memory does not fit into dpdp.\n");
-+		goto out;
++void kasan_init(void);
++
++static int kasan_enabled = false;
++
++static inline int8_t *
++kasan_addr_to_shad(vaddr_t va)
++{
++	return (char *)(KASAN_SHADOW_START +
++	    ((va - VM_MIN_KERNEL_ADDRESS) >> KASAN_SHADOW_SCALE_SHIFT));
++}
++
++static int
++kasan_unsupported(vaddr_t addr)
++{
++	return (addr >= VM_MIN_KERNEL_ADDRESS &&
++	    addr < VM_MAX_KERNEL_ADDRESS);
++}
++
++/*
++ * Create the shadow mapping. We don't create the 'User' area, because we
++ * exclude it from the monitoring. The 'Main' area is created dynamically
++ * in pmap_growkernel.
++ */
++void
++kasan_init(void)
++{
++	kasan_enabled = 1;
++
++	/* Call the ASAN constructors. */
++	kasan_ctors();
++}
++
++static void
++kasan_report(vaddr_t addr, size_t size, bool write, vaddr_t rip)
++{
++	printf("KASAN: unregistered access at 0x%lx: "
++	    "%s of %lu byte%s from 0x%lx\n", rip,
++	    (write ? "write" : "read"), size, (size > 1 ? "s" : ""), addr);
++}
++
++static void
++kasan_shadow_fill(vaddr_t addr, size_t size, uint8_t val)
++{
++	char *shad;
++
++	if (!kasan_enabled)
++		return;
++	if (size == 0)
++		return;
++	if (kasan_unsupported(addr))
++		return;
++
++	KASSERT(addr % KASAN_SHADOW_SCALE_SIZE == 0);
++	KASSERT(size % KASAN_SHADOW_SCALE_SIZE == 0);
++
++	shad = kasan_addr_to_shad(addr);
++	size = size >> KASAN_SHADOW_SCALE_SHIFT;
++
++	__builtin_memset(shad, val, size);
++}
++
++static inline void
++kasan_shadow_1byte_markvalid(vaddr_t addr)
++{
++	char *byte = kasan_addr_to_shad(addr);
++	char last = (addr & KASAN_SHADOW_MASK) + 1;
++
++	*byte = last;
++}
++
++void
++kasan_add_redzone(size_t *size)
++{
++	*size = roundup(*size, KASAN_SHADOW_SCALE_SIZE);
++	*size += KASAN_SHADOW_SCALE_SIZE;
++}
++
++static void
++kasan_markmem(vaddr_t addr, size_t size, int valid)
++{
++	size_t i;
++
++	KASSERT(addr % KASAN_SHADOW_SCALE_SIZE == 0);
++
++	if (valid) {
++		for (i = 0; i < size; i++)
++			kasan_shadow_1byte_markvalid(addr + i);
++	} else {
++		KASSERT(size % KASAN_SHADOW_SCALE_SIZE == 0);
++		kasan_shadow_fill(addr, size, KASAN_MEMORY_REDZONE);
 +	}
++}
 +
-+	/* round to chunks of 2MB page size */
-+#define MB2	(2 * 1024 * 1024)
-+	nl2p = (sz + MB2 - 1) / MB2; /* +MB2-1 to ceil */
-+	npd = (nl2p + 511) / 512; /* +511 to ceil */
++void
++kasan_alloc(vaddr_t addr, size_t size, size_t sz_with_redz)
++{
++	kasan_markmem(addr, sz_with_redz, false);
++	kasan_markmem(addr, size, true);
++}
 +
-+	shadow.size = MB2 * nl2p;
-+	sz = shadow.size + (nl2p + npd) * PAGE_SIZE;
- 
- 	for (p = bios_memmap; p->type != BIOS_MAP_END; p++)
-+		if (p->type == BIOS_MAP_FREE &&
-+		    p->size > sz) {
-+			p->size -= sz;
-+			shadow.addr = p->addr + p->size;
-+		}
++void
++kasan_free(vaddr_t addr, size_t sz_with_redz)
++{
++	kasan_markmem(addr, sz_with_redz, true);
++}
+Index: sys/kasan.h
+===================================================================
+RCS file: sys/kasan.h
+diff -N sys/kasan.h
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ sys/kasan.h	25 Apr 2023 20:50:28 -0000
+@@ -0,0 +1,27 @@
++/*	$OpenBSD: kasan.h $	*/
 +
-+	if (shadow.addr != 0) {
-+		addbootarg(BOOTARG_SHADOW, sizeof(bios_shadow_t), &shadow);
-+	}
-+ out:
-+#else
-+	for (p = bios_memmap; p->type != BIOS_MAP_END; p++)
- 		;
-+#endif
++#ifndef _SYS_KASAN_H_
++#define _SYS_KASAN_H_
 +
- 	addbootarg(BOOTARG_MEMMAP, (p - bios_memmap + 1) * sizeof *bios_memmap,
- 	    bios_memmap);
- }
++#define KASAN_SHADOW_SCALE_SHIFT	3
++#define KASAN_SHADOW_SCALE_SIZE		(1UL << KASAN_SHADOW_SCALE_SHIFT)
++#define KASAN_SHADOW_MASK		(KASAN_SHADOW_SCALE_SIZE - 1)
++
++#define KASAN_SHADOW_SIZE	(VM_MAX_KERNEL_ADDRESS - VM_MIN_KERNEL_ADDRESS)
++#define KASAN_SHADOW_START	(VA_SIGN_NEG((L4_SLOT_KASAN * NBPD_L4)))
++#define KASAN_SHADOW_END	(KASAN_SHADOW_START + KASAN_SHADOW_SIZE)
++
++#define __RET_ADDR	(unsigned long)__builtin_return_address(0)
++
++/* Our redzone values. */
++#define KASAN_GLOBAL_REDZONE	0xFA
++#define KASAN_MEMORY_REDZONE	0xFB
++
++/* Stack redzone shadow values. Part of the compiler ABI. */
++#define KASAN_STACK_LEFT	0xF1
++#define KASAN_STACK_MID		0xF2
++#define KASAN_STACK_RIGHT	0xF3
++#define KASAN_STACK_PARTIAL	0xF4
++#define KASAN_USE_AFTER_SCOPE	0xF8
++
++#endif /* !_SYS_KASAN_H_ */
