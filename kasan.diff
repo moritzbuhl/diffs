@@ -3,9 +3,9 @@ Index: arch/amd64/amd64/kasan.c
 RCS file: arch/amd64/amd64/kasan.c
 diff -N arch/amd64/amd64/kasan.c
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ arch/amd64/amd64/kasan.c	26 Apr 2023 12:51:26 -0000
++++ arch/amd64/amd64/kasan.c	26 Apr 2023 17:04:51 -0000
 @@ -0,0 +1,102 @@
-+/*	$OpenBSD: kasan.c $	*/
++/*	$OpenBSD$	*/
 +
 +#include <sys/param.h>
 +#include <sys/proc.h>
@@ -132,6 +132,78 @@ diff -u -p -r1.284 machdep.c
  	pmap_growkernel(VM_MIN_KERNEL_ADDRESS + 32 * 1024 * 1024);
  
  	pmap_kenter_pa(idt_vaddr, idt_paddr, PROT_READ | PROT_WRITE);
+Index: arch/amd64/conf/Makefile.amd64
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/conf/Makefile.amd64,v
+retrieving revision 1.132
+diff -u -p -r1.132 Makefile.amd64
+--- arch/amd64/conf/Makefile.amd64	21 Apr 2023 13:24:20 -0000	1.132
++++ arch/amd64/conf/Makefile.amd64	26 Apr 2023 19:09:43 -0000
+@@ -1,4 +1,4 @@
+-#	$OpenBSD: Makefile.amd64,v 1.132 2023/04/21 13:24:20 bluhm Exp $
++#	$OpenBSD: Makefile.amd64,v 1.129 2023/01/01 01:34:33 jsg Exp $
+ 
+ # For instructions on building kernels consult the config(8) and options(4)
+ # manual pages.
+@@ -53,7 +53,7 @@ INCLUDES=	-nostdinc -I$S -I${.OBJDIR} -I
+ CPPFLAGS=	${INCLUDES} ${IDENT} ${PARAM} -D_KERNEL -MD -MP
+ CWARNFLAGS=	-Werror -Wall -Wimplicit-function-declaration \
+ 		-Wno-pointer-sign \
+-		-Wframe-larger-than=2047
++		-Wframe-larger-than=16382
+ 
+ CMACHFLAGS=	-mcmodel=kernel -mno-red-zone -mno-sse2 -mno-sse -mno-3dnow \
+ 		-mno-mmx -msoft-float -fno-omit-frame-pointer
+@@ -69,10 +69,8 @@ CMACHFLAGS+=	-msave-args
+ SORTR=		cat
+ COPTIMIZE=	-Oz
+ .if ${COMPILER_VERSION:Mclang}
+-CMACHFLAGS+=	-mno-retpoline -fcf-protection=none
++CMACHFLAGS+=	-mno-retpoline
+ .endif
+-.else
+-CMACHFLAGS+=	-fcf-protection=branch
+ .endif
+ .if ${COMPILER_VERSION:Mclang}
+ NO_INTEGR_AS=	-no-integrated-as
+@@ -138,6 +136,13 @@ CFLAGS+=	-fsanitize=undefined
+ CFLAGS+=	-fno-wrapv
+ .endif
+ 
++.if ${IDENT:M-DKASAN} && ${COMPILER_VERSION:Mclang}
++CFLAGS+=	-fsanitize=kernel-address --param asan-globals=1
++CFLAGS+=	-mllvm -asan-instrumentation-with-call-threshold=0
++# TODO(gnezdo): need to find per-file options mechanism.
++#COPTS.asan.c+=	-fno-sanitize=kernel-address
++.endif
++
+ %LOAD
+ 
+ # cc's -MD puts the source and output paths in the dependency file;
+@@ -177,7 +182,7 @@ ld.script: ${_machdir}/conf/ld.script
+ 
+ gapdummy.o:
+ 	echo '__asm(".section .rodata,\"a\"");' > gapdummy.c
+-	${CC} -c ${CFLAGS} ${CPPFLAGS} -fcf-protection=none gapdummy.c -o $@
++	${CC} -c ${CFLAGS} ${CPPFLAGS} gapdummy.c -o $@
+ 
+ makegap.sh:
+ 	cp $S/conf/makegap.sh $@
+@@ -194,6 +199,14 @@ vers.o: ${SYSTEM_DEP:Ngap.o}
+ .if ${SYSTEM_OBJ:Mkcov.o} && ${COMPILER_VERSION:Mclang}
+ kcov.o: $S/dev/kcov.c
+ 	${NORMAL_C} -fno-sanitize-coverage=trace-pc,trace-cmp
++.endif
++
++# XXX: add subr_asan.o check
++.if ${SYSTEM_OBJ:Mkasan.o} && ${COMPILER_VERSION:Mclang}
++kasan.o: $S/arch/amd64/amd64/kasan.c
++	${NORMAL_C} -fno-sanitize=kernel-address
++subr_kasan.o: $S/kern/subr_kasan.c
++	${NORMAL_C} -fno-sanitize=kernel-address
+ .endif
+ 
+ HARDFLOAT_CFLAGS= -msse -msse2
 Index: arch/amd64/conf/files.amd64
 ===================================================================
 RCS file: /cvs/src/sys/arch/amd64/conf/files.amd64,v
@@ -170,9 +242,9 @@ Index: arch/amd64/include/kasan.h
 RCS file: arch/amd64/include/kasan.h
 diff -N arch/amd64/include/kasan.h
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ arch/amd64/include/kasan.h	26 Apr 2023 12:16:04 -0000
++++ arch/amd64/include/kasan.h	26 Apr 2023 17:05:54 -0000
 @@ -0,0 +1,10 @@
-+/*	$OpenBSD: kasan.h $	*/
++/*	$OpenBSD$	*/
 +
 +#ifndef _MACHINE_KASAN_H_
 +#define _MACHINE_KASAN_H_
@@ -283,9 +355,9 @@ Index: kern/subr_kasan.c
 RCS file: kern/subr_kasan.c
 diff -N kern/subr_kasan.c
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ kern/subr_kasan.c	26 Apr 2023 13:05:30 -0000
++++ kern/subr_kasan.c	26 Apr 2023 17:04:58 -0000
 @@ -0,0 +1,392 @@
-+/*	$OpenBSD: subr_kasan.c $	*/
++/*	$OpenBSD$	*/
 +
 +#include <sys/param.h>
 +#include <sys/proc.h>
@@ -682,9 +754,9 @@ Index: sys/kasan.h
 RCS file: sys/kasan.h
 diff -N sys/kasan.h
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ sys/kasan.h	26 Apr 2023 11:40:11 -0000
++++ sys/kasan.h	26 Apr 2023 17:05:52 -0000
 @@ -0,0 +1,82 @@
-+/*	$OpenBSD: kasan.h $	*/
++/*	$OpenBSD$	*/
 +
 +#ifndef _SYS_KASAN_H_
 +#define _SYS_KASAN_H_
