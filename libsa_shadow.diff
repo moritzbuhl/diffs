@@ -28,8 +28,8 @@ RCS file: /cvs/src/sys/arch/amd64/stand/libsa/memprobe.c,v
 retrieving revision 1.19
 diff -u -p -r1.19 memprobe.c
 --- libsa/memprobe.c	28 Jan 2021 18:54:52 -0000	1.19
-+++ libsa/memprobe.c	23 Apr 2023 19:58:21 -0000
-@@ -437,10 +437,37 @@ mem_add(long long sa, long long ea)
++++ libsa/memprobe.c	23 Apr 2023 20:05:27 -0000
+@@ -437,10 +437,34 @@ mem_add(long long sa, long long ea)
  void
  mem_pass(void)
  {
@@ -39,19 +39,13 @@ diff -u -p -r1.19 memprobe.c
 +	bios_shadow_t	 shadow;
 +
 +	memset(&shadow, 0, sizeof(shadow));
-+#endif
- 
- 	for (p = bios_memmap; p->type != BIOS_MAP_END; p++)
-+#ifdef KASAN
-+		shadow.size += p->size;
-+#else
- 		;
-+#endif
-+
-+#ifdef KASAN
-+	shadow.size = (shadow.size + 8) / 9; /* +8 to ceil */
 +
 +	for (p = bios_memmap; p->type != BIOS_MAP_END; p++)
++		shadow.size += p->size;
++
++	shadow.size = (shadow.size + 8) / 9; /* +8 to ceil */
+ 
+ 	for (p = bios_memmap; p->type != BIOS_MAP_END; p++)
 +		if (p->type == BIOS_MAP_FREE &&
 +		    p->size > shadow.size) {
 +			p->size -= shadow.size;
@@ -63,6 +57,9 @@ diff -u -p -r1.19 memprobe.c
 +	} else {
 +		addbootarg(BOOTARG_SHADOW, sizeof(bios_shadow_t), &shadow);
 +	}
++#else
++	for (p = bios_memmap; p->type != BIOS_MAP_END; p++)
+ 		;
 +#endif
 +
  	addbootarg(BOOTARG_MEMMAP, (p - bios_memmap + 1) * sizeof *bios_memmap,
