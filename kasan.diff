@@ -3,8 +3,8 @@ Index: arch/amd64/amd64/kasan.c
 RCS file: arch/amd64/amd64/kasan.c
 diff -N arch/amd64/amd64/kasan.c
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ arch/amd64/amd64/kasan.c	28 Apr 2023 08:35:01 -0000
-@@ -0,0 +1,35 @@
++++ arch/amd64/amd64/kasan.c	28 Apr 2023 14:00:32 -0000
+@@ -0,0 +1,37 @@
 +/*	$OpenBSD$	*/
 +
 +#include <sys/param.h>
@@ -19,6 +19,8 @@ diff -N arch/amd64/amd64/kasan.c
 +#include <machine/vmmvar.h>
 +
 +#include <sys/kasan.h>
++
++void	kasan_enter_shad_multi(vaddr_t, size_t);
 +
 +void
 +kasan_ctors(void)
@@ -46,7 +48,7 @@ RCS file: /cvs/src/sys/arch/amd64/amd64/machdep.c,v
 retrieving revision 1.284
 diff -u -p -r1.284 machdep.c
 --- arch/amd64/amd64/machdep.c	29 Nov 2022 21:41:39 -0000	1.284
-+++ arch/amd64/amd64/machdep.c	28 Apr 2023 08:21:56 -0000
++++ arch/amd64/amd64/machdep.c	28 Apr 2023 14:39:30 -0000
 @@ -100,6 +100,7 @@
  #include <machine/mpbiosvar.h>
  #include <machine/kcore.h>
@@ -75,27 +77,52 @@ diff -u -p -r1.284 machdep.c
  	pmap_growkernel(VM_MIN_KERNEL_ADDRESS + 32 * 1024 * 1024);
  
  	pmap_kenter_pa(idt_vaddr, idt_paddr, PROT_READ | PROT_WRITE);
-@@ -1735,6 +1742,13 @@ init_x86_64(paddr_t first_avail)
+@@ -1735,6 +1742,11 @@ init_x86_64(paddr_t first_avail)
  	ddb_init();
  	if (boothowto & RB_KDB)
  		db_enter();
 +#endif
 +#ifdef KASAN
-+/*
 +	kasan_init();
 +        kasan_enter_shad_multi((vaddr_t)VM_MIN_KERNEL_ADDRESS,
-+            VM_MIN_KERNEL_ADDRESS - kasan_maxkvaddr);
-+*/
++	    kasan_maxkvaddr - VM_MIN_KERNEL_ADDRESS); /* XXX: doing it all */
  #endif
  }
  
+Index: arch/amd64/amd64/pmap.c
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/amd64/pmap.c,v
+retrieving revision 1.164
+diff -u -p -r1.164 pmap.c
+--- arch/amd64/amd64/pmap.c	13 Apr 2023 15:23:21 -0000	1.164
++++ arch/amd64/amd64/pmap.c	28 Apr 2023 14:11:36 -0000
+@@ -116,6 +116,9 @@
+ #include <machine/i82489reg.h>
+ #include <machine/i82489var.h>
+ #endif
++#ifdef KASAN
++#include <machine/kasan.h>
++#endif
+ 
+ #include "vmm.h"
+ 
+@@ -3033,6 +3036,9 @@ pmap_growkernel(vaddr_t maxkvaddr)
+ 	}
+ 	pmap_maxkvaddr = maxkvaddr;
+ 	splx(s);
++
++	kasan_enter_shad_multi((vaddr_t)VM_MIN_KERNEL_ADDRESS, 
++	    maxkvaddr - VM_MIN_KERNEL_ADDRESS);
+ 
+ 	return maxkvaddr;
+ }
 Index: arch/amd64/conf/Makefile.amd64
 ===================================================================
 RCS file: /cvs/src/sys/arch/amd64/conf/Makefile.amd64,v
 retrieving revision 1.132
 diff -u -p -r1.132 Makefile.amd64
 --- arch/amd64/conf/Makefile.amd64	21 Apr 2023 13:24:20 -0000	1.132
-+++ arch/amd64/conf/Makefile.amd64	27 Apr 2023 08:34:03 -0000
++++ arch/amd64/conf/Makefile.amd64	28 Apr 2023 12:49:34 -0000
 @@ -1,4 +1,4 @@
 -#	$OpenBSD: Makefile.amd64,v 1.132 2023/04/21 13:24:20 bluhm Exp $
 +#	$OpenBSD: Makefile.amd64,v 1.129 2023/01/01 01:34:33 jsg Exp $
@@ -115,7 +142,7 @@ diff -u -p -r1.132 Makefile.amd64
  CFLAGS+=	-fno-wrapv
  .endif
  
-+KASAN_ENABLED = -fsanitize=kernel-address --param asan-globals=1 -mllvm -asan-instrumentation-with-call-threshold=0
++KASAN_ENABLED = -fsanitize=kernel-address --param asan-globals=1 -mllvm -asan-instrumentation-with-call-threshold=0 -mllvm -asan-mapping-offset=0xdfff908000000000
 +
 +.if ${IDENT:M-DKASAN} && ${COMPILER_VERSION:Mclang}
 +#CFLAGS+=${KASAN_ENABLED}
@@ -199,12 +226,12 @@ RCS file: /cvs/src/sys/arch/amd64/include/pmap.h,v
 retrieving revision 1.86
 diff -u -p -r1.86 pmap.h
 --- arch/amd64/include/pmap.h	13 Apr 2023 15:23:21 -0000	1.86
-+++ arch/amd64/include/pmap.h	27 Apr 2023 08:34:00 -0000
++++ arch/amd64/include/pmap.h	28 Apr 2023 11:13:28 -0000
 @@ -145,11 +145,13 @@
  #define NUM_L4_SLOT_DIRECT	4
  #define L4_SLOT_DIRECT		(L4_SLOT_KERNBASE - NUM_L4_SLOT_DIRECT)
  #define L4_SLOT_EARLY		(L4_SLOT_DIRECT - 1)
-+#define L4_SLOT_KASAN		(L4_SLOT_DIRECT - 2)
++#define L4_SLOT_KASAN		(L4_SLOT_KERN + 1)
  
  #define PDIR_SLOT_KERN		L4_SLOT_KERN
  #define PDIR_SLOT_PTE		L4_SLOT_PTE
@@ -229,6 +256,72 @@ diff -u -p -r1.724 files
  file kern/subr_kubsan.c			kubsan
  file kern/subr_log.c
  file kern/subr_percpu.c
+Index: kern/init_main.c
+===================================================================
+RCS file: /cvs/src/sys/kern/init_main.c,v
+retrieving revision 1.320
+diff -u -p -r1.320 init_main.c
+--- kern/init_main.c	1 Jan 2023 07:00:51 -0000	1.320
++++ kern/init_main.c	28 Apr 2023 15:12:36 -0000
+@@ -73,6 +73,10 @@
+ #include <sys/smr.h>
+ #include <sys/evcount.h>
+ 
++#ifdef KASAN
++#include <sys/kasan.h>
++#endif
++
+ #include <sys/syscallargs.h>
+ 
+ #include <uvm/uvm_extern.h>
+@@ -421,6 +425,7 @@ main(void *framep)
+ 		if (fork1(p, FORK_FORK, start_init, NULL, NULL, &initproc))
+ 			panic("fork init");
+ 		initprocess = initproc->p_p;
++printf("DEBUG PARENT: kasan_in_init=%d\n", kasan_in_init);
+ 	}
+ 
+ 	/*
+@@ -562,6 +567,9 @@ static char *initpaths[] = {
+ };
+ 
+ void
++#ifdef KASAN
++__attribute__((no_sanitize("address")))
++#endif
+ check_console(struct proc *p)
+ {
+ 	struct nameidata nd;
+@@ -583,6 +591,9 @@ check_console(struct proc *p)
+  * The program is invoked with one argument containing the boot flags.
+  */
+ void
++#ifdef KASAN
++__attribute__((no_sanitize("address")))
++#endif
+ start_init(void *arg)
+ {
+ 	struct proc *p = arg;
+@@ -601,6 +612,9 @@ start_init(void *arg)
+ 	/*
+ 	 * Now in process 1.
+ 	 */
++#ifdef KASAN
++	kasan_in_init = 1;
++#endif
+ 
+ 	/*
+ 	 * Wait for main() to tell us that it's safe to exec.
+@@ -714,6 +728,9 @@ start_init(void *arg)
+ 		 */
+ 		if ((error = sys_execve(p, &args, retval)) == EJUSTRETURN) {
+ 			KERNEL_UNLOCK();
++#ifdef KASAN
++			kasan_in_init = 0;
++#endif
+ 			return;
+ 		}
+ 		if (error != ENOENT)
 Index: kern/kern_malloc.c
 ===================================================================
 RCS file: /cvs/src/sys/kern/kern_malloc.c,v
@@ -294,8 +387,8 @@ Index: kern/subr_kasan.c
 RCS file: kern/subr_kasan.c
 diff -N kern/subr_kasan.c
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ kern/subr_kasan.c	28 Apr 2023 08:21:00 -0000
-@@ -0,0 +1,598 @@
++++ kern/subr_kasan.c	28 Apr 2023 14:55:28 -0000
+@@ -0,0 +1,542 @@
 +/*	$OpenBSD$	*/
 +
 +#include <sys/param.h>
@@ -303,6 +396,7 @@ diff -N kern/subr_kasan.c
 +#include <sys/tree.h>
 +#include <sys/types.h>
 +#include <sys/systm.h>
++#include <sys/user.h>
 +
 +#include <uvm/uvm_extern.h>
 +
@@ -321,15 +415,17 @@ diff -N kern/subr_kasan.c
 +	    ((addr + size - 1) >> KASAN_SHADOW_SCALE_SHIFT)
 +
 +void kasan_init(void);
++int pmap_get_physpage(vaddr_t, int, paddr_t *); // XXX
 +
 +static int kasan_enabled = 0;
 +static paddr_t kasan_zero = 0;
++int kasan_in_init = 0;
 +
 +static int
 +kasan_unsupported(vaddr_t addr)
 +{
-+	return (addr >= VM_MIN_KERNEL_ADDRESS ||
-+	    addr < VM_MAX_KERNEL_ADDRESS);
++	return (addr >= VM_MAX_KERNEL_ADDRESS ||
++	    addr < VM_MIN_KERNEL_ADDRESS);
 +}
 +
 +int
@@ -337,13 +433,8 @@ diff -N kern/subr_kasan.c
 +{
 +	uint64_t l4idx, l3idx, l2idx, l1idx;
 +	pd_entry_t *pd, npte;
-+	struct vm_page *ptp, *pptp;
 +	paddr_t npa;
-+	struct uvm_object *obj;
 +	struct pmap *pmap = pmap_kernel();
-+
-+	if (sva > MAXDSIZ)
-+		return ENOMEM;
 +
 +	l4idx = (sva & L4_MASK) >> L4_SHIFT; /* PML4E idx */
 +	l3idx = (sva & L3_MASK) >> L3_SHIFT; /* PDPTE idx */
@@ -357,39 +448,18 @@ diff -N kern/subr_kasan.c
 +		return ENOMEM;
 +
 +	/* npa = physaddr of PDPT */
-+	npa = pd[l4idx] & PMAP_PA_MASK;
++	npa = pd[l4idx] & PMAP_PA_MASK & PG_FRAME;
 +
 +	/* Valid PML4e for the 512GB region containing sva? */
 +	if (!npa) {
 +		/* No valid PML4e - allocate PDPT page and set PML4e */
-+		obj = &pmap->pm_obj[2];	/* PML4 UVM object */
-+		ptp = uvm_pagealloc(obj, ptp_va2o(sva, 3), NULL,
-+		    UVM_PGA_USERESERVE|UVM_PGA_ZERO);
-+
-+		if (ptp == NULL)
-+			return ENOMEM;
-+
-+		/*
-+		 * New PDPT page - we are setting the first entry, so set
-+		 * the wired count to 1
-+		 */
-+		ptp->wire_count = 1;
-+
-+		/* Calculate phys address of this new PDPT page */
-+		npa = VM_PAGE_TO_PHYS(ptp);
++		pmap_get_physpage(sva, 3, &npa);
 +
 +		/*
 +		 * Higher levels get full perms; specific permissions are
 +		 * entered at the lowest level.
 +		 */
 +		pd[l4idx] = (npa | PG_KW | pg_nx | PG_V);
-+
-+		pmap->pm_stats.resident_count++;
-+
-+		pptp = ptp;
-+	} else {
-+		/* Already allocated PML4e */
-+		pptp = PHYS_TO_VM_PAGE(npa);
 +	}
 +
 +	pd = (pd_entry_t *)PMAP_DIRECT_MAP(npa);
@@ -398,39 +468,18 @@ diff -N kern/subr_kasan.c
 +		    (uint64_t)npa);
 +
 +	/* npa = physaddr of PD page */
-+	npa = pd[l3idx] & PMAP_PA_MASK;
++	npa = pd[l3idx] & PMAP_PA_MASK & PG_FRAME;
 +
 +	/* Valid PDPTe for the 1GB region containing sva? */
 +	if (!npa) {
 +		/* No valid PDPTe - allocate PD page and set PDPTe */
-+		obj = &pmap->pm_obj[1];	/* PDPT UVM object */
-+		ptp = uvm_pagealloc(obj, ptp_va2o(sva, 2), NULL,
-+		    UVM_PGA_USERESERVE|UVM_PGA_ZERO);
-+
-+		if (ptp == NULL)
-+			return ENOMEM;
-+
-+		/*
-+		 * New PD page - we are setting the first entry, so set
-+		 * the wired count to 1
-+		 */
-+		ptp->wire_count = 1;
-+		pptp->wire_count++;
-+
-+		npa = VM_PAGE_TO_PHYS(ptp);
++		pmap_get_physpage(sva, 2, &npa);
 +
 +		/*
 +		 * Higher levels get full perms; specific permissions are
 +		 * entered at the lowest level.
 +		 */
 +		pd[l3idx] = (npa | PG_KW | pg_nx | PG_V);
-+
-+		pmap->pm_stats.resident_count++;
-+
-+		pptp = ptp;
-+	} else {
-+		/* Already allocated PDPTe */
-+		pptp = PHYS_TO_VM_PAGE(npa);
 +	}
 +
 +	pd = (pd_entry_t *)PMAP_DIRECT_MAP(npa);
@@ -439,35 +488,18 @@ diff -N kern/subr_kasan.c
 +		    (uint64_t)npa);
 +
 +	/* npa = physaddr of PT page */
-+	npa = pd[l2idx] & PMAP_PA_MASK;
++	npa = pd[l2idx] & PMAP_PA_MASK & PG_FRAME;
 +
 +	/* Valid PDE for the 2MB region containing sva? */
 +	if (!npa) {
 +		/* No valid PDE - allocate PT page and set PDE */
-+		obj = &pmap->pm_obj[0];	/* PDE UVM object */
-+		ptp = uvm_pagealloc(obj, ptp_va2o(sva, 1), NULL,
-+		    UVM_PGA_USERESERVE|UVM_PGA_ZERO);
-+
-+		if (ptp == NULL)
-+			return ENOMEM;
-+
-+		pptp->wire_count++;
-+
-+		npa = VM_PAGE_TO_PHYS(ptp);
++		pmap_get_physpage(sva, 1, &npa);
 +
 +		/*
 +		 * Higher level get full perms; specific permissions are
 +		 * entered at the lowest level.
 +		 */
 +		pd[l2idx] = (npa | PG_KW | pg_g_kern | pg_nx | PG_V);
-+
-+		pmap->pm_stats.resident_count++;
-+
-+	} else {
-+		/* Find final ptp */
-+		ptp = PHYS_TO_VM_PAGE(npa);
-+		if (ptp == NULL)
-+			panic("%s: ptp page vanished?", __func__);
 +	}
 +
 +	pd = (pd_entry_t *)PMAP_DIRECT_MAP(npa);
@@ -478,7 +510,6 @@ diff -N kern/subr_kasan.c
 +	npte = pa | PG_KW | pg_nx | PG_V;
 +
 +	if (pd[l1idx] == 0) {
-+		ptp->wire_count++;
 +		pmap->pm_stats.resident_count++;
 +	} else {
 +		/* XXX flush ept */
@@ -492,37 +523,26 @@ diff -N kern/subr_kasan.c
 +void
 +kasan_enter_shad_multi(vaddr_t va, size_t sz)
 +{
-+	struct uvm_object *obj;
-+	struct vm_page *ptp;
-+	struct pmap *pmap = pmap_kernel();
 +	size_t ssz, spgs, i;
-+	vaddr_t sva, zva;
-+
-+	if (kasan_zero == 0) {
-+		zva = KASAN_SHADOW_START - 8;
-+		obj = &pmap->pm_obj[0];
-+		ptp = uvm_pagealloc(obj, ptp_va2o((vaddr_t)zva, 0), NULL,
-+		    UVM_PGA_USERESERVE|UVM_PGA_ZERO);
-+
-+		if (ptp == NULL)
-+			panic("no memory");
-+
-+		pmap->pm_stats.resident_count++;
-+
-+		kasan_zero = VM_PAGE_TO_PHYS(ptp);
-+		memset((char *)zva, 0x80, PAGE_SIZE);
-+	}
-+
++	vaddr_t sva;
 +
 +	sva = (vaddr_t)kasan_addr_to_shad(va);
 +	ssz = (sz + KASAN_SHADOW_SCALE_SIZE - 1) / KASAN_SHADOW_SCALE_SIZE;
-+	sva = (va / PAGE_SIZE) * PAGE_SIZE;
++	sva = (sva / PAGE_SIZE) * PAGE_SIZE;
 +	spgs = (ssz + PAGE_SIZE - 1) / PAGE_SIZE;
 +
++printf("early start: 0x%llx\n", VA_SIGN_NEG((L4_SLOT_EARLY * NBPD_L4)));
++printf("shadow start: 0x%lx\n", KASAN_SHADOW_START);
++printf("shadow end: 0x%lx\n", KASAN_SHADOW_END);
++printf("mapped 0x%lx\n", sva);
 +	for (i = 0; i < spgs; i++)
++{
 +		if (kasan_enter_shad(sva + i * PAGE_SIZE, kasan_zero))
 +			panic("failed to create kasa page at 0x%lx", sva +
 +			    i * PAGE_SIZE);
++//printf("mapped 0x%lx\n", sva + i * PAGE_SIZE);
++}
++
 +}
 +
 +/*
@@ -533,19 +553,36 @@ diff -N kern/subr_kasan.c
 +void
 +kasan_init(void)
 +{
++	if (kasan_zero == 0) {
++		// XXX: zero page should be somewhere else not in shadow memory
++		pmap_get_physpage(KASAN_SHADOW_START, 0, &kasan_zero); // XXX: 0 becomes -1
++/*
++printf("before memset, 0x%lx\n", zva);
++		memset((char *)zva, 0x80, PAGE_SIZE);
++*/
++printf("got zero page\n");
++	}
++
++printf("stack: 0x%lx\n", (vaddr_t)proc0.p_addr + USPACE - 16);
++
++	/* map stack memory */
++	kasan_enter_shad_multi((vaddr_t)proc0.p_addr + USPACE - 16,
++	    1024 * 1024 * 2);
++
++	kasan_enter_shad_multi(VM_MIN_KERNEL_ADDRESS,
++	    VM_MAX_KERNEL_ADDRESS - VM_MIN_KERNEL_ADDRESS);
 +	kasan_enabled = 1;
-+	
 +
 +	/* Call the ASAN constructors. */
 +	kasan_ctors();
 +}
 +
 +static void
-+kasan_report(vaddr_t addr, size_t size, int write, vaddr_t rip)
++kasan_report(vaddr_t addr, size_t size, int op, vaddr_t rip)
 +{
 +	printf("KASAN: unregistered access at 0x%lx: "
 +	    "%s of %lu byte%s from 0x%lx\n", rip,
-+	    (write ? "write" : "read"), size, (size > 1 ? "s" : ""), addr);
++	    (op ? "write" : "read"), size, (size > 1 ? "s" : ""), addr);
 +}
 +
 +static void
@@ -553,7 +590,7 @@ diff -N kern/subr_kasan.c
 +{
 +	char *shad;
 +
-+	if (!kasan_enabled)
++	if (!kasan_enabled || kasan_in_init)
 +		return;
 +	if (size == 0)
 +		return;
@@ -604,12 +641,12 @@ diff -N kern/subr_kasan.c
 +void
 +kasan_alloc(vaddr_t addr, size_t size, size_t sz_with_redz)
 +{
-+	if (!kasan_enabled)
++	if (!kasan_enabled || kasan_in_init)
 +		return;
 +	if (size == 0)
 +		return;
 +	if (kasan_unsupported(addr))
-+		return;
++		return; // XXX this should be a panic 
 +
 +	kasan_markmem(addr, sz_with_redz, 0);
 +	kasan_markmem(addr, size, 1);
@@ -618,7 +655,7 @@ diff -N kern/subr_kasan.c
 +void
 +kasan_free(vaddr_t addr, size_t sz_with_redz)
 +{
-+	if (!kasan_enabled)
++	if (!kasan_enabled || kasan_in_init)
 +		return;
 +	if (sz_with_redz == 0)
 +		return;
@@ -699,11 +736,11 @@ diff -N kern/subr_kasan.c
 +}
 +
 +static inline void
-+kasan_shadow_check(unsigned long addr, size_t size, int write, vaddr_t retaddr)
++kasan_shadow_check(vaddr_t addr, size_t size, int op, vaddr_t retaddr)
 +{
 +	int valid;
 +
-+	if (!kasan_enabled)
++	if (!kasan_enabled || kasan_in_init)
 +		return;
 +	if (size == 0)
 +		return;
@@ -733,7 +770,7 @@ diff -N kern/subr_kasan.c
 +	}
 +
 +	if (!valid) {
-+		kasan_report(addr, size, write, retaddr);
++		kasan_report(addr, size, op, retaddr);
 +	}
 +}
 +
@@ -899,8 +936,8 @@ Index: sys/kasan.h
 RCS file: sys/kasan.h
 diff -N sys/kasan.h
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ sys/kasan.h	27 Apr 2023 12:15:52 -0000
-@@ -0,0 +1,82 @@
++++ sys/kasan.h	28 Apr 2023 14:51:50 -0000
+@@ -0,0 +1,87 @@
 +/*	$OpenBSD$	*/
 +
 +#ifndef _SYS_KASAN_H_
@@ -910,8 +947,11 @@ diff -N sys/kasan.h
 +#define KASAN_SHADOW_SCALE_SIZE		(1UL << KASAN_SHADOW_SCALE_SHIFT)
 +#define KASAN_SHADOW_MASK		(KASAN_SHADOW_SCALE_SIZE - 1)
 +
-+#define KASAN_SHADOW_SIZE	(VM_MAX_KERNEL_ADDRESS - VM_MIN_KERNEL_ADDRESS)
++#define KASAN_SHADOW_SIZE	((0xffffffffffffffff - VM_MIN_KERNEL_ADDRESS) >> 3)
++#define KASAN_SHADOW_START	(0xffff808000000000)
++#if 0
 +#define KASAN_SHADOW_START	(VA_SIGN_NEG((L4_SLOT_KASAN * NBPD_L4)))
++#endif
 +#define KASAN_SHADOW_END	(KASAN_SHADOW_START + KASAN_SHADOW_SIZE)
 +
 +/* Our redzone values. */
@@ -924,6 +964,8 @@ diff -N sys/kasan.h
 +#define KASAN_STACK_RIGHT	0xF3
 +#define KASAN_STACK_PARTIAL	0xF4
 +#define KASAN_USE_AFTER_SCOPE	0xF8
++
++extern int kasan_in_init;
 +
 +inline char *
 +kasan_addr_to_shad(vaddr_t va)
@@ -1011,26 +1053,3 @@ diff -u -p -r1.161 systm.h
  #if (defined(__GNUC__) && __GNUC__ >= 4)
  #define memmove(d, s, n)	__builtin_memmove((d), (s), (n))
  #endif
-Index: uvm/uvm_page.c
-===================================================================
-RCS file: /cvs/src/sys/uvm/uvm_page.c,v
-retrieving revision 1.171
-diff -u -p -r1.171 uvm_page.c
---- uvm/uvm_page.c	11 Apr 2023 00:45:09 -0000	1.171
-+++ uvm/uvm_page.c	27 Apr 2023 12:26:07 -0000
-@@ -707,6 +707,7 @@ uvm_pagealloc_pg(struct vm_page *pg, str
- 		flags |= PQ_ANON;
- 	} else if (obj)
- 		uvm_pageinsert(pg);
-+printf("uvm_pagealloc_pg behind unused branches\n");
- 	atomic_setbits_int(&pg->pg_flags, flags);
- #if defined(UVM_PAGE_TRKOWN)
- 	pg->owner_tag = NULL;
-@@ -907,6 +908,7 @@ uvm_pagealloc(struct uvm_object *obj, vo
- 	if (flags & UVM_PGA_ZERO)
- 		pmr_flags |= UVM_PLA_ZERO;
- 	TAILQ_INIT(&pgl);
-+printf("uvm_pagealloc:  before getpages\n");
- 	if (uvm_pmr_getpages(1, 0, 0, 1, 0, 1, pmr_flags, &pgl) != 0)
- 		goto fail;
- 
