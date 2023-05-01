@@ -387,8 +387,8 @@ Index: kern/subr_kasan.c
 RCS file: kern/subr_kasan.c
 diff -N kern/subr_kasan.c
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ kern/subr_kasan.c	28 Apr 2023 14:55:28 -0000
-@@ -0,0 +1,542 @@
++++ kern/subr_kasan.c	28 Apr 2023 16:45:20 -0000
+@@ -0,0 +1,550 @@
 +/*	$OpenBSD$	*/
 +
 +#include <sys/param.h>
@@ -405,6 +405,8 @@ diff -N kern/subr_kasan.c
 +#include <machine/pmap.h>
 +#include <machine/segments.h>
 +#include <machine/vmmvar.h>
++
++#include <ddb/db_output.h>
 +
 +#include <sys/kasan.h>
 +
@@ -534,7 +536,7 @@ diff -N kern/subr_kasan.c
 +printf("early start: 0x%llx\n", VA_SIGN_NEG((L4_SLOT_EARLY * NBPD_L4)));
 +printf("shadow start: 0x%lx\n", KASAN_SHADOW_START);
 +printf("shadow end: 0x%lx\n", KASAN_SHADOW_END);
-+printf("mapped 0x%lx\n", sva);
++printf("mapped 0x%lx to 0x%lx\n", sva, sva + ssz);
 +	for (i = 0; i < spgs; i++)
 +{
 +		if (kasan_enter_shad(sva + i * PAGE_SIZE, kasan_zero))
@@ -646,7 +648,7 @@ diff -N kern/subr_kasan.c
 +	if (size == 0)
 +		return;
 +	if (kasan_unsupported(addr))
-+		return; // XXX this should be a panic 
++		panic("malloc outside of VM_KERNEL_ADDRESS range");
 +
 +	kasan_markmem(addr, sz_with_redz, 0);
 +	kasan_markmem(addr, size, 1);
@@ -735,6 +737,7 @@ diff -N kern/subr_kasan.c
 +	return 1;
 +}
 +
++static size_t valid_access = 0;
 +static inline void
 +kasan_shadow_check(vaddr_t addr, size_t size, int op, vaddr_t retaddr)
 +{
@@ -770,8 +773,13 @@ diff -N kern/subr_kasan.c
 +	}
 +
 +	if (!valid) {
++		printf("%zu valid accesses\n", valid_access);
 +		kasan_report(addr, size, op, retaddr);
-+	}
++#ifdef DDB
++		db_stack_dump();
++#endif
++	} else
++		valid_access++;
 +}
 +
 +void *
