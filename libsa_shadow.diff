@@ -1,16 +1,222 @@
-Index: boot/Makefile
+Index: arch/amd64//amd64/machdep.c
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/amd64/machdep.c,v
+retrieving revision 1.284
+diff -u -p -r1.284 machdep.c
+--- arch/amd64//amd64/machdep.c	29 Nov 2022 21:41:39 -0000	1.284
++++ arch/amd64//amd64/machdep.c	24 Apr 2023 17:42:46 -0000
+@@ -254,6 +254,10 @@ u_int32_t	bios_cksumlen;
+ bios_efiinfo_t	*bios_efiinfo;
+ bios_ucode_t	*bios_ucode;
+ 
++#ifdef KASAN
++bios_shadow_t	*kasan_shadow = NULL;
++#endif
++
+ #if NEFI > 0
+ EFI_MEMORY_DESCRIPTOR *mmap;
+ #endif
+@@ -1452,6 +1456,18 @@ init_x86_64(paddr_t first_avail)
+ 		avail_start = HIBERNATE_HIBALLOC_PAGE + PAGE_SIZE;
+ #endif /* HIBERNATE */
+ 
++#ifdef KASAN
++	if (kasan_shadow == NULL)
++		panic("no shadow memory provided by boot");
++
++	printf("before shadow_init\n");
++	vaddr_t kasan_virt = pmap_init_pml4_shadow(kasan_shadow->addr,
++	    kasan_shadow->size);
++	printf("before memset for %lx\n", kasan_virt);
++	memset((caddr_t)kasan_virt, 0x80, kasan_shadow->size);
++	printf("memset done\n");
++#endif /* KASAN */
++
+ 	/*
+ 	 * We need to go through the BIOS memory map given, and
+ 	 * fill out mem_clusters and mem_cluster_cnt stuff, taking
+@@ -2040,6 +2056,12 @@ getbootinfo(char *bootinfo, int bootinfo
+ 
+ 		case BOOTARG_UCODE:
+ 			bios_ucode = (bios_ucode_t *)q->ba_arg;
++			break;
++		case BOOTARG_SHADOW:
++			kasan_shadow = (bios_shadow_t *)q->ba_arg;
++#ifdef BOOTINFO_DEBUG
++			printf(" shadow %p", kasan_shadow);
++#endif
+ 			break;
+ 
+ 		default:
+Index: arch/amd64//amd64/pmap.c
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/amd64/pmap.c,v
+retrieving revision 1.164
+diff -u -p -r1.164 pmap.c
+--- arch/amd64//amd64/pmap.c	13 Apr 2023 15:23:21 -0000	1.164
++++ arch/amd64//amd64/pmap.c	24 Apr 2023 17:27:52 -0000
+@@ -626,6 +626,90 @@ pmap_clear_pml4_early(void)
+ 	tlbflush();
+ }
+ 
++#ifdef KASAN
++/*
++ * pmap_init_pml4_shadow
++ *
++ * Like pmap_set_pml4_early but for the KASAN shadow memory.
++ */
++vaddr_t
++pmap_init_pml4_shadow(paddr_t shadow_pte_pages, uint64_t sz)
++{
++	extern paddr_t		 early_pte_pages;
++	//paddr_t			 shadow_pa;
++	pt_entry_t 		*pml4e, *pdpd, *pd;
++	paddr_t 		 curpa;
++	vaddr_t			 va;
++	int 			 i, j, off, np, npd;
++
++	np = sz / (2 * 1024 * 1024);
++	npd = (np + 511) / 512;
++
++	if (npd > 512)
++		panic("cannot allocate more than 512GB shadow memory");
++
++	pml4e = (pt_entry_t *)(proc0.p_addr->u_pcb.pcb_cr3 + KERNBASE);
++	pml4e[PDIR_SLOT_SHADOW] = (pd_entry_t)shadow_pte_pages | PG_V | PG_RW;
++
++	off = (shadow_pte_pages + (1 + npd) * NBPG) & PAGE_MASK_L2;
++	curpa = (shadow_pte_pages + (1 + npd) * NBPG) & L2_FRAME;
++
++printf("np: %d\n", np);
++printf("npd: %d\n", npd);
++printf("shadow_pte_pages: 0x%lx\n", shadow_pte_pages);
++printf("off: %d\n", off);
++printf("curpa: %lx\n", curpa);
++
++	pdpd = (pt_entry_t *)PMAP_DIRECT_MAP(shadow_pte_pages);
++	memset(pdpd, 0, (1 + npd) * NBPG);
++
++	for (i = 0; i < npd; i++)
++		pdpd[i] = (shadow_pte_pages + (1 + i) * NBPG) | PG_V | PG_RW;
++
++	pd = (pt_entry_t *)PMAP_DIRECT_MAP(shadow_pte_pages + NBPG); // XXX loop for npd > 1
++	for (i = 0; i < np; i++) {
++		for (j = 0; j < 512; j++) {
++			pd[(i * 512) + j] = curpa | PG_V | PG_RW | PG_PS;
++			curpa += (2 * 1024 * 1024);
++		}
++	}
++
++	va = (vaddr_t)((PDIR_SLOT_SHADOW * 512ULL) << L3_SHIFT) + off;
++	return VA_SIGN_NEG(va);
++
++/*
++	shadow_pa = shadow_pte_pages + (npd + 2) * NBPG;
++
++	printf("shadow_pte_pages: %lx\n", shadow_pte_pages);
++	printf("sz: %llu\n", sz);
++	printf("np: %d\n", np);
++	printf("shadow_pa: %lx\n", shadow_pa);
++
++	pml4e = (pt_entry_t *)(proc0.p_addr->u_pcb.pcb_cr3 + KERNBASE);
++	pml4e[PDIR_SLOT_SHADOW] = (pd_entry_t)shadow_pte_pages | PG_V | PG_RW;
++
++	off = shadow_pa & PAGE_MASK_L2;
++	curpa = shadow_pa & L2_FRAME; // XXX why is this rounding down?
++
++	pdpd = (pt_entry_t *)PMAP_DIRECT_MAP(shadow_pte_pages);
++	memset(pdpd, 0, (1 + np) * NBPG);
++
++	for (i = 0; i < np; i++)  {
++		pdpd[i / 512] = shadow_pte_pages + ((i / 512) + 1) * NBPG;
++		pd = (pt_entry_t *)PMAP_DIRECT_MAP(shadow_pte_pages + ((i / 512) + 1) * NBPG);
++		for (j = 0; j < MIN(512, np); j++) {
++//printf("   %lx\n", curpa);
++			pd[j] = curpa | PG_V | PG_RW | PG_PS;
++				curpa += (2 * 1024 * 1024);
++		}
++	}
++
++	va = (vaddr_t)((PDIR_SLOT_SHADOW * 512ULL) << L3_SHIFT) + off;
++	return VA_SIGN_NEG(va);
++*/
++}
++#endif /* KASAN */
++
+ /*
+  * p m a p   i n i t   f u n c t i o n s
+  *
+Index: arch/amd64//include/biosvar.h
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/include/biosvar.h,v
+retrieving revision 1.31
+diff -u -p -r1.31 biosvar.h
+--- arch/amd64//include/biosvar.h	18 Jan 2023 23:25:32 -0000	1.31
++++ arch/amd64//include/biosvar.h	23 Apr 2023 19:14:25 -0000
+@@ -233,6 +233,14 @@ typedef struct _bios_ucode {
+ 	uint64_t	uc_size;
+ } __packed bios_ucode_t;
+ 
++#ifdef KASAN
++#define	BOOTARG_SHADOW (13)
++typedef struct _bios_shadow {
++	uint64_t addr;		/* Beginning of block */
++	uint64_t size;		/* Size of block */
++} __packed bios_shadow_t;
++#endif
++
+ #if defined(_KERNEL) || defined (_STANDALONE)
+ 
+ #ifdef _LOCORE
+Index: arch/amd64//include/pmap.h
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/include/pmap.h,v
+retrieving revision 1.86
+diff -u -p -r1.86 pmap.h
+--- arch/amd64//include/pmap.h	13 Apr 2023 15:23:21 -0000	1.86
++++ arch/amd64//include/pmap.h	24 Apr 2023 11:34:51 -0000
+@@ -145,11 +145,17 @@
+ #define NUM_L4_SLOT_DIRECT	4
+ #define L4_SLOT_DIRECT		(L4_SLOT_KERNBASE - NUM_L4_SLOT_DIRECT)
+ #define L4_SLOT_EARLY		(L4_SLOT_DIRECT - 1)
++#ifdef KASAN
++#define L4_SLOT_SHADOW		(L4_SLOT_DIRECT - 2)
++#endif
+ 
+ #define PDIR_SLOT_KERN		L4_SLOT_KERN
+ #define PDIR_SLOT_PTE		L4_SLOT_PTE
+ #define PDIR_SLOT_DIRECT	L4_SLOT_DIRECT
+ #define PDIR_SLOT_EARLY		L4_SLOT_EARLY
++#ifdef KASAN
++#define PDIR_SLOT_SHADOW	L4_SLOT_SHADOW
++#endif
+ 
+ /*
+  * the following defines give the virtual addresses of various MMU
+@@ -407,6 +413,10 @@ void	pmap_convert(struct pmap *, int);
+ void	pmap_enter_special(vaddr_t, paddr_t, vm_prot_t);
+ vaddr_t	pmap_set_pml4_early(paddr_t pa);
+ void	pmap_clear_pml4_early(void);
++
++#ifdef KASAN
++vaddr_t	pmap_init_pml4_shadow(paddr_t pa, uint64_t);
++#endif
+ 
+ /*
+  * functions for flushing the cache for vaddrs and pages.
+Index: arch/amd64//stand/boot/Makefile
 ===================================================================
 RCS file: /cvs/src/sys/arch/amd64/stand/boot/Makefile,v
 retrieving revision 1.49
 diff -u -p -r1.49 Makefile
---- boot/Makefile	17 Apr 2023 00:05:35 -0000	1.49
-+++ boot/Makefile	23 Apr 2023 19:57:54 -0000
+--- arch/amd64//stand/boot/Makefile	17 Apr 2023 00:05:35 -0000	1.49
++++ arch/amd64//stand/boot/Makefile	24 Apr 2023 07:10:57 -0000
 @@ -50,7 +50,7 @@ SRCS+=	aes_xts.c bcrypt_pbkdf.c blowfish
  .endif
  
  .PATH:	${S}/lib/libkern
 -SRCS+=	ashldi3.c ashrdi3.c divdi3.c lshrdi3.c moddi3.c qdivrem.c
-+SRCS+=	ashldi3.c ashrdi3.c udivdi3.c divdi3.c lshrdi3.c moddi3.c qdivrem.c
++SRCS+=	ashldi3.c ashrdi3.c divdi3.c udivdi3.c lshrdi3.c moddi3.c qdivrem.c
  SRCS+=	strlcpy.c
  
  .PATH:	${S}/lib/libz
@@ -22,14 +228,14 @@ diff -u -p -r1.49 Makefile
  CFLAGS+=-m32 $(SACFLAGS) -D__INTERNAL_LIBSA_CREAD -fno-pie
  AFLAGS+=${NO_INTEGR_AS}
  AFLAGS+=-m32 # -Wa,-R
-Index: libsa/memprobe.c
+Index: arch/amd64//stand/libsa/memprobe.c
 ===================================================================
 RCS file: /cvs/src/sys/arch/amd64/stand/libsa/memprobe.c,v
 retrieving revision 1.19
 diff -u -p -r1.19 memprobe.c
---- libsa/memprobe.c	28 Jan 2021 18:54:52 -0000	1.19
-+++ libsa/memprobe.c	23 Apr 2023 20:08:43 -0000
-@@ -437,10 +437,32 @@ mem_add(long long sa, long long ea)
+--- arch/amd64//stand/libsa/memprobe.c	28 Jan 2021 18:54:52 -0000	1.19
++++ arch/amd64//stand/libsa/memprobe.c	24 Apr 2023 16:04:48 -0000
+@@ -437,10 +437,48 @@ mem_add(long long sa, long long ea)
  void
  mem_pass(void)
  {
@@ -37,24 +243,40 @@ diff -u -p -r1.19 memprobe.c
 +	bios_memmap_t	*p;
 +#ifdef KASAN
 +	bios_shadow_t	 shadow;
++	uint64_t	 nl2p, npd, sz = 0;
 +
 +	memset(&shadow, 0, sizeof(shadow));
 +
 +	for (p = bios_memmap; p->type != BIOS_MAP_END; p++)
-+		shadow.size += p->size;
++		if (p->type == BIOS_MAP_FREE)
++			sz += p->size;
 +
-+	shadow.size = (shadow.size + 8) / 9; /* +8 to ceil */
++	sz = (sz + 8) / 9; /* +8 to ceil */
++
++	if (sz > 512ULL * 1024 * 1024 * 1024) {
++		printf("Shadow memory does not fit into dpdp.\n");
++		goto out;
++	}
++
++	/* round to chunks of 2MB page size */
++#define MB2	(2 * 1024 * 1024)
++	nl2p = (sz + MB2 - 1) / MB2; /* +MB2-1 to ceil */
++	npd = (nl2p + 511) / 512; /* +511 to ceil */
++
++	shadow.size = MB2 * nl2p;
++	sz = shadow.size + (nl2p + npd) * PAGE_SIZE;
  
  	for (p = bios_memmap; p->type != BIOS_MAP_END; p++)
 +		if (p->type == BIOS_MAP_FREE &&
-+		    p->size > shadow.size) {
-+			p->size -= shadow.size;
++		    p->size > sz) {
++			p->size -= sz;
 +			shadow.addr = p->addr + p->size;
 +		}
 +
 +	if (shadow.addr != 0) {
 +		addbootarg(BOOTARG_SHADOW, sizeof(bios_shadow_t), &shadow);
 +	}
++ out:
 +#else
 +	for (p = bios_memmap; p->type != BIOS_MAP_END; p++)
  		;
