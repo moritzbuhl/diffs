@@ -224,7 +224,7 @@ RCS file: /cvs/src/sys/kern/kern_malloc.c,v
 retrieving revision 1.148
 diff -u -p -r1.148 kern_malloc.c
 --- kern/kern_malloc.c	14 Aug 2022 01:58:27 -0000	1.148
-+++ kern/kern_malloc.c	26 Apr 2023 13:11:49 -0000
++++ kern/kern_malloc.c	26 Apr 2023 15:45:19 -0000
 @@ -50,6 +50,11 @@
  #include <ddb/db_output.h>
  #endif
@@ -257,17 +257,18 @@ diff -u -p -r1.148 kern_malloc.c
  	return (va);
  }
  
-@@ -378,6 +389,9 @@ free(void *addr, int type, size_t freeds
+@@ -378,6 +389,10 @@ free(void *addr, int type, size_t freeds
  #ifdef DIAGNOSTIC
  	long alloc;
  #endif
 +#ifdef KASAN
-+	kasan_add_redzone(&freedsize);
++	if (freedsize != 0)
++		kasan_add_redzone(&freedsize);
 +#endif
  #ifdef KMEMSTATS
  	struct kmemstats *ksp = &kmemstats[type];
  	int wake;
-@@ -494,6 +508,9 @@ free(void *addr, int type, size_t freeds
+@@ -494,6 +509,9 @@ free(void *addr, int type, size_t freeds
  #endif
  	XSIMPLEQ_INSERT_TAIL(&kbp->kb_freelist, freep, kf_flist);
  	mtx_leave(&malloc_mtx);
