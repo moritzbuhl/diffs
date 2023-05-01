@@ -95,7 +95,7 @@ RCS file: /cvs/src/sys/arch/amd64/amd64/pmap.c,v
 retrieving revision 1.164
 diff -u -p -r1.164 pmap.c
 --- arch/amd64/amd64/pmap.c	13 Apr 2023 15:23:21 -0000	1.164
-+++ arch/amd64/amd64/pmap.c	28 Apr 2023 14:11:36 -0000
++++ arch/amd64/amd64/pmap.c	28 Apr 2023 20:55:17 -0000
 @@ -116,6 +116,9 @@
  #include <machine/i82489reg.h>
  #include <machine/i82489var.h>
@@ -387,8 +387,8 @@ Index: kern/subr_kasan.c
 RCS file: kern/subr_kasan.c
 diff -N kern/subr_kasan.c
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ kern/subr_kasan.c	28 Apr 2023 16:45:20 -0000
-@@ -0,0 +1,550 @@
++++ kern/subr_kasan.c	28 Apr 2023 20:59:30 -0000
+@@ -0,0 +1,561 @@
 +/*	$OpenBSD$	*/
 +
 +#include <sys/param.h>
@@ -547,6 +547,7 @@ diff -N kern/subr_kasan.c
 +
 +}
 +
++vaddr_t		pmap_steal_memory(vsize_t, vaddr_t *, vaddr_t *);
 +/*
 + * Create the shadow mapping. We don't create the 'User' area, because we
 + * exclude it from the monitoring. The 'Main' area is created dynamically
@@ -555,14 +556,14 @@ diff -N kern/subr_kasan.c
 +void
 +kasan_init(void)
 +{
++	vaddr_t zva;
++
 +	if (kasan_zero == 0) {
-+		// XXX: zero page should be somewhere else not in shadow memory
-+		pmap_get_physpage(KASAN_SHADOW_START, 0, &kasan_zero); // XXX: 0 becomes -1
-+/*
-+printf("before memset, 0x%lx\n", zva);
-+		memset((char *)zva, 0x80, PAGE_SIZE);
-+*/
-+printf("got zero page\n");
++printf("allocing kasan_zero\n");
++		zva = pmap_steal_memory(PAGE_SIZE, NULL, NULL);
++                kasan_zero = PMAP_DIRECT_UNMAP(zva);
++		pmap_get_physpage(zva, 1, &kasan_zero);
++		__builtin_memset((char *)zva, 0xFF, PAGE_SIZE);
 +	}
 +
 +printf("stack: 0x%lx\n", (vaddr_t)proc0.p_addr + USPACE - 16);
@@ -624,12 +625,22 @@ diff -N kern/subr_kasan.c
 +	*size += KASAN_SHADOW_SCALE_SIZE;
 +}
 +
++struct vm_page *pmap_find_ptp(struct pmap *, vaddr_t, paddr_t, int);
++
 +static void
 +kasan_markmem(vaddr_t addr, size_t size, int valid)
 +{
++	struct vm_page *vm;
 +	size_t i;
 +
 +	KASSERT(addr % KASAN_SHADOW_SCALE_SIZE == 0);
++
++	// XXX: PHYS_TO_VM_PAGE might also work
++	if ((vm = pmap_find_ptp(pmap_kernel(), addr, kasan_zero, 1)) == NULL) {
++		printf("found pmap pa ptp kasan_zero thing\n");
++	} else {
++		panic("no pmap pa ptp kasan_zero thing\n");
++	}
 +
 +	if (valid) {
 +		for (i = 0; i < size; i++)
