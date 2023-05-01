@@ -3,7 +3,7 @@ Index: arch/amd64/amd64/kasan.c
 RCS file: arch/amd64/amd64/kasan.c
 diff -N arch/amd64/amd64/kasan.c
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ arch/amd64/amd64/kasan.c	26 Apr 2023 11:10:16 -0000
++++ arch/amd64/amd64/kasan.c	26 Apr 2023 12:51:26 -0000
 @@ -0,0 +1,102 @@
 +/*	$OpenBSD: kasan.c $	*/
 +
@@ -107,6 +107,49 @@ diff -N arch/amd64/amd64/kasan.c
 +		ptr++;
 +	}
 +}
+Index: arch/amd64/amd64/machdep.c
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/amd64/machdep.c,v
+retrieving revision 1.284
+diff -u -p -r1.284 machdep.c
+--- arch/amd64/amd64/machdep.c	29 Nov 2022 21:41:39 -0000	1.284
++++ arch/amd64/amd64/machdep.c	26 Apr 2023 12:47:52 -0000
+@@ -100,6 +100,7 @@
+ #include <machine/mpbiosvar.h>
+ #include <machine/kcore.h>
+ #include <machine/tss.h>
++#include <machine/kasan.h>
+ 
+ #include <dev/isa/isareg.h>
+ #include <dev/ic/i8042reg.h>
+@@ -1679,6 +1680,9 @@ init_x86_64(paddr_t first_avail)
+ 		}
+ 	}
+ 
++#ifdef KASAN
++	kasan_init();
++#endif
+ 	pmap_growkernel(VM_MIN_KERNEL_ADDRESS + 32 * 1024 * 1024);
+ 
+ 	pmap_kenter_pa(idt_vaddr, idt_paddr, PROT_READ | PROT_WRITE);
+Index: arch/amd64/conf/GENERIC
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/conf/GENERIC,v
+retrieving revision 1.517
+diff -u -p -r1.517 GENERIC
+--- arch/amd64/conf/GENERIC	23 Apr 2023 00:50:29 -0000	1.517
++++ arch/amd64/conf/GENERIC	25 Apr 2023 19:22:44 -0000
+@@ -159,8 +159,8 @@ iic*	at amdpm?
+ dwiic*	at acpi?		# DesignWare Synopsys i2c controller
+ dwiic*	at pci?
+ iic*	at dwiic?
+-iosf*	at acpi?		# Intel OnChip System Fabric
+-iosf*	at pci?
++#iosf*	at acpi?		# Intel OnChip System Fabric
++#iosf*	at pci?
+ 
+ itherm*	at pci?			# Intel 3400 Thermal Sensor
+ adc*	at iic?			# Analog Devices AD7416/AD7417/7418
 Index: arch/amd64/conf/files.amd64
 ===================================================================
 RCS file: /cvs/src/sys/arch/amd64/conf/files.amd64,v
@@ -145,13 +188,14 @@ Index: arch/amd64/include/kasan.h
 RCS file: arch/amd64/include/kasan.h
 diff -N arch/amd64/include/kasan.h
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ arch/amd64/include/kasan.h	26 Apr 2023 11:10:15 -0000
-@@ -0,0 +1,9 @@
++++ arch/amd64/include/kasan.h	26 Apr 2023 12:16:04 -0000
+@@ -0,0 +1,10 @@
 +/*	$OpenBSD: kasan.h $	*/
 +
 +#ifndef _MACHINE_KASAN_H_
 +#define _MACHINE_KASAN_H_
 +
++void	kasan_init(void);
 +void	kasan_shadow_map(vaddr_t, size_t);
 +void	kasan_ctors(void);
 +
@@ -246,7 +290,7 @@ Index: kern/subr_kasan.c
 RCS file: kern/subr_kasan.c
 diff -N kern/subr_kasan.c
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ kern/subr_kasan.c	26 Apr 2023 11:19:29 -0000
++++ kern/subr_kasan.c	26 Apr 2023 12:59:23 -0000
 @@ -0,0 +1,378 @@
 +/*	$OpenBSD: subr_kasan.c $	*/
 +
@@ -274,12 +318,12 @@ diff -N kern/subr_kasan.c
 +
 +void kasan_init(void);
 +
-+static int kasan_enabled = false;
++static int kasan_enabled = 0;
 +
 +static int
 +kasan_unsupported(vaddr_t addr)
 +{
-+	return (addr >= VM_MIN_KERNEL_ADDRESS &&
++	return (addr >= VM_MIN_KERNEL_ADDRESS ||
 +	    addr < VM_MAX_KERNEL_ADDRESS);
 +}
 +
@@ -361,14 +405,14 @@ diff -N kern/subr_kasan.c
 +void
 +kasan_alloc(vaddr_t addr, size_t size, size_t sz_with_redz)
 +{
-+	kasan_markmem(addr, sz_with_redz, false);
-+	kasan_markmem(addr, size, true);
++	kasan_markmem(addr, sz_with_redz, 0);
++	kasan_markmem(addr, size, 1);
 +}
 +
 +void
 +kasan_free(vaddr_t addr, size_t sz_with_redz)
 +{
-+	kasan_markmem(addr, sz_with_redz, true);
++	kasan_markmem(addr, sz_with_redz, 1);
 +}
 +
 +static inline int
@@ -435,7 +479,7 @@ diff -N kern/subr_kasan.c
 +
 +	for (i = 0; i < size; i++) {
 +		if (!kasan_shadow_1byte_isvalid(addr + i))
-+			return false;
++			return 0;
 +	}
 +
 +	return 1;
@@ -475,7 +519,7 @@ diff -N kern/subr_kasan.c
 +		valid = kasan_shadow_Nbyte_isvalid(addr, size);
 +	}
 +
-+	if (__predict_false(!valid)) {
++	if (!valid) {
 +		kasan_report(addr, size, write, retaddr);
 +	}
 +}
@@ -483,23 +527,23 @@ diff -N kern/subr_kasan.c
 +void *
 +kasan_memcpy(void *dst, const void *src, size_t len)
 +{
-+	kasan_shadow_check((vaddr_t)src, len, false, __RET_ADDR);
-+	kasan_shadow_check((vaddr_t)dst, len, true, __RET_ADDR);
++	kasan_shadow_check((vaddr_t)src, len, 0, __RET_ADDR);
++	kasan_shadow_check((vaddr_t)dst, len, 1, __RET_ADDR);
 +	return __builtin_memcpy(dst, src, len);
 +}
 +
 +int
 +kasan_memcmp(const void *b1, const void *b2, size_t len)
 +{
-+	kasan_shadow_check((vaddr_t)b1, len, false, __RET_ADDR);
-+	kasan_shadow_check((vaddr_t)b2, len, false, __RET_ADDR);
++	kasan_shadow_check((vaddr_t)b1, len, 0, __RET_ADDR);
++	kasan_shadow_check((vaddr_t)b2, len, 0, __RET_ADDR);
 +	return __builtin_memcmp(b1, b2, len);
 +}
 +
 +void *
 +kasan_memset(void *b, int c, size_t len)
 +{
-+	kasan_shadow_check((vaddr_t)b, len, true, __RET_ADDR);
++	kasan_shadow_check((vaddr_t)b, len, 1, __RET_ADDR);
 +	return __builtin_memset(b, c, len);
 +}
 +
@@ -531,22 +575,22 @@ diff -N kern/subr_kasan.c
 +	void __asan_load##size(unsigned long);			\
 +	void __asan_load##size(unsigned long addr)		\
 +	{							\
-+		kasan_shadow_check(addr, size, false, __RET_ADDR);\
++		kasan_shadow_check(addr, size, 0, __RET_ADDR);\
 +	} 							\
 +	void __asan_load##size##_noabort(unsigned long);	\
 +	void __asan_load##size##_noabort(unsigned long addr)	\
 +	{							\
-+		kasan_shadow_check(addr, size, false, __RET_ADDR);\
++		kasan_shadow_check(addr, size, 0, __RET_ADDR);\
 +	}							\
 +	void __asan_store##size(unsigned long);			\
 +	void __asan_store##size(unsigned long addr)		\
 +	{							\
-+		kasan_shadow_check(addr, size, true, __RET_ADDR);\
++		kasan_shadow_check(addr, size, 1, __RET_ADDR);\
 +	}							\
 +	void __asan_store##size##_noabort(unsigned long);	\
 +	void __asan_store##size##_noabort(unsigned long addr)	\
 +	{							\
-+		kasan_shadow_check(addr, size, true, __RET_ADDR);\
++		kasan_shadow_check(addr, size, 1, __RET_ADDR);\
 +	}
 +
 +ASAN_LOAD_STORE(1);
@@ -558,25 +602,25 @@ diff -N kern/subr_kasan.c
 +void
 +__asan_loadN(unsigned long addr, size_t size)
 +{
-+	kasan_shadow_check(addr, size, false, __RET_ADDR);
++	kasan_shadow_check(addr, size, 0, __RET_ADDR);
 +}
 +
 +void
 +__asan_loadN_noabort(unsigned long addr, size_t size)
 +{
-+	kasan_shadow_check(addr, size, false, __RET_ADDR);
++	kasan_shadow_check(addr, size, 0, __RET_ADDR);
 +}
 +
 +void
 +__asan_storeN(unsigned long addr, size_t size)
 +{
-+	kasan_shadow_check(addr, size, true, __RET_ADDR);
++	kasan_shadow_check(addr, size, 1, __RET_ADDR);
 +}
 +
 +void
 +__asan_storeN_noabort(unsigned long addr, size_t size)
 +{
-+	kasan_shadow_check(addr, size, true, __RET_ADDR);
++	kasan_shadow_check(addr, size, 1, __RET_ADDR);
 +}
 +
 +void
