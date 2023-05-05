@@ -1,0 +1,16 @@
+Index: dev/pci/if_mcx.c
+===================================================================
+RCS file: /cvs/src/sys/dev/pci/if_mcx.c,v
+retrieving revision 1.106
+diff -u -p -r1.106 if_mcx.c
+--- dev/pci/if_mcx.c	22 Nov 2022 06:48:32 -0000	1.106
++++ dev/pci/if_mcx.c	5 May 2023 11:40:53 -0000
+@@ -2700,7 +2700,7 @@ mcx_match(struct device *parent, void *m
+ 	return (pci_matchbyid(aux, mcx_devices, nitems(mcx_devices)));
+ }
+ 
+-void
++static void
+ mcx_attach(struct device *parent, struct device *self, void *aux)
+ {
+ 	struct mcx_softc *sc = (struct mcx_softc *)self;
