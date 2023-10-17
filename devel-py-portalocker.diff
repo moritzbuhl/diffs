@@ -1,0 +1,37 @@
+Index: Makefile
+===================================================================
+RCS file: /cvs/ports/devel/py-portalocker/Makefile,v
+retrieving revision 1.2
+diff -u -p -r1.2 Makefile
+--- Makefile	13 Nov 2022 15:28:18 -0000	1.2
++++ Makefile	17 Oct 2023 20:36:32 -0000
+@@ -1,7 +1,6 @@
+ COMMENT =	easy Python API to file locking
+ 
+-MODPY_EGG_VERSION =	2.6.0
+-REVISION =	0
++MODPY_EGG_VERSION =	2.8.2
+ 
+ DISTNAME =	portalocker-${MODPY_EGG_VERSION}
+ PKGNAME =	py-${DISTNAME}
+@@ -21,7 +20,7 @@ MODPY_PI =	Yes
+ FLAVOR =	python3
+ FLAVORS =	python3
+ 
+-MODPY_PYBUILD =	setuptools
++MODPY_PYBUILD =	setuptools_scm
+ TEST_DEPENDS =	devel/py-test-cov${MODPY_FLAVOR} \
+ 		devel/py-test-timeout${MODPY_FLAVOR} \
+ 		textproc/py-sphinx${MODPY_FLAVOR} \
+Index: distinfo
+===================================================================
+RCS file: /cvs/ports/devel/py-portalocker/distinfo,v
+retrieving revision 1.1.1.1
+diff -u -p -r1.1.1.1 distinfo
+--- distinfo	8 Nov 2022 23:06:45 -0000	1.1.1.1
++++ distinfo	17 Oct 2023 20:27:55 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (portalocker-2.6.0.tar.gz) = lk9oMPtCp0tdMrzpntN9gwjB19RN3xjz3Yn0aA3pezk=
+-SIZE (portalocker-2.6.0.tar.gz) = 20066
++SHA256 (portalocker-2.8.2.tar.gz) = KwNap4KORsWOmzE5DuHxabmOEGarELmmqGH+fiXuTzM=
++SIZE (portalocker-2.8.2.tar.gz) = 38978
