@@ -1,9 +1,9 @@
-Index: if_igc.c
+Index: dev/pci/if_igc.c
 ===================================================================
-RCS file: /cvs/src/sys/dev/pci/if_igc.c,v
+RCS file: /mount/openbsd/cvs/src/sys/dev/pci/if_igc.c,v
 diff -u -p -r1.14 if_igc.c
---- if_igc.c	10 Nov 2023 15:51:20 -0000	1.14
-+++ if_igc.c	1 Jan 2024 08:49:58 -0000
+--- dev/pci/if_igc.c	10 Nov 2023 15:51:20 -0000	1.14
++++ dev/pci/if_igc.c	1 Jan 2024 20:59:58 -0000
 @@ -44,12 +44,16 @@
  
  #include <net/if.h>
@@ -152,7 +152,7 @@ diff -u -p -r1.14 if_igc.c
  		return 0;
  	}
  
-@@ -2065,13 +2077,36 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+@@ -2065,6 +2077,29 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  	if (off == 0)
  		return 0;
  
@@ -182,11 +182,12 @@ diff -u -p -r1.14 if_igc.c
  	/* Now ready a context descriptor */
  	txdesc = (struct igc_adv_tx_context_desc *)&txr->tx_base[prod];
  
- 	/* Now copy bits into descriptor */
+@@ -2072,7 +2107,7 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  	htolem32(&txdesc->vlan_macip_lens, vlan_macip_lens);
  	htolem32(&txdesc->type_tucmd_mlhl, type_tucmd_mlhl);
--	htolem32(&txdesc->seqnum_seed, 0);
-+	htolem32(&txdesc->seqnum_seed, mss_l4len_idx);
- 	htolem32(&txdesc->mss_l4len_idx, 0);
+ 	htolem32(&txdesc->seqnum_seed, 0);
+-	htolem32(&txdesc->mss_l4len_idx, 0);
++	htolem32(&txdesc->mss_l4len_idx, mss_l4len_idx);
  
  	return 1;
+ }
