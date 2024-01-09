@@ -101,7 +101,7 @@ diff -u -p -r1.14 if_igc.c
  			htolem32(&txdesc->read.olinfo_status, olinfo_status);
  
  			last = prod;
-@@ -1999,32 +2006,35 @@ igc_free_transmit_buffers(struct tx_ring
+@@ -1999,32 +2006,36 @@ igc_free_transmit_buffers(struct tx_ring
  
  int
  igc_tx_ctx_setup(struct tx_ring *txr, struct mbuf *mp, int prod,
@@ -133,7 +133,7 @@ diff -u -p -r1.14 if_igc.c
  	if (ISSET(mp->m_flags, M_VLANTAG)) {
  		uint32_t vtag = mp->m_pkthdr.ether_vtag;
  		vlan_macip_lens |= (vtag << IGC_ADVTXD_VLAN_SHIFT);
--		off = 1;
+ 		off = 1;
  	}
  #endif
 -#endif
