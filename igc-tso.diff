@@ -1,9 +1,9 @@
-Index: dev/pci/if_igc.c
+Index: dev/pci//if_igc.c
 ===================================================================
-RCS file: /mount/openbsd/cvs/src/sys/dev/pci/if_igc.c,v
+RCS file: /cvs/src/sys/dev/pci/if_igc.c,v
 diff -u -p -r1.14 if_igc.c
---- dev/pci/if_igc.c	10 Nov 2023 15:51:20 -0000	1.14
-+++ dev/pci/if_igc.c	1 Jan 2024 20:59:58 -0000
+--- dev/pci//if_igc.c	10 Nov 2023 15:51:20 -0000	1.14
++++ dev/pci//if_igc.c	9 Jan 2024 18:46:50 -0000
 @@ -44,12 +44,16 @@
  
  #include <net/if.h>
@@ -101,7 +101,7 @@ diff -u -p -r1.14 if_igc.c
  			htolem32(&txdesc->read.olinfo_status, olinfo_status);
  
  			last = prod;
-@@ -1999,32 +2006,36 @@ igc_free_transmit_buffers(struct tx_ring
+@@ -1999,23 +2006,26 @@ igc_free_transmit_buffers(struct tx_ring
  
  int
  igc_tx_ctx_setup(struct tx_ring *txr, struct mbuf *mp, int prod,
@@ -132,7 +132,7 @@ diff -u -p -r1.14 if_igc.c
  #if NVLAN > 0
  	if (ISSET(mp->m_flags, M_VLANTAG)) {
  		uint32_t vtag = mp->m_pkthdr.ether_vtag;
- 		vlan_macip_lens |= (vtag << IGC_ADVTXD_VLAN_SHIFT);
+@@ -2023,8 +2033,9 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  		off = 1;
  	}
  #endif
@@ -143,7 +143,7 @@ diff -u -p -r1.14 if_igc.c
  	ether_extract_headers(mp, &ext);
  
  	if (ext.ip4) {
-@@ -2042,6 +2052,8 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+@@ -2042,6 +2053,8 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  		type_tucmd_mlhl |= IGC_ADVTXD_TUCMD_IPV6;
  #endif
  	} else {
@@ -152,7 +152,7 @@ diff -u -p -r1.14 if_igc.c
  		return 0;
  	}
  
-@@ -2065,6 +2077,29 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+@@ -2065,6 +2078,29 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  	if (off == 0)
  		return 0;
  
@@ -182,7 +182,7 @@ diff -u -p -r1.14 if_igc.c
  	/* Now ready a context descriptor */
  	txdesc = (struct igc_adv_tx_context_desc *)&txr->tx_base[prod];
  
-@@ -2072,7 +2107,7 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+@@ -2072,7 +2108,7 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  	htolem32(&txdesc->vlan_macip_lens, vlan_macip_lens);
  	htolem32(&txdesc->type_tucmd_mlhl, type_tucmd_mlhl);
  	htolem32(&txdesc->seqnum_seed, 0);
