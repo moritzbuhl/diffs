@@ -1,9 +1,10 @@
-Index: dev/pci//if_igc.c
+Index: dev/pci/if_igc.c
 ===================================================================
 RCS file: /cvs/src/sys/dev/pci/if_igc.c,v
+retrieving revision 1.14
 diff -u -p -r1.14 if_igc.c
---- dev/pci//if_igc.c	10 Nov 2023 15:51:20 -0000	1.14
-+++ dev/pci//if_igc.c	9 Jan 2024 18:46:50 -0000
+--- dev/pci/if_igc.c	10 Nov 2023 15:51:20 -0000	1.14
++++ dev/pci/if_igc.c	22 Jan 2024 21:52:49 -0000
 @@ -44,12 +44,16 @@
  
  #include <net/if.h>
@@ -114,7 +115,7 @@ diff -u -p -r1.14 if_igc.c
  	uint32_t type_tucmd_mlhl = 0;
  	uint32_t vlan_macip_lens = 0;
 -	uint32_t iphlen;
-+	uint32_t ethlen, iphlen;
++	uint32_t ethlen, iphlen = 0;
  	int off = 0;
  
 -	vlan_macip_lens |= (sizeof(*ext.eh) << IGC_ADVTXD_MACLEN_SHIFT);
@@ -132,29 +133,33 @@ diff -u -p -r1.14 if_igc.c
  #if NVLAN > 0
  	if (ISSET(mp->m_flags, M_VLANTAG)) {
  		uint32_t vtag = mp->m_pkthdr.ether_vtag;
-@@ -2023,8 +2033,9 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+@@ -2023,10 +2033,12 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  		off = 1;
  	}
  #endif
 -#endif
  
-+	ethlen = sizeof(*ext.eh);
-+	vlan_macip_lens |= (ethlen << IGC_ADVTXD_MACLEN_SHIFT);
  	ether_extract_headers(mp, &ext);
  
++	ethlen = sizeof(*ext.eh);
++	vlan_macip_lens |= (ethlen << IGC_ADVTXD_MACLEN_SHIFT);
++
  	if (ext.ip4) {
-@@ -2042,6 +2053,8 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+ 		iphlen = ext.ip4->ip_hl << 2;
+ 
+@@ -2042,7 +2054,8 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  		type_tucmd_mlhl |= IGC_ADVTXD_TUCMD_IPV6;
  #endif
  	} else {
+-		return 0;
 +		if (mp->m_pkthdr.csum_flags & M_TCP_TSO)
 +			tcpstat_inc(tcps_outbadtso);
- 		return 0;
  	}
  
-@@ -2065,6 +2078,29 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
- 	if (off == 0)
- 		return 0;
+ 	vlan_macip_lens |= iphlen;
+@@ -2062,6 +2075,29 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+ 		}
+ 	}
  
 +	if (mp->m_pkthdr.csum_flags & M_TCP_TSO) {
 +		if (ext.tcp) {
@@ -179,8 +184,8 @@ diff -u -p -r1.14 if_igc.c
 +			tcpstat_inc(tcps_outbadtso);
 +	}
 +
- 	/* Now ready a context descriptor */
- 	txdesc = (struct igc_adv_tx_context_desc *)&txr->tx_base[prod];
+ 	if (off == 0)
+ 		return 0;
  
 @@ -2072,7 +2108,7 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  	htolem32(&txdesc->vlan_macip_lens, vlan_macip_lens);
