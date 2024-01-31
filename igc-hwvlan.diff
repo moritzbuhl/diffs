@@ -1,0 +1,57 @@
+Index: dev/pci/if_igc.c
+===================================================================
+RCS file: /cvs/src/sys/dev/pci/if_igc.c,v
+diff -u -p -r1.15 if_igc.c
+--- dev/pci/if_igc.c	23 Jan 2024 08:48:12 -0000	1.15
++++ dev/pci/if_igc.c	31 Jan 2024 07:57:14 -0000
+@@ -790,11 +790,9 @@ igc_setup_interface(struct igc_softc *sc
+ 
+ 	ifp->if_capabilities = IFCAP_VLAN_MTU;
+ 
+-#ifdef notyet
+ #if NVLAN > 0
+ 	ifp->if_capabilities |= IFCAP_VLAN_HWTAGGING;
+ #endif
+-#endif
+ 
+ 	ifp->if_capabilities |= IFCAP_CSUM_IPv4;
+ 	ifp->if_capabilities |= IFCAP_CSUM_TCPv4 | IFCAP_CSUM_UDPv4;
+@@ -2005,9 +2003,10 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+ 	struct igc_adv_tx_context_desc *txdesc;
+ 	uint32_t type_tucmd_mlhl = 0;
+ 	uint32_t vlan_macip_lens = 0;
+-	uint32_t iphlen;
++	uint32_t iphlen = 0;
+ 	int off = 0;
+ 
++	ether_extract_headers(mp, &ext);
+ 	vlan_macip_lens |= (sizeof(*ext.eh) << IGC_ADVTXD_MACLEN_SHIFT);
+ 
+ 	/*
+@@ -2015,7 +2014,6 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+ 	 * be placed into the context descriptor. Hence
+ 	 * we need to make one even if not doing offloads.
+ 	 */
+-#ifdef notyet
+ #if NVLAN > 0
+ 	if (ISSET(mp->m_flags, M_VLANTAG)) {
+ 		uint32_t vtag = mp->m_pkthdr.ether_vtag;
+@@ -2023,9 +2021,6 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+ 		off = 1;
+ 	}
+ #endif
+-#endif
+-
+-	ether_extract_headers(mp, &ext);
+ 
+ 	if (ext.ip4) {
+ 		iphlen = ext.ip4->ip_hl << 2;
+@@ -2041,8 +2036,6 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+ 
+ 		type_tucmd_mlhl |= IGC_ADVTXD_TUCMD_IPV6;
+ #endif
+-	} else {
+-		return 0;
+ 	}
+ 
+ 	vlan_macip_lens |= iphlen;
