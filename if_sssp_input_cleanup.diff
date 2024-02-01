@@ -1,0 +1,157 @@
+Index: net/if_spppsubr.c
+===================================================================
+RCS file: /cvs/src/sys/net/if_spppsubr.c,v
+diff -u -p -r1.192 if_spppsubr.c
+--- net/if_spppsubr.c	10 Nov 2023 15:51:24 -0000	1.192
++++ net/if_spppsubr.c	31 Jan 2024 07:40:02 -0000
+@@ -444,11 +444,7 @@ sppp_input(struct ifnet *ifp, struct mbu
+ 			log(LOG_DEBUG,
+ 			    SPP_FMT "input packet is too small, %d bytes\n",
+ 			    SPP_ARGS(ifp), m->m_pkthdr.len);
+-	  drop:
+-		m_freem (m);
+-		++ifp->if_ierrors;
+-		++ifp->if_iqdrops;
+-		return;
++		goto drop;
+ 	}
+ 
+ 	/* mark incoming routing domain */
+@@ -472,81 +468,70 @@ sppp_input(struct ifnet *ifp, struct mbu
+ 		}
+ 	}
+ 
+-	switch (ht.address) {
+-	case PPP_ALLSTATIONS:
+-		if (ht.control != PPP_UI)
+-			goto invalid;
+-		switch (ntohs (ht.protocol)) {
+-		default:
+-			if (sp->state[IDX_LCP] == STATE_OPENED)
+-				sppp_cp_send (sp, PPP_LCP, PROTO_REJ,
+-				    ++sp->pp_seq, 2, &ht.protocol);
+-			if (debug)
+-				log(LOG_DEBUG,
+-				    SPP_FMT "invalid input protocol "
+-				    "<addr=0x%x ctrl=0x%x proto=0x%x>\n",
+-				    SPP_ARGS(ifp),
+-				    ht.address, ht.control, ntohs(ht.protocol));
+-			++ifp->if_noproto;
+-			goto drop;
+-		case PPP_LCP:
+-			sppp_cp_input(&lcp, sp, m);
+-			m_freem (m);
+-			return;
+-		case PPP_PAP:
+-			if (sp->pp_phase >= PHASE_AUTHENTICATE)
+-				sppp_pap_input(sp, m);
+-			m_freem (m);
+-			return;
+-		case PPP_CHAP:
+-			if (sp->pp_phase >= PHASE_AUTHENTICATE)
+-				sppp_chap_input(sp, m);
+-			m_freem (m);
+-			return;
+-		case PPP_IPCP:
+-			if (sp->pp_phase == PHASE_NETWORK)
+-				sppp_cp_input(&ipcp, sp, m);
+-			m_freem (m);
+-			return;
+-		case PPP_IP:
+-			if (sp->state[IDX_IPCP] == STATE_OPENED) {
+-				sp->pp_last_activity = tv.tv_sec;
+-				if (ifp->if_flags & IFF_UP) {
+-					ipv4_input(ifp, m);
+-					return;
+-				}
+-			}
+-			break;
+-#ifdef INET6
+-		case PPP_IPV6CP:
+-			if (sp->pp_phase == PHASE_NETWORK)
+-				sppp_cp_input(&ipv6cp, sp, m);
+-			m_freem (m);
+-			return;
+-		case PPP_IPV6:
+-			if (sp->state[IDX_IPV6CP] == STATE_OPENED) {
+-				sp->pp_last_activity = tv.tv_sec;
+-				if (ifp->if_flags & IFF_UP) {
+-					ipv6_input(ifp, m);
+-					return;
+-				}
+-			}
+-			break;
+-#endif
+-		}
+-		break;
+-	default:        /* Invalid PPP packet. */
+-	  invalid:
++	switch (ntohs (ht.protocol)) {
++	default:
++		if (sp->state[IDX_LCP] == STATE_OPENED)
++			sppp_cp_send (sp, PPP_LCP, PROTO_REJ,
++			    ++sp->pp_seq, 2, &ht.protocol);
+ 		if (debug)
+ 			log(LOG_DEBUG,
+-			    SPP_FMT "invalid input packet "
++			    SPP_FMT "invalid input protocol "
+ 			    "<addr=0x%x ctrl=0x%x proto=0x%x>\n",
+ 			    SPP_ARGS(ifp),
+ 			    ht.address, ht.control, ntohs(ht.protocol));
++		++ifp->if_noproto;
+ 		goto drop;
++	case PPP_LCP:
++		sppp_cp_input(&lcp, sp, m);
++		m_freem (m);
++		return;
++	case PPP_PAP:
++		if (sp->pp_phase >= PHASE_AUTHENTICATE)
++			sppp_pap_input(sp, m);
++		m_freem (m);
++		return;
++	case PPP_CHAP:
++		if (sp->pp_phase >= PHASE_AUTHENTICATE)
++			sppp_chap_input(sp, m);
++		m_freem (m);
++		return;
++	case PPP_IPCP:
++		if (sp->pp_phase == PHASE_NETWORK)
++			sppp_cp_input(&ipcp, sp, m);
++		m_freem (m);
++		return;
++	case PPP_IP:
++		if (sp->state[IDX_IPCP] == STATE_OPENED) {
++			sp->pp_last_activity = tv.tv_sec;
++			if (ifp->if_flags & IFF_UP) {
++				ipv4_input(ifp, m);
++				return;
++			}
++		}
++		break;
++#ifdef INET6
++	case PPP_IPV6CP:
++		if (sp->pp_phase == PHASE_NETWORK)
++			sppp_cp_input(&ipv6cp, sp, m);
++		m_freem (m);
++		return;
++	case PPP_IPV6:
++		if (sp->state[IDX_IPV6CP] == STATE_OPENED) {
++			sp->pp_last_activity = tv.tv_sec;
++			if (ifp->if_flags & IFF_UP) {
++				ipv6_input(ifp, m);
++				return;
++			}
++		}
++		break;
++#endif
+ 	}
+ 
+-	goto drop;
++	  drop:
++	m_freem (m);
++	++ifp->if_ierrors;
++	++ifp->if_iqdrops;
++	return;
+ }
+ 
+ /*
