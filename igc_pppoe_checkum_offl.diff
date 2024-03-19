@@ -1,0 +1,100 @@
+Index: net/if_ethersubr.c
+===================================================================
+RCS file: /cvs/src/sys/net/if_ethersubr.c,v
+diff -u -p -r1.291 if_ethersubr.c
+--- net/if_ethersubr.c	27 Jul 2023 20:21:25 -0000	1.291
++++ net/if_ethersubr.c	19 Mar 2024 12:33:46 -0000
+@@ -94,6 +94,7 @@ didn't get a copy, you may request one f
+ #include <net/if_dl.h>
+ #include <net/if_media.h>
+ #include <net/if_types.h>
++#include <net/ppp_defs.h>
+ 
+ #include <netinet/in.h>
+ #include <netinet/if_ether.h>
+@@ -1059,6 +1060,28 @@ ether_extract_headers(struct mbuf *mp, s
+ 		hlen = sizeof(*ext->evh);
+ 	}
+ #endif
++
++	if (ether_type == ETHERTYPE_PPPOE) {
++		hlen = sizeof(struct ether_pppoe_header);
++		if (mp->m_len < hlen)
++			return;
++
++		ext->eppph = mtod(mp, struct ether_pppoe_header *);
++
++		if (ext->eppph->eppp_code != 0)
++			return;
++		
++		switch (ntohs(ext->eppph->eppp_protocol)) { /* XXX */
++		case PPP_IP:
++			ether_type = ETHERTYPE_IP;
++			break;
++		case PPP_IPV6:
++			ether_type = ETHERTYPE_IPV6;
++			break;
++		default:
++			return;
++		}
++	}
+ 
+ 	switch (ether_type) {
+ 	case ETHERTYPE_IP:
+Index: ./netinet/if_ether.h
+===================================================================
+RCS file: /cvs/src/sys/netinet/if_ether.h,v
+diff -u -p -r1.90 if_ether.h
+--- ./netinet/if_ether.h	27 Jul 2023 20:21:25 -0000	1.90
++++ ./netinet/if_ether.h	19 Mar 2024 12:04:11 -0000
+@@ -105,6 +105,21 @@ struct  ether_vlan_header {
+ 
+ #define EVL_ENCAPLEN    4       /* length in octets of encapsulation */
+ 
++/*
++ * PPPoE headers.
++ */
++
++struct  ether_pppoe_header {
++        u_char  eppp_dhost[ETHER_ADDR_LEN];
++        u_char  eppp_shost[ETHER_ADDR_LEN];
++        u_int16_t eppp_encap_proto;
++        u_int8_t  eppp_vertype;
++        u_int8_t  eppp_code;
++        u_int16_t eppp_session_id;
++        u_int16_t eppp_length;
++        u_int16_t eppp_protocol;
++} __packed;
++
+ #include <net/ethertypes.h>
+ 
+ #define	ETHER_IS_MULTICAST(addr) (*(addr) & 0x01) /* is address mcast/bcast? */
+@@ -303,6 +318,7 @@ void		ether_e64_to_addr(struct ether_add
+ struct ether_extracted {
+ 	struct ether_header		*eh;
+ 	struct ether_vlan_header	*evh;
++	struct ether_pppoe_header	*eppph;
+ 	struct ip			*ip4;
+ 	struct ip6_hdr			*ip6;
+ 	struct tcphdr			*tcp;
+Index: ./dev/pci/if_igc.c
+===================================================================
+RCS file: /cvs/src/sys/dev/pci/if_igc.c,v
+diff -u -p -r1.15 if_igc.c
+--- ./dev/pci/if_igc.c	23 Jan 2024 08:48:12 -0000	1.15
++++ ./dev/pci/if_igc.c	19 Mar 2024 12:16:00 -0000
+@@ -2008,7 +2008,13 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+ 	uint32_t iphlen;
+ 	int off = 0;
+ 
+-	vlan_macip_lens |= (sizeof(*ext.eh) << IGC_ADVTXD_MACLEN_SHIFT);
++        if (ext.eppph) {
++                vlan_macip_lens |=
++                    (sizeof(*ext.eppph) << IGC_ADVTXD_MACLEN_SHIFT);
++        } else {
++                vlan_macip_lens |=
++                    (sizeof(*ext.eh) << IGC_ADVTXD_MACLEN_SHIFT);
++        }
+ 
+ 	/*
+ 	 * In advanced descriptors the vlan tag must
