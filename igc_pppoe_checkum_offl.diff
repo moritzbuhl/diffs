@@ -1,11 +1,14 @@
-diff --git sys/dev/pci/if_igc.c sys/dev/pci/if_igc.c
-index 53bda8d1147..d2e4bdb391b 100644
---- sys/dev/pci/if_igc.c
-+++ sys/dev/pci/if_igc.c
+Index: dev/pci/if_igc.c
+===================================================================
+RCS file: /cvs/src/sys/dev/pci/if_igc.c,v
+retrieving revision 1.19
+diff -u -p -r1.19 if_igc.c
+--- dev/pci/if_igc.c	25 Mar 2024 20:25:13 -0000	1.19
++++ dev/pci/if_igc.c	28 Mar 2024 09:53:17 -0000
 @@ -2069,7 +2069,13 @@ igc_tx_ctx_setup(struct tx_ring *txr, struct mbuf *mp, int prod,
- 
- 	ether_extract_headers(mp, &ext);
- 
+
+	ether_extract_headers(mp, &ext);
+
 -	vlan_macip_lens |= (sizeof(*ext.eh) << IGC_ADVTXD_MACLEN_SHIFT);
 +	if (ext.eppph) {
 +	        vlan_macip_lens |=
@@ -14,14 +17,18 @@ index 53bda8d1147..d2e4bdb391b 100644
 +	        vlan_macip_lens |=
 +	            (sizeof(*ext.eh) << IGC_ADVTXD_MACLEN_SHIFT);
 +	}
- 
++
  	if (ext.ip4) {
  		type_tucmd_mlhl |= IGC_ADVTXD_TUCMD_IPV4;
-diff --git sys/net/if_ethersubr.c sys/net/if_ethersubr.c
-index a7c6d5b1efe..c6618e843b1 100644
---- sys/net/if_ethersubr.c
-+++ sys/net/if_ethersubr.c
-@@ -94,6 +94,7 @@ didn't get a copy, you may request one from <license@ipv6.nrl.navy.mil>.
+ 		if (ISSET(mp->m_pkthdr.csum_flags, M_IPV4_CSUM_OUT)) {
+Index: net/if_ethersubr.c
+===================================================================
+RCS file: /cvs/src/sys/net/if_ethersubr.c,v
+retrieving revision 1.293
+diff -u -p -r1.293 if_ethersubr.c
+--- net/if_ethersubr.c	14 Feb 2024 22:41:48 -0000	1.293
++++ net/if_ethersubr.c	28 Mar 2024 09:53:20 -0000
+@@ -94,6 +94,7 @@ didn't get a copy, you may request one f
  #include <net/if_dl.h>
  #include <net/if_media.h>
  #include <net/if_types.h>
@@ -29,7 +36,7 @@ index a7c6d5b1efe..c6618e843b1 100644
  
  #include <netinet/in.h>
  #include <netinet/if_ether.h>
-@@ -1120,6 +1121,28 @@ ether_extract_headers(struct mbuf *m0, struct ether_extracted *ext)
+@@ -1120,6 +1121,28 @@ ether_extract_headers(struct mbuf *m0, s
  	}
  #endif
  
@@ -58,10 +65,30 @@ index a7c6d5b1efe..c6618e843b1 100644
  	switch (ether_type) {
  	case ETHERTYPE_IP:
  		m = m_getptr(m0, hlen, &hoff);
-diff --git sys/netinet/if_ether.h sys/netinet/if_ether.h
-index f4240e8c4ec..717adeaaa7b 100644
---- sys/netinet/if_ether.h
-+++ sys/netinet/if_ether.h
+Index: net/if_pppoe.c
+===================================================================
+RCS file: /cvs/src/sys/net/if_pppoe.c,v
+retrieving revision 1.83
+diff -u -p -r1.83 if_pppoe.c
+--- net/if_pppoe.c	14 Jul 2022 11:03:15 -0000	1.83
++++ net/if_pppoe.c	28 Mar 2024 09:53:20 -0000
+@@ -843,6 +843,9 @@ pppoe_ioctl(struct ifnet *ifp, unsigned 
+ 				    PPPOE_OVERHEAD;
+ 			}
+ 			sc->sc_eth_ifidx = eth_if->if_index;
++			sc->sc_sppp.pp_if.if_capabilities = 
++			    eth_if->if_capabilities & 
++			    ~(IFCAP_TSOv4 | IFCAP_TSOv6);
+ 			if_put(eth_if);
+ 		}
+ 
+Index: netinet/if_ether.h
+===================================================================
+RCS file: /cvs/src/sys/netinet/if_ether.h,v
+retrieving revision 1.92
+diff -u -p -r1.92 if_ether.h
+--- netinet/if_ether.h	14 Feb 2024 22:41:48 -0000	1.92
++++ netinet/if_ether.h	28 Mar 2024 09:53:20 -0000
 @@ -105,6 +105,21 @@ struct  ether_vlan_header {
  
  #define EVL_ENCAPLEN    4       /* length in octets of encapsulation */
@@ -84,7 +111,7 @@ index f4240e8c4ec..717adeaaa7b 100644
  #include <net/ethertypes.h>
  
  #define	ETHER_IS_MULTICAST(addr) (*(addr) & 0x01) /* is address mcast/bcast? */
-@@ -303,6 +318,7 @@ void		ether_e64_to_addr(struct ether_addr *, uint64_t);
+@@ -303,6 +318,7 @@ void		ether_e64_to_addr(struct ether_add
  struct ether_extracted {
  	struct ether_header		*eh;
  	struct ether_vlan_header	*evh;
