@@ -1,0 +1,164 @@
+Index: dev/pci/if_em.c
+===================================================================
+RCS file: /mount/openbsd/cvs/src/sys/dev/pci/if_em.c,v
+retrieving revision 1.374
+diff -u -p -r1.374 if_em.c
+--- dev/pci/if_em.c	16 Feb 2024 22:30:54 -0000	1.374
++++ dev/pci/if_em.c	31 Mar 2024 14:25:20 -0000
+@@ -2455,7 +2455,13 @@ em_tso_setup(struct em_queue *que, struc
+ 	if (ext.tcp == NULL)
+ 		goto out;
+ 
+-	vlan_macip_lens |= (sizeof(*ext.eh) << E1000_ADVTXD_MACLEN_SHIFT);
++	if (ext.eppph) {
++	        vlan_macip_lens |=
++	            (sizeof(*ext.eppph) << E1000_ADVTXD_MACLEN_SHIFT);
++	} else {
++	        vlan_macip_lens |=
++	            (sizeof(*ext.eh) << E1000_ADVTXD_MACLEN_SHIFT);
++	}
+ 
+ 	if (ext.ip4) {
+ 		type_tucmd_mlhl |= E1000_ADVTXD_TUCMD_IPV4;
+Index: dev/pci/if_igc.c
+===================================================================
+RCS file: /mount/openbsd/cvs/src/sys/dev/pci/if_igc.c,v
+retrieving revision 1.19
+diff -u -p -r1.19 if_igc.c
+--- dev/pci/if_igc.c	25 Mar 2024 20:25:13 -0000	1.19
++++ dev/pci/if_igc.c	31 Mar 2024 14:25:22 -0000
+@@ -2032,7 +2032,13 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+ 	int off = 0;
+ 
+ 	ether_extract_headers(mp, &ext);
+-	vlan_macip_lens |= (sizeof(*ext.eh) << IGC_ADVTXD_MACLEN_SHIFT);
++	if (ext.eppph) {
++	        vlan_macip_lens |=
++	            (sizeof(*ext.eppph) << IGC_ADVTXD_MACLEN_SHIFT);
++	} else {
++	        vlan_macip_lens |=
++	            (sizeof(*ext.eh) << IGC_ADVTXD_MACLEN_SHIFT);
++	}
+ 
+ 	/*
+ 	 * In advanced descriptors the vlan tag must
+Index: dev/pci/if_ix.c
+===================================================================
+RCS file: /mount/openbsd/cvs/src/sys/dev/pci/if_ix.c,v
+retrieving revision 1.211
+diff -u -p -r1.211 if_ix.c
+--- dev/pci/if_ix.c	7 Mar 2024 17:09:02 -0000	1.211
++++ dev/pci/if_ix.c	31 Mar 2024 14:03:48 -0000
+@@ -2499,7 +2499,13 @@ ixgbe_tx_offload(struct mbuf *mp, uint32
+ 
+ 	ether_extract_headers(mp, &ext);
+ 
+-	*vlan_macip_lens |= (sizeof(*ext.eh) << IXGBE_ADVTXD_MACLEN_SHIFT);
++	if (ext.eppph) {
++	        *vlan_macip_lens |=
++	            (sizeof(*ext.eppph) << IXGBE_ADVTXD_MACLEN_SHIFT);
++	} else {
++	        *vlan_macip_lens |=
++	            (sizeof(*ext.eh) << IXGBE_ADVTXD_MACLEN_SHIFT);
++	}
+ 
+ 	if (ext.ip4) {
+ 		if (ISSET(mp->m_pkthdr.csum_flags, M_IPV4_CSUM_OUT)) {
+Index: net/if_ethersubr.c
+===================================================================
+RCS file: /mount/openbsd/cvs/src/sys/net/if_ethersubr.c,v
+retrieving revision 1.293
+diff -u -p -r1.293 if_ethersubr.c
+--- net/if_ethersubr.c	14 Feb 2024 22:41:48 -0000	1.293
++++ net/if_ethersubr.c	31 Mar 2024 14:01:06 -0000
+@@ -94,6 +94,7 @@ didn't get a copy, you may request one f
+ #include <net/if_dl.h>
+ #include <net/if_media.h>
+ #include <net/if_types.h>
++#include <net/ppp_defs.h>
+ 
+ #include <netinet/in.h>
+ #include <netinet/if_ether.h>
+@@ -1119,6 +1120,28 @@ ether_extract_headers(struct mbuf *m0, s
+ 		ext->paylen = sizeof(*ext->eh) + ext->paylen - hlen;
+ 	}
+ #endif
++
++	if (ether_type == ETHERTYPE_PPPOE) {
++		hlen = sizeof(struct ether_pppoe_header);
++		if (m0->m_len < hlen)
++			return;
++
++		ext->eppph = mtod(m0, struct ether_pppoe_header *);
++
++		if (ext->eppph->eppp_code != 0)
++			return;
++
++		switch (ntohs(ext->eppph->eppp_protocol)) { /* XXX */
++		case PPP_IP:
++			ether_type = ETHERTYPE_IP;
++			break;
++		case PPP_IPV6:
++			ether_type = ETHERTYPE_IPV6;
++			break;
++		default:
++			return;
++		}
++	}
+ 
+ 	switch (ether_type) {
+ 	case ETHERTYPE_IP:
+Index: net/if_pppoe.c
+===================================================================
+RCS file: /mount/openbsd/cvs/src/sys/net/if_pppoe.c,v
+retrieving revision 1.83
+diff -u -p -r1.83 if_pppoe.c
+--- net/if_pppoe.c	14 Jul 2022 11:03:15 -0000	1.83
++++ net/if_pppoe.c	31 Mar 2024 14:01:06 -0000
+@@ -843,6 +843,9 @@ pppoe_ioctl(struct ifnet *ifp, unsigned 
+ 				    PPPOE_OVERHEAD;
+ 			}
+ 			sc->sc_eth_ifidx = eth_if->if_index;
++			sc->sc_sppp.pp_if.if_capabilities = 
++			    eth_if->if_capabilities & 
++			    ~(IFCAP_TSOv4 | IFCAP_TSOv6);
+ 			if_put(eth_if);
+ 		}
+ 
+Index: netinet/if_ether.h
+===================================================================
+RCS file: /mount/openbsd/cvs/src/sys/netinet/if_ether.h,v
+retrieving revision 1.92
+diff -u -p -r1.92 if_ether.h
+--- netinet/if_ether.h	14 Feb 2024 22:41:48 -0000	1.92
++++ netinet/if_ether.h	31 Mar 2024 14:01:06 -0000
+@@ -105,6 +105,21 @@ struct  ether_vlan_header {
+ 
+ #define EVL_ENCAPLEN    4       /* length in octets of encapsulation */
+ 
++/*
++ * PPPoE headers.
++ */
++
++struct  ether_pppoe_header {
++	u_char  eppp_dhost[ETHER_ADDR_LEN];
++	u_char  eppp_shost[ETHER_ADDR_LEN];
++	u_int16_t eppp_encap_proto;
++	u_int8_t  eppp_vertype;
++	u_int8_t  eppp_code;
++	u_int16_t eppp_session_id;
++	u_int16_t eppp_length;
++	u_int16_t eppp_protocol;
++} __packed;
++
+ #include <net/ethertypes.h>
+ 
+ #define	ETHER_IS_MULTICAST(addr) (*(addr) & 0x01) /* is address mcast/bcast? */
+@@ -303,6 +318,7 @@ void		ether_e64_to_addr(struct ether_add
+ struct ether_extracted {
+ 	struct ether_header		*eh;
+ 	struct ether_vlan_header	*evh;
++	struct ether_pppoe_header	*eppph;
+ 	struct ip			*ip4;
+ 	struct ip6_hdr			*ip6;
+ 	struct tcphdr			*tcp;
