@@ -1,0 +1,175 @@
+Index: etc/rc
+===================================================================
+RCS file: /cvs/src/etc/rc,v
+diff -u -p -r1.573 rc
+--- etc/rc	30 Mar 2024 07:35:01 -0000	1.573
++++ etc/rc	7 Apr 2024 00:34:49 -0000
+@@ -406,6 +406,10 @@ fi
+ # Add swap block-devices.
+ swapctl -A -t blk
+ 
++if [[ $2 == -q ]]; then
++	> /dev/null
++fi
++
+ # Run filesystem check unless a /fastboot file exists.
+ if [[ -e /fastboot ]]; then
+ 	echo "Fast boot: skipping disk checks."
+Index: sbin/init/init.c
+===================================================================
+RCS file: /cvs/src/sbin/init/init.c,v
+diff -u -p -r1.72 init.c
+--- sbin/init/init.c	10 Sep 2022 00:49:47 -0000	1.72
++++ sbin/init/init.c	7 Apr 2024 00:40:31 -0000
+@@ -132,7 +132,9 @@ state_func_t state_funcs[] = {
+ 	f_nice_death
+ };
+ 
+-enum { AUTOBOOT, FASTBOOT } runcom_mode = AUTOBOOT;
++#define RC_FASTBOOT	0x00000001
++#define RC_QUIET	0x00000002
++int runcom_flags = 0;
+ 
+ void transition(state_t);
+ volatile sig_atomic_t requested_transition = DEFAULT_STATE;
+@@ -243,7 +245,10 @@ main(int argc, char *argv[])
+ 			requested_transition = single_user;
+ 			break;
+ 		case 'f':
+-			runcom_mode = FASTBOOT;
++			runcom_flags |= RC_FASTBOOT;
++			break;
++		case 'q':
++			runcom_flags |= RC_QUIET;
+ 			break;
+ 		default:
+ 			warning("unrecognized flag '-%c'", c);
+@@ -651,7 +656,7 @@ f_single_user(void)
+ 		}
+ 	}
+ 
+-	runcom_mode = FASTBOOT;
++	runcom_flags |= RC_FASTBOOT;
+ 	return runcom;
+ }
+ 
+@@ -663,7 +668,7 @@ f_runcom(void)
+ {
+ 	pid_t pid, wpid;
+ 	int status;
+-	char *argv[4];
++	char *argv[5];
+ 	struct sigaction sa;
+ 
+ 	if ((pid = fork()) == 0) {
+@@ -678,8 +683,9 @@ f_runcom(void)
+ 
+ 		argv[0] = "sh";
+ 		argv[1] = _PATH_RUNCOM;
+-		argv[2] = runcom_mode == AUTOBOOT ? "autoboot" : NULL;
+-		argv[3] = NULL;
++		argv[2] = runcom_flags & RC_FASTBOOT ? "fastboot" : "autoboot";
++		argv[3] = runcom_flags & RC_QUIET ? "-q" : NULL;
++		argv[4] = NULL;
+ 
+ 		sigprocmask(SIG_SETMASK, &sa.sa_mask, NULL);
+ 
+@@ -739,7 +745,7 @@ f_runcom(void)
+ 	if (WEXITSTATUS(status))
+ 		return single_user;
+ 
+-	runcom_mode = AUTOBOOT;		/* the default */
++	runcom_flags = 0;		/* the default */
+ 	/* NB: should send a message to the session logger to avoid blocking. */
+ 	logwtmp("~", "reboot", "");
+ 	return read_ttys;
+Index: sys/kern/init_main.c
+===================================================================
+RCS file: /cvs/src/sys/kern/init_main.c,v
+diff -u -p -r1.325 init_main.c
+--- sys/kern/init_main.c	14 Feb 2024 06:17:51 -0000	1.325
++++ sys/kern/init_main.c	7 Apr 2024 00:41:09 -0000
+@@ -594,7 +594,7 @@ start_init(void *arg)
+ 	int options, error;
+ 	long i;
+ 	register_t retval[2];
+-	char flags[4], *flagsp;
++	char flags[5], *flagsp;
+ 	char **pathp, *path, *ucp, **uap, *arg0, *arg1 = NULL;
+ 
+ 	/*
+@@ -644,6 +644,10 @@ start_init(void *arg)
+ 
+ 		if (boothowto & RB_SINGLE) {
+ 			*flagsp++ = 's';
++			options = 1;
++		}
++		if (boothowto & RB_QUIET) {
++			*flagsp++ = 'q';
+ 			options = 1;
+ 		}
+ #ifdef notyet
+Index: sys/kern/subr_prf.c
+===================================================================
+RCS file: /cvs/src/sys/kern/subr_prf.c,v
+diff -u -p -r1.106 subr_prf.c
+--- sys/kern/subr_prf.c	14 Aug 2022 01:58:28 -0000	1.106
++++ sys/kern/subr_prf.c	7 Apr 2024 00:49:21 -0000
+@@ -204,6 +204,8 @@ panic(const char *fmt, ...)
+ #ifdef BOOT_QUIET
+ 	printf_flags |= TOCONS;	/* make sure we see kernel printf output */
+ #endif
++	if (boothowto & RB_QUIET)
++		printf_flags |= TOCONS;
+ 
+ 	/*
+ 	 * All panic messages are printed, but only the first panic on a
+@@ -526,7 +528,8 @@ printf(const char *fmt, ...)
+ 
+ 	va_start(ap, fmt);
+ 	mtx_enter(&kprintf_mutex);
+-	retval = kprintf(fmt, printf_flags, NULL, NULL, ap);
++	retval = kprintf(fmt, (boothowto & RB_QUIET) ? TOLOG : printf_flags,
++	    NULL, NULL, ap);
+ 	mtx_leave(&kprintf_mutex);
+ 	va_end(ap);
+ 	if (!panicstr)
+Index: sys/stand/boot/vars.c
+===================================================================
+RCS file: /cvs/src/sys/stand/boot/vars.c,v
+diff -u -p -r1.17 vars.c
+--- sys/stand/boot/vars.c	13 Mar 2023 20:19:22 -0000	1.17
++++ sys/stand/boot/vars.c	7 Apr 2024 00:09:53 -0000
+@@ -196,6 +196,8 @@ Xhowto(void)
+ 				putchar('s');
+ 			if (cmd.boothowto & RB_KDB)
+ 				putchar('d');
++			if (cmd.boothowto & RB_QUIET)
++				putchar('q');
+ 		}
+ 		putchar('\n');
+ 	} else
+@@ -225,6 +227,9 @@ bootparse(int i)
+ 					break;
+ 				case 'd':
+ 					howto |= RB_KDB;
++					break;
++				case 'q':
++					howto |= RB_QUIET;
+ 					break;
+ 				default:
+ 					printf("howto: bad option: %c\n", *cp);
+Index: sys/sys/reboot.h
+===================================================================
+RCS file: /cvs/src/sys/sys/reboot.h,v
+diff -u -p -r1.20 reboot.h
+--- sys/sys/reboot.h	26 Oct 2021 16:29:49 -0000	1.20
++++ sys/sys/reboot.h	7 Apr 2024 00:09:04 -0000
+@@ -59,6 +59,7 @@
+ #define	RB_RESET	0x08000	/* just reset, no cleanup  */
+ #define	RB_GOODRANDOM	0x10000	/* excellent random seed loaded */
+ #define	RB_UNHIBERNATE	0x20000	/* unhibernate */
++#define	RB_QUIET	0x40000	/* quiet */
+ 
+ /*
+  * Constants for converting boot-style device number to type,
