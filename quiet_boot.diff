@@ -3,13 +3,13 @@ Index: etc/rc
 RCS file: /cvs/src/etc/rc,v
 diff -u -p -r1.573 rc
 --- etc/rc	30 Mar 2024 07:35:01 -0000	1.573
-+++ etc/rc	7 Apr 2024 00:34:49 -0000
++++ etc/rc	8 Apr 2024 05:34:54 -0000
 @@ -406,6 +406,10 @@ fi
  # Add swap block-devices.
  swapctl -A -t blk
  
 +if [[ $2 == -q ]]; then
-+	> /dev/null
++	exec > /dev/null
 +fi
 +
  # Run filesystem check unless a /fastboot file exists.
@@ -20,7 +20,7 @@ Index: sbin/init/init.c
 RCS file: /cvs/src/sbin/init/init.c,v
 diff -u -p -r1.72 init.c
 --- sbin/init/init.c	10 Sep 2022 00:49:47 -0000	1.72
-+++ sbin/init/init.c	7 Apr 2024 00:40:31 -0000
++++ sbin/init/init.c	7 Apr 2024 17:37:46 -0000
 @@ -132,7 +132,9 @@ state_func_t state_funcs[] = {
  	f_nice_death
  };
@@ -32,7 +32,14 @@ diff -u -p -r1.72 init.c
  
  void transition(state_t);
  volatile sig_atomic_t requested_transition = DEFAULT_STATE;
-@@ -243,7 +245,10 @@ main(int argc, char *argv[])
+@@ -237,13 +239,16 @@ main(int argc, char *argv[])
+ 	 * This code assumes that we always get arguments through flags,
+ 	 * never through bits set in some random machine register.
+ 	 */
+-	while ((c = getopt(argc, argv, "sf")) != -1)
++	while ((c = getopt(argc, argv, "sfq")) != -1)
+ 		switch (c) {
+ 		case 's':
  			requested_transition = single_user;
  			break;
  		case 'f':
