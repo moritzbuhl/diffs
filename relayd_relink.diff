@@ -1,0 +1,48 @@
+Index: etc/rc
+===================================================================
+RCS file: /cvs/src/etc/rc,v
+diff -u -p -r1.574 rc
+--- etc/rc	2 Apr 2024 08:21:04 -0000	1.574
++++ etc/rc	15 Apr 2024 04:20:44 -0000
+@@ -241,7 +241,8 @@ reorder_libs() {
+ 		) || { _error=true; break; }
+ 	done
+ 
+-	for _bin in $_relink/usr/sbin/sshd $_relink/usr/bin/ssh-agent ; do
++	for _bin in $_relink/usr/sbin/sshd $_relink/usr/bin/ssh-agent \
++	    $_relink/usr/sbin/relayd; do
+ 		_tmpdir=$(mktemp -dq $_relink/_rebuild.XXXXXXXXXXXX) &&
+ 		(
+ 		set -o errexit
+Index: usr.sbin/relayd/Makefile
+===================================================================
+RCS file: /cvs/src/usr.sbin/relayd/Makefile,v
+diff -u -p -r1.35 Makefile
+--- usr.sbin/relayd/Makefile	26 Oct 2020 16:52:06 -0000	1.35
++++ usr.sbin/relayd/Makefile	15 Apr 2024 04:05:27 -0000
+@@ -17,4 +17,25 @@ CFLAGS+=	-Wshadow -Wpointer-arith
+ CFLAGS+=	-Wsign-compare -Wcast-qual
+ YFLAGS=
+ 
++CLEANFILES += install.sh relayd.tar
++
++# The random relink kit, used on OpenBSD by /etc/rc
++
++install.sh: Makefile
++	echo "set -o errexit" > $@
++	echo "${CC} ${LDFLAGS} ${LDSTATIC} -o ${PROG}" \
++	    "\`echo " ${OBJS} "| tr ' ' '\\\n' | sort -R\`" ${LDADD} >> $@
++	echo "./${PROG} -nf /dev/null 2>&1 | grep -q 'nothing to do'" >> $@
++	echo "install -c -s  -o root -g bin " \
++	    "-m ${BINMODE} ${PROG} ${BINDIR}/${PROG}" >> $@
++
++${PROG}.tar: ${OBJS} install.sh
++	tar cf $@ ${OBJS} install.sh
++
++afterinstall: ${PROG}.tar
++	install -d -o root -g wheel -m 755 \
++	    ${DESTDIR}/usr/share/relink/${BINDIR}/${PROG}
++	install -o ${BINOWN} -g ${BINGRP} -m 640 ${PROG}.tar \
++	    ${DESTDIR}/usr/share/relink/${BINDIR}/${PROG}/${PROG}.tar
++ 
+ .include <bsd.prog.mk>

@@ -1,0 +1,23 @@
+Index: usr.sbin/relayd/relay_http.c
+===================================================================
+RCS file: /cvs/src/usr.sbin/relayd/relay_http.c,v
+diff -u -p -r1.87 relay_http.c
+--- usr.sbin/relayd/relay_http.c	1 Dec 2023 16:48:40 -0000	1.87
++++ usr.sbin/relayd/relay_http.c	15 Apr 2024 04:31:47 -0000
+@@ -1972,7 +1972,6 @@ relay_test(struct protocol *proto, struc
+ 	struct http_descriptor	*desc = cre->desc;
+ 	struct relay_rule	*r = NULL, *rule = NULL;
+ 	struct relay_table	*tbl = NULL;
+-	u_int			 cnt = 0;
+ 	u_int			 action = RES_PASS;
+ 	struct kvlist		 actions, matches;
+ 	struct kv		*kv;
+@@ -1983,8 +1982,6 @@ relay_test(struct protocol *proto, struc
+ 
+ 	r = TAILQ_FIRST(&proto->rules);
+ 	while (r != NULL) {
+-		cnt++;
+-
+ 		TAILQ_INIT(&matches);
+ 		TAILQ_INIT(&r->rule_kvlist);
+ 
