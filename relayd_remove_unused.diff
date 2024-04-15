@@ -1,3 +1,8 @@
+Fix compiler warning.
+The cnt variable was never used according to a quick glace at git log.
+/usr/src/usr.sbin/relayd/relay_http.c:1975:11: warning: variable 'cnt' set but not used [-Wunused-but-set-variable]
+        u_int                    cnt = 0;
+
 Index: usr.sbin/relayd/relay_http.c
 ===================================================================
 RCS file: /cvs/src/usr.sbin/relayd/relay_http.c,v
