@@ -3,7 +3,7 @@ Index: dev/pci/if_igc.c
 RCS file: /cvs/src/sys/dev/pci/if_igc.c,v
 diff -u -p -r1.20 if_igc.c
 --- dev/pci/if_igc.c	12 Apr 2024 19:27:43 -0000	1.20
-+++ dev/pci/if_igc.c	2 May 2024 18:38:10 -0000
++++ dev/pci/if_igc.c	2 May 2024 18:49:07 -0000
 @@ -44,10 +44,14 @@
  
  #include <net/if.h>
@@ -36,7 +36,7 @@ diff -u -p -r1.20 if_igc.c
  		bus_dmamap_sync(txr->txdma.dma_tag, map, 0,
  		    map->dm_mapsize, BUS_DMASYNC_PREWRITE);
  
-@@ -2025,12 +2028,16 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+@@ -2025,12 +2028,15 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  {
  	struct ether_extracted ext;
  	struct igc_adv_tx_context_desc *txdesc;
@@ -47,15 +47,14 @@ diff -u -p -r1.20 if_igc.c
  
 -	ether_extract_headers(mp, &ext);
 -	vlan_macip_lens |= (sizeof(*ext.eh) << IGC_ADVTXD_MACLEN_SHIFT);
-+	if (ISSET(mp->m_pkthdr.csum_flags, M_TCP_TSO)) {
++	if (ISSET(mp->m_pkthdr.csum_flags, M_TCP_TSO))
 +		*olinfo_status = 0;
-+	} else {
++	else
 +		*olinfo_status = mp->m_pkthdr.len << IGC_ADVTXD_PAYLEN_SHIFT;
-+	}
  
  	/*
  	 * In advanced descriptors the vlan tag must
-@@ -2046,6 +2053,10 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+@@ -2046,6 +2052,10 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  	}
  #endif
  
@@ -66,7 +65,7 @@ diff -u -p -r1.20 if_igc.c
  	if (ext.ip4) {
  		type_tucmd_mlhl |= IGC_ADVTXD_TUCMD_IPV4;
  		if (ISSET(mp->m_pkthdr.csum_flags, M_IPV4_CSUM_OUT)) {
-@@ -2056,6 +2067,9 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+@@ -2056,6 +2066,9 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  	} else if (ext.ip6) {
  		type_tucmd_mlhl |= IGC_ADVTXD_TUCMD_IPV6;
  #endif
@@ -76,7 +75,7 @@ diff -u -p -r1.20 if_igc.c
  	}
  
  	vlan_macip_lens |= ext.iphlen;
-@@ -2075,6 +2089,29 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+@@ -2075,6 +2088,29 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  		}
  	}
  
@@ -106,7 +105,7 @@ diff -u -p -r1.20 if_igc.c
  	if (off == 0)
  		return 0;
  
-@@ -2085,7 +2122,7 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+@@ -2085,7 +2121,7 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  	htolem32(&txdesc->vlan_macip_lens, vlan_macip_lens);
  	htolem32(&txdesc->type_tucmd_mlhl, type_tucmd_mlhl);
  	htolem32(&txdesc->seqnum_seed, 0);
