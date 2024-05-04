@@ -3,7 +3,7 @@ Index: dev/pci/if_igc.c
 RCS file: /cvs/src/sys/dev/pci/if_igc.c,v
 diff -u -p -r1.20 if_igc.c
 --- dev/pci/if_igc.c	12 Apr 2024 19:27:43 -0000	1.20
-+++ dev/pci/if_igc.c	2 May 2024 18:49:07 -0000
++++ dev/pci/if_igc.c	4 May 2024 12:12:00 -0000
 @@ -44,10 +44,14 @@
  
  #include <net/if.h>
@@ -27,16 +27,7 @@ diff -u -p -r1.20 if_igc.c
  
  	/* Initialize ifmedia structures. */
  	ifmedia_init(&sc->media, IFM_IMASK, igc_media_change, igc_media_status);
-@@ -993,8 +998,6 @@ igc_start(struct ifqueue *ifq)
- 			continue;
- 		}
- 
--		olinfo_status = m->m_pkthdr.len << IGC_ADVTXD_PAYLEN_SHIFT;
--
- 		bus_dmamap_sync(txr->txdma.dma_tag, map, 0,
- 		    map->dm_mapsize, BUS_DMASYNC_PREWRITE);
- 
-@@ -2025,12 +2028,15 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+@@ -2025,13 +2030,11 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  {
  	struct ether_extracted ext;
  	struct igc_adv_tx_context_desc *txdesc;
@@ -47,14 +38,11 @@ diff -u -p -r1.20 if_igc.c
  
 -	ether_extract_headers(mp, &ext);
 -	vlan_macip_lens |= (sizeof(*ext.eh) << IGC_ADVTXD_MACLEN_SHIFT);
-+	if (ISSET(mp->m_pkthdr.csum_flags, M_TCP_TSO))
-+		*olinfo_status = 0;
-+	else
-+		*olinfo_status = mp->m_pkthdr.len << IGC_ADVTXD_PAYLEN_SHIFT;
- 
+-
  	/*
  	 * In advanced descriptors the vlan tag must
-@@ -2046,6 +2052,10 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+ 	 * be placed into the context descriptor. Hence
+@@ -2046,6 +2049,10 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  	}
  #endif
  
@@ -65,21 +53,11 @@ diff -u -p -r1.20 if_igc.c
  	if (ext.ip4) {
  		type_tucmd_mlhl |= IGC_ADVTXD_TUCMD_IPV4;
  		if (ISSET(mp->m_pkthdr.csum_flags, M_IPV4_CSUM_OUT)) {
-@@ -2056,6 +2066,9 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
- 	} else if (ext.ip6) {
- 		type_tucmd_mlhl |= IGC_ADVTXD_TUCMD_IPV6;
- #endif
-+	} else {
-+		if (ISSET(mp->m_pkthdr.csum_flags, M_TCP_TSO))
-+			tcpstat_inc(tcps_outbadtso);
- 	}
- 
- 	vlan_macip_lens |= ext.iphlen;
-@@ -2075,6 +2088,29 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+@@ -2075,6 +2082,30 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  		}
  	}
  
-+	if (ISSET(mp->m_pkthdr.csum_flags, M_TCP_TSO)) {
++	if (mp->m_pkthdr.csum_flags & M_TCP_TSO) {
 +		if (ext.tcp) {
 +			uint32_t hdrlen, thlen, paylen, outlen;
 +
@@ -91,6 +69,7 @@ diff -u -p -r1.20 if_igc.c
 +
 +			hdrlen = sizeof(*ext.eh) + ext.iphlen + thlen;
 +			paylen = mp->m_pkthdr.len - hdrlen;
++			CLR(*olinfo_status, IGC_ADVTXD_PAYLEN_MASK);
 +			*olinfo_status |= paylen << IGC_ADVTXD_PAYLEN_SHIFT;
 +
 +			*cmd_type_len |= IGC_ADVTXD_DCMD_TSE;
@@ -105,7 +84,7 @@ diff -u -p -r1.20 if_igc.c
  	if (off == 0)
  		return 0;
  
-@@ -2085,7 +2121,7 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
+@@ -2085,7 +2116,7 @@ igc_tx_ctx_setup(struct tx_ring *txr, st
  	htolem32(&txdesc->vlan_macip_lens, vlan_macip_lens);
  	htolem32(&txdesc->type_tucmd_mlhl, type_tucmd_mlhl);
  	htolem32(&txdesc->seqnum_seed, 0);
@@ -114,3 +93,17 @@ diff -u -p -r1.20 if_igc.c
  
  	return 1;
  }
+Index: dev/pci/igc_base.h
+===================================================================
+RCS file: /cvs/src/sys/dev/pci/igc_base.h,v
+diff -u -p -r1.2 igc_base.h
+--- dev/pci/igc_base.h	25 Mar 2024 20:25:13 -0000	1.2
++++ dev/pci/igc_base.h	4 May 2024 12:12:00 -0000
+@@ -66,6 +66,7 @@ struct igc_adv_tx_context_desc {
+ #define IGC_ADVTXD_POPTS_ISCO_FULL	0x00001800
+ #define IGC_ADVTXD_POPTS_IPSEC	0x00000400 /* IPSec offload request */
+ #define IGC_ADVTXD_PAYLEN_SHIFT	14 /* Adv desc PAYLEN shift */
++#define IGC_ADVTXD_PAYLEN_MASK	0xFFFFD000 /* Adv desc PAYLEN shift */
+ 
+ /* Advanced Transmit Context Descriptor Config */
+ #define IGC_ADVTXD_MACLEN_SHIFT		9 /* Adv ctxt desc mac len shift */
