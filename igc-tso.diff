@@ -3,7 +3,7 @@ Index: dev/pci/if_igc.c
 RCS file: /cvs/src/sys/dev/pci/if_igc.c,v
 diff -u -p -r1.20 if_igc.c
 --- dev/pci/if_igc.c	12 Apr 2024 19:27:43 -0000	1.20
-+++ dev/pci/if_igc.c	4 May 2024 12:17:31 -0000
++++ dev/pci/if_igc.c	4 May 2024 13:34:39 -0000
 @@ -44,10 +44,14 @@
  
  #include <net/if.h>
@@ -98,7 +98,7 @@ Index: dev/pci/igc_base.h
 RCS file: /cvs/src/sys/dev/pci/igc_base.h,v
 diff -u -p -r1.2 igc_base.h
 --- dev/pci/igc_base.h	25 Mar 2024 20:25:13 -0000	1.2
-+++ dev/pci/igc_base.h	4 May 2024 12:12:00 -0000
++++ dev/pci/igc_base.h	4 May 2024 13:34:39 -0000
 @@ -66,6 +66,7 @@ struct igc_adv_tx_context_desc {
  #define IGC_ADVTXD_POPTS_ISCO_FULL	0x00001800
  #define IGC_ADVTXD_POPTS_IPSEC	0x00000400 /* IPSec offload request */
