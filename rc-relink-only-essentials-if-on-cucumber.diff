@@ -1,0 +1,35 @@
+Index: etc/rc
+===================================================================
+RCS file: /cvs/src/etc/rc,v
+diff -u -p -r1.574 rc
+--- etc/rc	2 Apr 2024 08:21:04 -0000	1.574
++++ etc/rc	15 May 2024 07:49:27 -0000
+@@ -179,6 +179,7 @@ make_keys() {
+ reorder_libs() {
+ 	local _error=false _dkdev _liba _libas _mp _ro_list _tmpdir
+ 	local _relink=/usr/share/relink
++	local _time
+ 
+ 	[[ $library_aslr == NO ]] && return
+ 
+@@ -241,6 +242,7 @@ reorder_libs() {
+ 		) || { _error=true; break; }
+ 	done
+ 
++	_time=$(date '+%s')
+ 	for _bin in $_relink/usr/sbin/sshd $_relink/usr/bin/ssh-agent ; do
+ 		_tmpdir=$(mktemp -dq $_relink/_rebuild.XXXXXXXXXXXX) &&
+ 		(
+@@ -258,6 +260,12 @@ reorder_libs() {
+ 			fi
+ 		fi
+ 		) || { _error=true; break; }
++		if [ $_bin = $_relink/usr/bin/ssh-agent ]; then
++			_time=$(($(date '+%s') - _time))
++			if [ $_time -gt 3 ]; then
++				break
++			fi
++		fi
+ 	done
+ 
+ 	rm -rf $_relink/_rebuild.*
