@@ -1,0 +1,22 @@
+In 396 there already is a M_MCAST check.
+netinet6/ip6_input.c:466 sets this in ip6_input_if.
+
+Index: netinet/tcp_input.c
+===================================================================
+RCS file: /cvs/src/sys/netinet/tcp_input.c,v
+diff -u -p -r1.406 tcp_input.c
+--- netinet/tcp_input.c	7 Jun 2024 08:02:17 -0000	1.406
++++ netinet/tcp_input.c	3 Jul 2024 13:12:38 -0000
+@@ -434,12 +434,6 @@ tcp_input(struct mbuf **mp, int *offp, i
+ 			/* XXX stat */
+ 			goto drop;
+ 		}
+-
+-		/* Discard packets to multicast */
+-		if (IN6_IS_ADDR_MULTICAST(&ip6->ip6_dst)) {
+-			/* XXX stat */
+-			goto drop;
+-		}
+ 		break;
+ #endif
+ 	default:
