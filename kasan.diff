@@ -1,7 +1,9 @@
-diff --git a/sys/arch/amd64/amd64/acpi_machdep.c b/sys/arch/amd64/amd64/acpi_machdep.c
-index 2403f03f943..2685f104672 100644
---- a/sys/arch/amd64/amd64/acpi_machdep.c
-+++ b/sys/arch/amd64/amd64/acpi_machdep.c
+Index: arch/amd64/amd64/acpi_machdep.c
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/amd64/acpi_machdep.c,v
+diff -u -p -r1.110 acpi_machdep.c
+--- arch/amd64/amd64/acpi_machdep.c	29 May 2024 12:21:33 -0000	1.110
++++ arch/amd64/amd64/acpi_machdep.c	14 Jul 2024 19:07:29 -0000
 @@ -52,6 +52,8 @@
  #include <machine/i82489var.h>
  #endif
@@ -11,19 +13,49 @@ index 2403f03f943..2685f104672 100644
  extern u_char acpi_real_mode_resume[], acpi_resume_end[];
  extern u_char acpi_tramp_data_start[], acpi_tramp_data_end[];
  extern u_int32_t acpi_pdirpa;
-@@ -119,6 +121,7 @@ acpi_map(paddr_t pa, size_t len, struct acpi_mem_map *handle)
+@@ -119,6 +121,9 @@ acpi_map(paddr_t pa, size_t len, struct 
  
  	do {
  		pmap_kenter_pa(va, pgpa, PROT_READ | PROT_WRITE);
++#ifdef KASAN
 +		kasan_alloc(va, NBPG, NBPG);
++#endif
  		va += NBPG;
  		pgpa += NBPG;
  	} while (pgpa < endpa);
-diff --git a/sys/arch/amd64/amd64/kasan.c b/sys/arch/amd64/amd64/kasan.c
-new file mode 100644
-index 00000000000..b7fcf9062a0
---- /dev/null
-+++ b/sys/arch/amd64/amd64/kasan.c
+Index: arch/amd64/amd64/cpu.c
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/amd64/cpu.c,v
+diff -u -p -r1.190 cpu.c
+--- arch/amd64/amd64/cpu.c	7 Jun 2024 16:53:35 -0000	1.190
++++ arch/amd64/amd64/cpu.c	14 Jul 2024 19:07:29 -0000
+@@ -96,6 +96,10 @@
+ #include <machine/pio.h>
+ #include <machine/vmmvar.h>
+ 
++#ifdef KASAN
++#include <sys/kasan.h>
++#endif
++
+ #if NLAPIC > 0
+ #include <machine/i82489reg.h>
+ #include <machine/i82489var.h>
+@@ -647,6 +651,9 @@ cpu_attach(struct device *parent, struct
+ 		return;
+ 	}
+ 	pcb = ci->ci_idle_pcb = (struct pcb *) kstack;
++#ifdef KASAN
++	kasan_alloc(kstack, USPACE, USPACE);
++#endif
+ 	memset(pcb, 0, USPACE);
+ 
+ 	pcb->pcb_kstack = kstack + USPACE - 16;
+Index: arch/amd64/amd64/kasan.c
+===================================================================
+RCS file: arch/amd64/amd64/kasan.c
+diff -N arch/amd64/amd64/kasan.c
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ arch/amd64/amd64/kasan.c	14 Jul 2024 19:07:29 -0000
 @@ -0,0 +1,37 @@
 +/*	$OpenBSD$	*/
 +
@@ -62,19 +94,23 @@ index 00000000000..b7fcf9062a0
 +		ptr++;
 +	}
 +}
-diff --git a/sys/arch/amd64/amd64/machdep.c b/sys/arch/amd64/amd64/machdep.c
-index 66cdafb5e54..d708af19a96 100644
---- a/sys/arch/amd64/amd64/machdep.c
-+++ b/sys/arch/amd64/amd64/machdep.c
-@@ -100,6 +100,7 @@
+Index: arch/amd64/amd64/machdep.c
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/amd64/machdep.c,v
+diff -u -p -r1.295 machdep.c
+--- arch/amd64/amd64/machdep.c	26 Jun 2024 01:40:49 -0000	1.295
++++ arch/amd64/amd64/machdep.c	14 Jul 2024 19:07:29 -0000
+@@ -100,6 +100,9 @@
  #include <machine/mpbiosvar.h>
  #include <machine/kcore.h>
  #include <machine/tss.h>
++#ifdef KASAN
 +#include <machine/kasan.h>
++#endif
  
  #include <dev/isa/isareg.h>
  #include <dev/ic/i8042reg.h>
-@@ -1422,6 +1423,9 @@ init_x86_64(paddr_t first_avail)
+@@ -1422,6 +1425,9 @@ init_x86_64(paddr_t first_avail)
  	bios_memmap_t *bmp;
  	int x, ist;
  	uint64_t max_dm_size = ((uint64_t)512 * NUM_L4_SLOT_DIRECT) << 30;
@@ -84,7 +120,7 @@ index 66cdafb5e54..d708af19a96 100644
  
  	/*
  	 * locore0 mapped 3 pages for use before the pmap is initialized
-@@ -1746,6 +1750,9 @@ init_x86_64(paddr_t first_avail)
+@@ -1746,6 +1752,9 @@ init_x86_64(paddr_t first_avail)
  		}
  	}
  
@@ -94,22 +130,24 @@ index 66cdafb5e54..d708af19a96 100644
  	pmap_growkernel(VM_MIN_KERNEL_ADDRESS + 32 * 1024 * 1024);
  
  	pmap_kenter_pa(idt_vaddr, idt_paddr, PROT_READ | PROT_WRITE);
-@@ -1800,6 +1807,11 @@ init_x86_64(paddr_t first_avail)
+@@ -1799,6 +1808,11 @@ init_x86_64(paddr_t first_avail)
+ 	ddb_init();
  	if (boothowto & RB_KDB)
  		db_enter();
- #endif
++#endif
 +#ifdef KASAN
 +	kasan_init();
 +        kasan_enter_shad_multi((vaddr_t)VM_MIN_KERNEL_ADDRESS,
 +	    kasan_maxkvaddr - VM_MIN_KERNEL_ADDRESS); /* XXX: doing it all */
-+#endif
+ #endif
  }
  
- void
-diff --git a/sys/arch/amd64/amd64/pmap.c b/sys/arch/amd64/amd64/pmap.c
-index 0c3fe07cd69..9fb6a417836 100644
---- a/sys/arch/amd64/amd64/pmap.c
-+++ b/sys/arch/amd64/amd64/pmap.c
+Index: arch/amd64/amd64/pmap.c
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/amd64/pmap.c,v
+diff -u -p -r1.169 pmap.c
+--- arch/amd64/amd64/pmap.c	9 Jul 2024 19:11:06 -0000	1.169
++++ arch/amd64/amd64/pmap.c	14 Jul 2024 19:07:29 -0000
 @@ -116,6 +116,9 @@
  #include <machine/i82489reg.h>
  #include <machine/i82489var.h>
@@ -120,20 +158,24 @@ index 0c3fe07cd69..9fb6a417836 100644
  
  #include "vmm.h"
  
-@@ -3079,6 +3082,9 @@ pmap_growkernel(vaddr_t maxkvaddr)
+@@ -3078,6 +3081,11 @@ pmap_growkernel(vaddr_t maxkvaddr)
+ 	}
  	pmap_maxkvaddr = maxkvaddr;
  	splx(s);
- 
++
++#ifdef KASAN
 +	kasan_enter_shad_multi((vaddr_t)VM_MIN_KERNEL_ADDRESS, 
 +	    maxkvaddr - VM_MIN_KERNEL_ADDRESS);
-+
++#endif
+ 
  	return maxkvaddr;
  }
- 
-diff --git a/sys/arch/amd64/conf/GENERIC.MP b/sys/arch/amd64/conf/GENERIC.MP
-index bb842f6d96e..13067cb7e40 100644
---- a/sys/arch/amd64/conf/GENERIC.MP
-+++ b/sys/arch/amd64/conf/GENERIC.MP
+Index: arch/amd64/conf/GENERIC.MP
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/conf/GENERIC.MP,v
+diff -u -p -r1.16 GENERIC.MP
+--- arch/amd64/conf/GENERIC.MP	9 Feb 2021 14:06:19 -0000	1.16
++++ arch/amd64/conf/GENERIC.MP	14 Jul 2024 19:07:29 -0000
 @@ -5,5 +5,5 @@ include "arch/amd64/conf/GENERIC"
  option	MULTIPROCESSOR
  #option	MP_LOCKDEBUG
@@ -141,17 +183,19 @@ index bb842f6d96e..13067cb7e40 100644
 -
 +option KASAN
  cpu*		at mainbus?
-diff --git a/sys/arch/amd64/conf/Makefile.amd64 b/sys/arch/amd64/conf/Makefile.amd64
-index aefa751ee3b..dcd9080af5a 100644
---- a/sys/arch/amd64/conf/Makefile.amd64
-+++ b/sys/arch/amd64/conf/Makefile.amd64
+Index: arch/amd64/conf/Makefile.amd64
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/conf/Makefile.amd64,v
+diff -u -p -r1.137 Makefile.amd64
+--- arch/amd64/conf/Makefile.amd64	7 Jun 2024 05:17:34 -0000	1.137
++++ arch/amd64/conf/Makefile.amd64	14 Jul 2024 19:07:29 -0000
 @@ -1,4 +1,4 @@
 -#	$OpenBSD: Makefile.amd64,v 1.137 2024/06/07 05:17:34 deraadt Exp $
 +#	$OpenBSD: Makefile.amd64,v 1.129 2023/01/01 01:34:33 jsg Exp $
  
  # For instructions on building kernels consult the config(8) and options(4)
  # manual pages.
-@@ -53,7 +53,7 @@ INCLUDES=	-nostdinc -I$S -I${.OBJDIR} -I$S/arch \
+@@ -53,7 +53,7 @@ INCLUDES=	-nostdinc -I$S -I${.OBJDIR} -I
  CPPFLAGS=	${INCLUDES} ${IDENT} ${PARAM} -D_KERNEL -MD -MP
  CWARNFLAGS=	-Werror -Wall -Wimplicit-function-declaration \
  		-Wno-pointer-sign \
@@ -160,6 +204,15 @@ index aefa751ee3b..dcd9080af5a 100644
  
  CMACHFLAGS=	-mcmodel=kernel -mno-red-zone -mno-sse2 -mno-sse -mno-3dnow \
  		-mno-mmx -msoft-float -fno-omit-frame-pointer
+@@ -73,7 +73,7 @@ CMACHFLAGS+=	-mno-retpoline -fcf-protect
+ .endif
+ .else
+ CMACHFLAGS+=	-mretpoline-external-thunk -fcf-protection=branch
+-CMACHFLAGS+=	-fret-clean
++#CMACHFLAGS+=	-fret-clean
+ .endif
+ .if ${COMPILER_VERSION:Mclang}
+ NO_INTEGR_AS=	-no-integrated-as
 @@ -136,6 +136,12 @@ CFLAGS+=	-fsanitize=undefined
  CFLAGS+=	-fno-wrapv
  .endif
@@ -173,10 +226,12 @@ index aefa751ee3b..dcd9080af5a 100644
  %LOAD
  
  # cc's -MD puts the source and output paths in the dependency file;
-@@ -194,6 +200,18 @@ kcov.o: $S/dev/kcov.c
+@@ -192,6 +198,18 @@ vers.o: ${SYSTEM_DEP:Ngap.o}
+ .if ${SYSTEM_OBJ:Mkcov.o} && ${COMPILER_VERSION:Mclang}
+ kcov.o: $S/dev/kcov.c
  	${NORMAL_C} -fno-sanitize-coverage=trace-pc,trace-cmp
- .endif
- 
++.endif
++
 +# XXX: add subr_asan.o check
 +.if ${SYSTEM_OBJ:Mkasan.o} && ${COMPILER_VERSION:Mclang}
 +kasan.o: $S/arch/amd64/amd64/kasan.c
@@ -187,16 +242,16 @@ index aefa751ee3b..dcd9080af5a 100644
 +	${NORMAL_C} -fno-sanitize=kernel-address
 +init_main.o: $S/kern/init_main.c
 +	${NORMAL_C} ${KASAN_ENABLED}
-+.endif
-+
- HARDFLOAT_CFLAGS= -msse -msse2
+ .endif
  
- display_mode_vba.o: $S/dev/pci/drm/amd/display/dc/dml/display_mode_vba.c
-diff --git a/sys/arch/amd64/conf/files.amd64 b/sys/arch/amd64/conf/files.amd64
-index a3452d9729c..6b4891b8fa0 100644
---- a/sys/arch/amd64/conf/files.amd64
-+++ b/sys/arch/amd64/conf/files.amd64
-@@ -10,6 +10,7 @@ file	arch/amd64/amd64/gdt.c			multiprocessor
+ HARDFLOAT_CFLAGS= -msse -msse2
+Index: arch/amd64/conf/files.amd64
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/conf/files.amd64,v
+diff -u -p -r1.109 files.amd64
+--- arch/amd64/conf/files.amd64	8 Jul 2023 08:01:10 -0000	1.109
++++ arch/amd64/conf/files.amd64	14 Jul 2024 19:07:29 -0000
+@@ -10,6 +10,7 @@ file	arch/amd64/amd64/gdt.c			multiproce
  file	arch/amd64/amd64/machdep.c
  file	arch/amd64/amd64/hibernate_machdep.c	hibernate
  file	arch/amd64/amd64/identcpu.c
@@ -204,10 +259,12 @@ index a3452d9729c..6b4891b8fa0 100644
  file	arch/amd64/amd64/tsc.c
  file	arch/amd64/amd64/via.c
  file	arch/amd64/amd64/locore.S
-diff --git a/sys/arch/amd64/conf/ld.script b/sys/arch/amd64/conf/ld.script
-index c02f60c66cb..a82be2ed427 100644
---- a/sys/arch/amd64/conf/ld.script
-+++ b/sys/arch/amd64/conf/ld.script
+Index: arch/amd64/conf/ld.script
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/conf/ld.script,v
+diff -u -p -r1.19 ld.script
+--- arch/amd64/conf/ld.script	7 Nov 2022 01:41:57 -0000	1.19
++++ arch/amd64/conf/ld.script	14 Jul 2024 19:07:29 -0000
 @@ -85,6 +85,10 @@ SECTIONS
  	{
  		__rodata_start = ABSOLUTE(.);
@@ -219,10 +276,29 @@ index c02f60c66cb..a82be2ed427 100644
  		. = ALIGN(8);
  		__nofault_start = ABSOLUTE(.);
  		*(.nofault.*) *(.nofault)
-diff --git a/sys/arch/amd64/include/pmap.h b/sys/arch/amd64/include/pmap.h
-index 6a8e4f92dd3..799e8be5b74 100644
---- a/sys/arch/amd64/include/pmap.h
-+++ b/sys/arch/amd64/include/pmap.h
+Index: arch/amd64/include/kasan.h
+===================================================================
+RCS file: arch/amd64/include/kasan.h
+diff -N arch/amd64/include/kasan.h
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ arch/amd64/include/kasan.h	14 Jul 2024 19:07:30 -0000
+@@ -0,0 +1,10 @@
++/*    $OpenBSD$       */
++
++#ifndef _MACHINE_KASAN_H_
++#define _MACHINE_KASAN_H_
++
++void	kasan_init(void);
++void	kasan_ctors(void);
++void	kasan_enter_shad_multi(vaddr_t, size_t);
++
++#endif /* !_MACHINE_KASAN_H_ */
+Index: arch/amd64/include/pmap.h
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/include/pmap.h,v
+diff -u -p -r1.89 pmap.h
+--- arch/amd64/include/pmap.h	9 Jul 2024 19:11:06 -0000	1.89
++++ arch/amd64/include/pmap.h	14 Jul 2024 19:07:30 -0000
 @@ -145,11 +145,13 @@
  #define NUM_L4_SLOT_DIRECT	4
  #define L4_SLOT_DIRECT		(L4_SLOT_KERNBASE - NUM_L4_SLOT_DIRECT)
@@ -237,10 +313,12 @@ index 6a8e4f92dd3..799e8be5b74 100644
  
  /*
   * the following defines give the virtual addresses of various MMU
-diff --git a/sys/conf/files b/sys/conf/files
-index 1be0a066e34..d87f627fb18 100644
---- a/sys/conf/files
-+++ b/sys/conf/files
+Index: conf/files
+===================================================================
+RCS file: /cvs/src/sys/conf/files,v
+diff -u -p -r1.734 files
+--- conf/files	13 Jul 2024 13:20:44 -0000	1.734
++++ conf/files	14 Jul 2024 19:07:31 -0000
 @@ -741,6 +741,7 @@ file kern/subr_evcount.c
  file kern/subr_extent.c
  file kern/subr_suspend.c		suspend
@@ -249,10 +327,12 @@ index 1be0a066e34..d87f627fb18 100644
  file kern/subr_kubsan.c			kubsan
  file kern/subr_log.c
  file kern/subr_percpu.c
-diff --git a/sys/kern/init_main.c b/sys/kern/init_main.c
-index d571b0855cf..087c929d660 100644
---- a/sys/kern/init_main.c
-+++ b/sys/kern/init_main.c
+Index: kern/init_main.c
+===================================================================
+RCS file: /cvs/src/sys/kern/init_main.c,v
+diff -u -p -r1.326 init_main.c
+--- kern/init_main.c	2 Apr 2024 08:39:16 -0000	1.326
++++ kern/init_main.c	14 Jul 2024 19:07:34 -0000
 @@ -74,6 +74,10 @@
  #include <sys/smr.h>
  #include <sys/evcount.h>
@@ -264,15 +344,17 @@ index d571b0855cf..087c929d660 100644
  #include <sys/syscallargs.h>
  
  #include <uvm/uvm_extern.h>
-@@ -424,6 +428,7 @@ main(void *framep)
+@@ -424,6 +428,9 @@ main(void *framep)
  		if (fork1(p, FORK_FORK, start_init, NULL, NULL, &initproc))
  			panic("fork init");
  		initprocess = initproc->p_p;
++#ifdef KASAN
 +printf("DEBUG PARENT: kasan_in_init=%d\n", kasan_in_init);
++#endif
  	}
  
  	/*
-@@ -561,6 +566,9 @@ static char *initpaths[] = {
+@@ -561,6 +568,9 @@ static char *initpaths[] = {
  };
  
  void
@@ -282,7 +364,7 @@ index d571b0855cf..087c929d660 100644
  check_console(struct proc *p)
  {
  	struct nameidata nd;
-@@ -582,6 +590,9 @@ check_console(struct proc *p)
+@@ -582,6 +592,9 @@ check_console(struct proc *p)
   * The program is invoked with one argument containing the boot flags.
   */
  void
@@ -292,7 +374,7 @@ index d571b0855cf..087c929d660 100644
  start_init(void *arg)
  {
  	struct proc *p = arg;
-@@ -600,6 +611,9 @@ start_init(void *arg)
+@@ -600,6 +613,9 @@ start_init(void *arg)
  	/*
  	 * Now in process 1.
  	 */
@@ -302,7 +384,7 @@ index d571b0855cf..087c929d660 100644
  
  	/*
  	 * Wait for main() to tell us that it's safe to exec.
-@@ -713,6 +727,9 @@ start_init(void *arg)
+@@ -713,6 +729,9 @@ start_init(void *arg)
  		 */
  		if ((error = sys_execve(p, &args, retval)) == EJUSTRETURN) {
  			KERNEL_UNLOCK();
@@ -312,10 +394,12 @@ index d571b0855cf..087c929d660 100644
  			return;
  		}
  		if (error != ENOENT)
-diff --git a/sys/kern/kern_malloc.c b/sys/kern/kern_malloc.c
-index dd90a719f88..63eb2ffea7e 100644
---- a/sys/kern/kern_malloc.c
-+++ b/sys/kern/kern_malloc.c
+Index: kern/kern_malloc.c
+===================================================================
+RCS file: /cvs/src/sys/kern/kern_malloc.c,v
+diff -u -p -r1.152 kern_malloc.c
+--- kern/kern_malloc.c	26 Jun 2024 01:40:49 -0000	1.152
++++ kern/kern_malloc.c	14 Jul 2024 19:07:34 -0000
 @@ -50,6 +50,11 @@
  #include <ddb/db_output.h>
  #endif
@@ -359,7 +443,7 @@ index dd90a719f88..63eb2ffea7e 100644
  
  	TRACEPOINT(uvm, malloc, type, va, size, flags);
  
-@@ -365,6 +384,10 @@ free(void *addr, int type, size_t freedsize)
+@@ -365,6 +384,10 @@ free(void *addr, int type, size_t freeds
  #ifdef DIAGNOSTIC
  	long alloc;
  #endif
@@ -370,7 +454,7 @@ index dd90a719f88..63eb2ffea7e 100644
  #ifdef KMEMSTATS
  	struct kmemstats *ksp = &kmemstats[type];
  	int wake;
-@@ -481,6 +504,9 @@ free(void *addr, int type, size_t freedsize)
+@@ -481,6 +504,9 @@ free(void *addr, int type, size_t freeds
  #endif
  	XSIMPLEQ_INSERT_TAIL(&kbp->kb_freelist, freep, kf_flist);
  	mtx_leave(&malloc_mtx);
@@ -380,11 +464,12 @@ index dd90a719f88..63eb2ffea7e 100644
  #ifdef KMEMSTATS
  	if (wake)
  		wakeup(ksp);
-diff --git a/sys/kern/subr_kasan.c b/sys/kern/subr_kasan.c
-new file mode 100644
-index 00000000000..29e5f5868b3
---- /dev/null
-+++ b/sys/kern/subr_kasan.c
+Index: kern/subr_kasan.c
+===================================================================
+RCS file: kern/subr_kasan.c
+diff -N kern/subr_kasan.c
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ kern/subr_kasan.c	14 Jul 2024 19:07:34 -0000
 @@ -0,0 +1,563 @@
 +/*	$OpenBSD$	*/
 +
@@ -949,11 +1034,12 @@ index 00000000000..29e5f5868b3
 +ASAN_SET_SHADOW(f3);
 +ASAN_SET_SHADOW(f5);
 +ASAN_SET_SHADOW(f8);
-diff --git a/sys/sys/kasan.h b/sys/sys/kasan.h
-new file mode 100644
-index 00000000000..9686d247a7a
---- /dev/null
-+++ b/sys/sys/kasan.h
+Index: sys/kasan.h
+===================================================================
+RCS file: sys/kasan.h
+diff -N sys/kasan.h
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ sys/kasan.h	14 Jul 2024 19:07:34 -0000
 @@ -0,0 +1,87 @@
 +/*	$OpenBSD$	*/
 +
@@ -1042,10 +1128,12 @@ index 00000000000..9686d247a7a
 +};
 +
 +#endif /* !_SYS_KASAN_H_ */
-diff --git a/sys/sys/systm.h b/sys/sys/systm.h
-index 541d83d1a77..19d7213f967 100644
---- a/sys/sys/systm.h
-+++ b/sys/sys/systm.h
+Index: sys/systm.h
+===================================================================
+RCS file: /cvs/src/sys/sys/systm.h,v
+diff -u -p -r1.171 systm.h
+--- sys/systm.h	28 May 2024 12:50:23 -0000	1.171
++++ sys/systm.h	14 Jul 2024 19:07:34 -0000
 @@ -387,10 +387,20 @@ extern int (*mountroot)(void);
  
  #include <lib/libkern/libkern.h>
@@ -1067,10 +1155,12 @@ index 541d83d1a77..19d7213f967 100644
  #if (defined(__GNUC__) && __GNUC__ >= 4)
  #define memmove(d, s, n)	__builtin_memmove((d), (s), (n))
  #endif
-diff --git a/sys/uvm/uvm_km.c b/sys/uvm/uvm_km.c
-index a715173529a..6b1ad9dddb7 100644
---- a/sys/uvm/uvm_km.c
-+++ b/sys/uvm/uvm_km.c
+Index: uvm/uvm_km.c
+===================================================================
+RCS file: /cvs/src/sys/uvm/uvm_km.c,v
+diff -u -p -r1.152 uvm_km.c
+--- uvm/uvm_km.c	27 Mar 2024 15:41:40 -0000	1.152
++++ uvm/uvm_km.c	14 Jul 2024 19:07:34 -0000
 @@ -134,6 +134,10 @@
  #include <sys/proc.h>
  #include <sys/kthread.h>
@@ -1082,21 +1172,27 @@ index a715173529a..6b1ad9dddb7 100644
  
  /*
   * global data structures
-@@ -773,6 +777,8 @@ km_alloc(size_t sz, const struct kmem_va_mode *kv,
+@@ -773,6 +777,12 @@ km_alloc(size_t sz, const struct kmem_va
  	if (kv->kv_singlepage || kp->kp_maxseg == 1) {
  		TAILQ_FOREACH(pg, &pgl, pageq) {
  			va = pmap_map_direct(pg);
++#ifdef KASAN
++/* XXX: how to handle direct map?
 +			kasan_enter_shad_multi(va, PAGE_SIZE);
 +			kasan_alloc(va, (kp->kp_zero) ? PAGE_SIZE : 0, PAGE_SIZE);
++*/
++#endif
  			if (pg == TAILQ_FIRST(&pgl))
  				sva = va;
  		}
-@@ -844,6 +850,8 @@ try_map:
+@@ -844,6 +854,10 @@ try_map:
  			pmap_kenter_pa(va, VM_PAGE_TO_PHYS(pg), prot);
  		va += PAGE_SIZE;
  	}
++#ifdef KASAN
 +	kasan_enter_shad_multi(sva, sz);
 +	kasan_alloc(sva, (kp->kp_zero) ? sz : 0 , sz);
++#endif
  	pmap_update(pmap_kernel());
  	return ((void *)sva);
  }
