@@ -1,0 +1,36 @@
+Index: server_fcgi.c
+===================================================================
+RCS file: /cvs/src/usr.sbin/httpd/server_fcgi.c,v
+diff -u -p -r1.97 server_fcgi.c
+--- server_fcgi.c	8 Nov 2023 19:19:10 -0000	1.97
++++ server_fcgi.c	23 Jul 2024 12:07:46 -0000
+@@ -274,14 +274,6 @@ server_fcgi(struct httpd *env, struct cl
+ 		}
+ 	}
+ 
+-	TAILQ_FOREACH(fcgiparam, &srv_conf->fcgiparams, entry) {
+-		if (fcgi_add_param(&param, fcgiparam->name, fcgiparam->value,
+-		    clt) == -1) {
+-			errstr = "failed to encode param";
+-			goto fail;
+-		}
+-	}
+-
+ 	(void)print_host(&clt->clt_ss, hbuf, sizeof(hbuf));
+ 	if (fcgi_add_param(&param, "REMOTE_ADDR", hbuf, clt) == -1) {
+ 		errstr = "failed to encode param";
+@@ -349,6 +341,14 @@ server_fcgi(struct httpd *env, struct cl
+ 	    clt) == -1) {
+ 		errstr = "failed to encode param";
+ 		goto fail;
++	}
++
++	TAILQ_FOREACH(fcgiparam, &srv_conf->fcgiparams, entry) {
++		if (fcgi_add_param(&param, fcgiparam->name, fcgiparam->value,
++		    clt) == -1) {
++			errstr = "failed to encode param";
++			goto fail;
++		}
+ 	}
+ 
+ 	if (param.total_len != 0) {	/* send last params record */
