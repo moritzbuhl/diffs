@@ -3,12 +3,22 @@ Index: dev/pci/if_bwfm_pci.c
 RCS file: /cvs/src/sys/dev/pci/if_bwfm_pci.c,v
 diff -u -p -r1.77 if_bwfm_pci.c
 --- dev/pci/if_bwfm_pci.c	12 Jul 2024 08:33:25 -0000	1.77
-+++ dev/pci/if_bwfm_pci.c	23 Jul 2024 19:55:06 -0000
-@@ -2517,7 +2517,14 @@ bwfm_pci_msgbuf_query_dcmd(struct bwfm_s
++++ dev/pci/if_bwfm_pci.c	5 Aug 2024 20:01:48 -0000
+@@ -2458,6 +2458,7 @@ bwfm_pci_hostready(struct bwfm_pci_softc
+ 		    BWFM_PCI_PCIE2REG_H2D_MAILBOX_1, 1);
+ }
+ 
++#include <ddb/db_output.h> /* XXX */
+ /* Msgbuf protocol implementation */
+ int
+ bwfm_pci_msgbuf_query_dcmd(struct bwfm_softc *bwfm, int ifidx,
+@@ -2517,7 +2518,16 @@ bwfm_pci_msgbuf_query_dcmd(struct bwfm_s
  	bwfm_pci_ring_write_commit(sc, &sc->sc_ctrl_submit);
  	splx(s);
  
 -	tsleep_nsec(ctl, PWAIT, "bwfm", SEC_TO_NSEC(5));
++if (ctl->transid == 69 || ctl->transid == 70)
++db_stack_dump();
 +        if (tsleep_nsec(ctl, PWAIT, "bwfm", SEC_TO_NSEC(5))) {
 +                printf("%s: timeout trans_id=%hu, req_buf_addr=%lx, len=%p *len=%lu\n",
 +                    DEVNAME(sc), ctl->transid, paddr, len, *len);
