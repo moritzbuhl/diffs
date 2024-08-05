@@ -1,0 +1,37 @@
+Index: sys/dev/ic/bwfm.c
+===================================================================
+RCS file: /cvs/src/sys/dev/ic/bwfm.c,v
+diff -u -p -r1.111 bwfm.c
+--- sys/dev/ic/bwfm.c	19 Feb 2024 21:23:02 -0000	1.111
++++ sys/dev/ic/bwfm.c	5 Aug 2024 21:01:58 -0000
+@@ -48,7 +48,7 @@
+ #include <dev/ic/bwfmvar.h>
+ #include <dev/ic/bwfmreg.h>
+ 
+-/* #define BWFM_DEBUG */
++#define BWFM_DEBUG	1
+ #ifdef BWFM_DEBUG
+ #define DPRINTF(x)	do { if (bwfm_debug > 0) printf x; } while (0)
+ #define DPRINTFN(n, x)	do { if (bwfm_debug >= (n)) printf x; } while (0)
+@@ -1702,8 +1702,11 @@ bwfm_proto_bcdc_txctl(struct bwfm_softc 
+ 		return 1;
+ 	}
+ 
+-	if (tsleep_nsec(ctl, PWAIT, "bwfm", SEC_TO_NSEC(1)))
++	if (tsleep_nsec(ctl, PWAIT, "bwfm", SEC_TO_NSEC(1))) {
++		printf("%s: timeout reqid=%d, buf=%p, len=%p *len=%lu\n",
++		    DEVNAME(sc), reqid, buf, len, *len);
+ 		timeout = 1;
++	}
+ 
+ 	TAILQ_FOREACH_SAFE(ctl, &sc->sc_bcdc_rxctlq, next, tmp) {
+ 		if (ctl->reqid != reqid)
+@@ -2867,7 +2870,7 @@ bwfm_set_key_cb(struct bwfm_softc *sc, v
+ 		return;
+ 	}
+ 
+-	delay(100);
++	delay(500);
+ 
+ 	bwfm_fwvar_var_set_data(sc, "wsec_key", &key, sizeof(key));
+ 	bwfm_fwvar_var_get_int(sc, "wsec", &wsec);
