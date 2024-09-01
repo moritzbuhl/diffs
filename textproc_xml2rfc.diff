@@ -1,0 +1,52 @@
+Index: Makefile
+===================================================================
+RCS file: /cvs/ports/textproc/xml2rfc/Makefile,v
+diff -u -p -r1.56 Makefile
+--- Makefile	6 May 2024 12:24:10 -0000	1.56
++++ Makefile	1 Sep 2024 18:50:48 -0000
+@@ -1,6 +1,6 @@
+ COMMENT=	convert memos written in XML to the RFC format
+ 
+-MODPY_EGG_VERSION=	3.18.2
++MODPY_EGG_VERSION=	3.23.0
+ DISTNAME=	xml2rfc-${MODPY_EGG_VERSION}
+ REVISION=	0
+ 
+@@ -17,7 +17,7 @@ MODPY_PI=	Yes
+ MODPY_PYBUILD=	setuptools
+ MODPY_PYTEST_ARGS= test.py
+ 
+-# setuptools at runtime: still uses pkg_resources as of 3.18.0
++# setuptools at runtime:
+ # from requirements.txt
+ RUN_DEPENDS=	sysutils/py-platformdirs${MODPY_FLAVOR} \
+ 		devel/py-configargparse${MODPY_FLAVOR} \
+@@ -29,15 +29,14 @@ RUN_DEPENDS=	sysutils/py-platformdirs${M
+ 		textproc/py-yaml${MODPY_FLAVOR} \
+ 		www/py-requests${MODPY_FLAVOR} \
+ 		devel/py-setuptools${MODPY_FLAVOR} \
+-		devel/py-six${MODPY_FLAVOR} \
+ 		devel/py-wcwidth${MODPY_FLAVOR}
+ 
+ TEST_DEPENDS+=	devel/py-decorator${MODPY_FLAVOR} \
+ 		print/py-pypdf${MODPY_FLAVOR} \
+ 		print/weasyprint${MODPY_FLAVOR} \
+ 		textproc/py-dict2xml${MODPY_FLAVOR} \
+-		fonts/noto/fonts
+-# also wants fonts/noto/cjk, but seems to trigger a problem with weasyprint??
++		fonts/noto/fonts \
++		fonts/noto/cjk
+ 
+ # tests also need network access
+ PORTHOME=	${WRKDIR}
+Index: distinfo
+===================================================================
+RCS file: /cvs/ports/textproc/xml2rfc/distinfo,v
+diff -u -p -r1.17 distinfo
+--- distinfo	26 Oct 2023 07:18:39 -0000	1.17
++++ distinfo	1 Sep 2024 18:35:53 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (xml2rfc-3.18.2.tar.gz) = h6dltenBM+pfeXRwjH2rteZvwU7En+OBeDJDIH6xEjg=
+-SIZE (xml2rfc-3.18.2.tar.gz) = 2653005
++SHA256 (xml2rfc-3.23.0.tar.gz) = 9nQ+IQ34Coq6DHkfdOnE55lWfdkREwfe8XHYoJeUEDk=
++SIZE (xml2rfc-3.23.0.tar.gz) = 2659398
