@@ -3,7 +3,7 @@ Index: Makefile
 RCS file: /cvs/ports/textproc/xml2rfc/Makefile,v
 diff -u -p -r1.56 Makefile
 --- Makefile	6 May 2024 12:24:10 -0000	1.56
-+++ Makefile	1 Sep 2024 18:50:48 -0000
++++ Makefile	2 Sep 2024 09:43:22 -0000
 @@ -1,6 +1,6 @@
  COMMENT=	convert memos written in XML to the RFC format
  
@@ -12,19 +12,19 @@ diff -u -p -r1.56 Makefile
  DISTNAME=	xml2rfc-${MODPY_EGG_VERSION}
  REVISION=	0
  
-@@ -17,7 +17,7 @@ MODPY_PI=	Yes
+@@ -17,7 +17,6 @@ MODPY_PI=	Yes
  MODPY_PYBUILD=	setuptools
  MODPY_PYTEST_ARGS= test.py
  
 -# setuptools at runtime: still uses pkg_resources as of 3.18.0
-+# setuptools at runtime:
  # from requirements.txt
  RUN_DEPENDS=	sysutils/py-platformdirs${MODPY_FLAVOR} \
  		devel/py-configargparse${MODPY_FLAVOR} \
-@@ -29,15 +29,14 @@ RUN_DEPENDS=	sysutils/py-platformdirs${M
+@@ -28,16 +27,14 @@ RUN_DEPENDS=	sysutils/py-platformdirs${M
+ 		devel/py-country${MODPY_FLAVOR} \
  		textproc/py-yaml${MODPY_FLAVOR} \
  		www/py-requests${MODPY_FLAVOR} \
- 		devel/py-setuptools${MODPY_FLAVOR} \
+-		devel/py-setuptools${MODPY_FLAVOR} \
 -		devel/py-six${MODPY_FLAVOR} \
  		devel/py-wcwidth${MODPY_FLAVOR}
  
