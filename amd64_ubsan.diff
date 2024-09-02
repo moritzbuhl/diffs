@@ -1,0 +1,15 @@
+? arch/amd64/conf/KUBSAN
+Index: arch/amd64/conf/Makefile.amd64
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/conf/Makefile.amd64,v
+diff -u -p -r1.137 Makefile.amd64
+--- arch/amd64/conf/Makefile.amd64	7 Jun 2024 05:17:34 -0000	1.137
++++ arch/amd64/conf/Makefile.amd64	2 Sep 2024 19:06:03 -0000
+@@ -134,6 +134,7 @@ PROF=		-fsanitize-coverage=trace-pc,trac
+ .if ${IDENT:M-DKUBSAN} && ${COMPILER_VERSION:Mclang}
+ CFLAGS+=	-fsanitize=undefined
+ CFLAGS+=	-fno-wrapv
++CWARNFLAGS+=	-Wframe-larger-than=4040
+ .endif
+ 
+ %LOAD
