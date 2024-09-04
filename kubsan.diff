@@ -1,0 +1,94 @@
+Index: arch/amd64/conf/Makefile.amd64
+===================================================================
+RCS file: /cvs/src/sys/arch/amd64/conf/Makefile.amd64,v
+diff -u -p -r1.137 Makefile.amd64
+--- arch/amd64/conf/Makefile.amd64	7 Jun 2024 05:17:34 -0000	1.137
++++ arch/amd64/conf/Makefile.amd64	4 Sep 2024 20:30:05 -0000
+@@ -134,6 +134,7 @@ PROF=		-fsanitize-coverage=trace-pc,trac
+ .if ${IDENT:M-DKUBSAN} && ${COMPILER_VERSION:Mclang}
+ CFLAGS+=	-fsanitize=undefined
+ CFLAGS+=	-fno-wrapv
++CWARNFLAGS+=	-Wframe-larger-than=4040
+ .endif
+ 
+ %LOAD
+Index: kern/subr_kubsan.c
+===================================================================
+RCS file: /cvs/src/sys/kern/subr_kubsan.c,v
+diff -u -p -r1.12 subr_kubsan.c
+--- kern/subr_kubsan.c	6 Nov 2019 19:16:48 -0000	1.12
++++ kern/subr_kubsan.c	4 Sep 2024 20:30:05 -0000
+@@ -38,6 +38,7 @@
+ struct kubsan_report {
+ 	enum {
+ 		KUBSAN_FLOAT_CAST_OVERFLOW,
++		KUBSAN_INVALID_BUILTIN,
+ 		KUBSAN_INVALID_VALUE,
+ 		KUBSAN_NEGATE_OVERFLOW,
+ 		KUBSAN_NONNULL_ARG,
+@@ -58,6 +59,10 @@ struct kubsan_report {
+ 		} v_float_cast_overflow;
+ 
+ 		struct {
++			const struct invalid_builtin_data *v_data;
++		} v_invalid_builtin;
++
++		struct {
+ 			const struct invalid_value_data *v_data;
+ 			unsigned long v_val;
+ 		} v_invalid_value;
+@@ -102,6 +107,7 @@ struct kubsan_report {
+ 	} kr_u;
+ };
+ #define kr_float_cast_overflow		kr_u.v_float_cast_overflow
++#define kr_invalid_builtin		kr_u.v_invalid_builtin
+ #define kr_invalid_value		kr_u.v_invalid_value
+ #define kr_negate_overflow		kr_u.v_negate_overflow
+ #define kr_nonnull_arg			kr_u.v_nonnull_arg
+@@ -129,6 +135,11 @@ struct float_cast_overflow_data {
+ 	struct type_descriptor *d_ttype;	/* to type */
+ };
+ 
++struct invalid_builtin_data {
++	struct source_location d_src;
++	uint8_t d_kind;
++};
++
+ struct invalid_value_data {
+ 	struct source_location d_src;
+ 	struct type_descriptor *d_type;
+@@ -265,6 +276,18 @@ __ubsan_handle_float_cast_overflow(struc
+ }
+ 
+ void
++__ubsan_handle_invalid_builtin(struct invalid_builtin_data *data)
++{
++	struct kubsan_report kr = {
++		.kr_type		= KUBSAN_INVALID_VALUE,
++		.kr_src			= &data->d_src,
++		.kr_invalid_builtin	= { data },
++	};
++
++	kubsan_defer_report(&kr);
++}
++
++void
+ __ubsan_handle_load_invalid_value(struct invalid_value_data *data,
+     unsigned long val)
+ {
+@@ -559,6 +582,15 @@ again:
+ 			    "of representable values of type %s\n",
+ 			    bloc, blhs, data->d_ftype->t_name,
+ 			    data->d_ttype->t_name);
++			break;
++		}
++
++		case KUBSAN_INVALID_BUILTIN: {
++			const struct invalid_builtin_data *data =
++			    kr->kr_invalid_builtin.v_data;
++
++			printf("kubsan: %s: invalid builtin: %s\n",
++			    bloc, kubsan_kind(data->d_kind));
+ 			break;
+ 		}
+ 
