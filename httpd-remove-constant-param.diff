@@ -1,0 +1,68 @@
+? config.d
+? control.d
+? css.h
+? httpd
+? httpd.d
+? js.h
+? log.d
+? logger.d
+? parse.c
+? parse.d
+? patterns.d
+? proc.d
+? server.d
+? server_fcgi.d
+? server_file.d
+? server_http.d
+Index: server.c
+===================================================================
+RCS file: /cvs/src/usr.sbin/httpd/server.c,v
+diff -u -p -r1.129 server.c
+--- server.c	8 Nov 2023 19:19:10 -0000	1.129
++++ server.c	26 Nov 2024 19:41:11 -0000
+@@ -55,7 +55,7 @@ void		 server_shutdown(void);
+ void		 server_init(struct privsep *, struct privsep_proc *p, void *);
+ void		 server_launch(void);
+ int		 server_socket(struct sockaddr_storage *, in_port_t,
+-		    struct server_config *, int, int);
++		    struct server_config *, int);
+ int		 server_socket_listen(struct sockaddr_storage *, in_port_t,
+ 		    struct server_config *);
+ struct server	*server_byid(uint32_t);
+@@ -635,7 +635,7 @@ server_socket_getport(struct sockaddr_st
+ 
+ int
+ server_socket(struct sockaddr_storage *ss, in_port_t port,
+-    struct server_config *srv_conf, int fd, int reuseport)
++    struct server_config *srv_conf, int reuseport)
+ {
+ 	struct linger	lng;
+ 	int		s = -1, val;
+@@ -643,8 +643,7 @@ server_socket(struct sockaddr_storage *s
+ 	if (server_socket_af(ss, port) == -1)
+ 		goto bad;
+ 
+-	s = fd == -1 ? socket(ss->ss_family, SOCK_STREAM | SOCK_NONBLOCK,
+-	    IPPROTO_TCP) : fd;
++	s = socket(ss->ss_family, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
+ 	if (s == -1)
+ 		goto bad;
+ 
+@@ -741,7 +740,7 @@ server_socket_listen(struct sockaddr_sto
+ {
+ 	int s;
+ 
+-	if ((s = server_socket(ss, port, srv_conf, -1, 1)) == -1)
++	if ((s = server_socket(ss, port, srv_conf, 1)) == -1)
+ 		return (-1);
+ 
+ 	if (bind(s, (struct sockaddr *)ss, ss->ss_len) == -1)
+@@ -762,7 +761,7 @@ server_socket_connect(struct sockaddr_st
+ {
+ 	int	s;
+ 
+-	if ((s = server_socket(ss, port, srv_conf, -1, 0)) == -1)
++	if ((s = server_socket(ss, port, srv_conf, 0)) == -1)
+ 		return (-1);
+ 
+ 	if (connect(s, (struct sockaddr *)ss, ss->ss_len) == -1) {
