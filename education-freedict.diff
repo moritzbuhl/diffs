@@ -749,6 +749,19 @@ diff -u -p -r1.2 distinfo
 -SIZE (freedict-eng-swe-2023.05.29.dictd.tar.xz) = 1886840
 +SHA256 (freedict-eng-swe-2024.10.10.dictd.tar.xz) = zsYpjCWUpTfgokIYvIKJVuNSiHwzB1sccKhroZpCLq0=
 +SIZE (freedict-eng-swe-2024.10.10.dictd.tar.xz) = 3313508
+Index: eng-swe/pkg/PLIST
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-swe/pkg/PLIST,v
+diff -u -p -r1.2 PLIST
+--- eng-swe/pkg/PLIST	6 Mar 2024 04:14:20 -0000	1.2
++++ eng-swe/pkg/PLIST	10 Jan 2025 10:50:38 -0000
+@@ -2,5 +2,6 @@ freedict/
+ freedict/eng-swe/
+ freedict/eng-swe/COPYING
+ freedict/eng-swe/INSTALL
++freedict/eng-swe/README
+ freedict/eng-swe/eng-swe.dict.dz
+ freedict/eng-swe/eng-swe.index
 Index: fin-bul/Makefile
 ===================================================================
 RCS file: /cvs/ports/education/freedict/fin-bul/Makefile,v
