@@ -1,0 +1,2800 @@
+Index: deu-ell/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-ell/Makefile,v
+diff -u -p -r1.2 Makefile
+--- deu-ell/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-ell/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	German-Greek FreeDict+WikDict Dictionary
+ DICT =	deu-ell
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: deu-ell/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-ell/distinfo,v
+diff -u -p -r1.2 distinfo
+--- deu-ell/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-ell/distinfo	10 Jan 2025 09:57:13 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-deu-ell-2023.05.29.dictd.tar.xz) = tFAkZ3xqxtwi+5FpYvGPtZ5U6MKpjN9N3IyoEzRgtEE=
+-SIZE (freedict-deu-ell-2023.05.29.dictd.tar.xz) = 791468
++SHA256 (freedict-deu-ell-2024.10.10.dictd.tar.xz) = p0oRjj0mbI6Ak6ZTqXCGK/GywXkmIXcTThF4Ildhl50=
++SIZE (freedict-deu-ell-2024.10.10.dictd.tar.xz) = 788124
+Index: deu-fin/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-fin/Makefile,v
+diff -u -p -r1.2 Makefile
+--- deu-fin/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-fin/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	German-Finnish FreeDict+WikDict Dictionary
+ DICT =	deu-fin
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: deu-fin/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-fin/distinfo,v
+diff -u -p -r1.2 distinfo
+--- deu-fin/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-fin/distinfo	10 Jan 2025 09:57:15 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-deu-fin-2023.05.29.dictd.tar.xz) = +lF4no1KFEmp//d9Onr2M7fVZCTcWld9M08Y4mNLOFI=
+-SIZE (freedict-deu-fin-2023.05.29.dictd.tar.xz) = 866888
++SHA256 (freedict-deu-fin-2024.10.10.dictd.tar.xz) = 6AHQMeUp7aN30JZD7GJlwwhaSLeugbcVJWRV14WsTxU=
++SIZE (freedict-deu-fin-2024.10.10.dictd.tar.xz) = 847596
+Index: deu-fra/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-fra/Makefile,v
+diff -u -p -r1.2 Makefile
+--- deu-fra/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-fra/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	German-French FreeDict+WikDict Dictionary
+ DICT =	deu-fra
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: deu-fra/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-fra/distinfo,v
+diff -u -p -r1.2 distinfo
+--- deu-fra/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-fra/distinfo	10 Jan 2025 09:57:16 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-deu-fra-2023.05.29.dictd.tar.xz) = epfaTT57JC+Y+8OrlIigUWbgkI46+D8RWxmuaNI/uU8=
+-SIZE (freedict-deu-fra-2023.05.29.dictd.tar.xz) = 3380008
++SHA256 (freedict-deu-fra-2024.10.10.dictd.tar.xz) = IsY1m0DZNe/1w8hvT2iyvGX/SgjVjHjyLX8C5qtcRdI=
++SIZE (freedict-deu-fra-2024.10.10.dictd.tar.xz) = 3737232
+Index: deu-ind/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-ind/Makefile,v
+diff -u -p -r1.2 Makefile
+--- deu-ind/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-ind/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	German-Indonesian FreeDict+WikDict Dictionary
+ DICT =	deu-ind
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: deu-ind/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-ind/distinfo,v
+diff -u -p -r1.2 distinfo
+--- deu-ind/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-ind/distinfo	10 Jan 2025 09:57:17 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-deu-ind-2023.05.29.dictd.tar.xz) = V1mxfn3coyBBVEJwwk1cPPhydoqONxH0AbXCcGD/bMI=
+-SIZE (freedict-deu-ind-2023.05.29.dictd.tar.xz) = 959396
++SHA256 (freedict-deu-ind-2024.10.10.dictd.tar.xz) = YR/24t4w25pAltje+SaqUqM3lWNmZJxVlR1KR9Rzlt4=
++SIZE (freedict-deu-ind-2024.10.10.dictd.tar.xz) = 1087004
+Index: deu-pol/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-pol/Makefile,v
+diff -u -p -r1.2 Makefile
+--- deu-pol/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-pol/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	German-Polish FreeDict+WikDict Dictionary
+ DICT =	deu-pol
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: deu-pol/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-pol/distinfo,v
+diff -u -p -r1.2 distinfo
+--- deu-pol/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-pol/distinfo	10 Jan 2025 09:57:19 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-deu-pol-2023.05.29.dictd.tar.xz) = lvGBBBcNuSoHsuma2uRjxZbie3/rl+4SdlMcWna/37w=
+-SIZE (freedict-deu-pol-2023.05.29.dictd.tar.xz) = 1465216
++SHA256 (freedict-deu-pol-2024.10.10.dictd.tar.xz) = RxOHxmeJXJkw43nKQQQ6qToS4CDt0mU5rfSw7UbjwP4=
++SIZE (freedict-deu-pol-2024.10.10.dictd.tar.xz) = 1563460
+Index: deu-rus/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-rus/Makefile,v
+diff -u -p -r1.2 Makefile
+--- deu-rus/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-rus/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	German-Russian FreeDict+WikDict Dictionary
+ DICT =	deu-rus
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: deu-rus/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-rus/distinfo,v
+diff -u -p -r1.2 distinfo
+--- deu-rus/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-rus/distinfo	10 Jan 2025 09:57:20 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-deu-rus-2023.05.29.dictd.tar.xz) = yf+AYHL4j96hAl9vDPVehdsiCDdlxT49/bdzJiUErEw=
+-SIZE (freedict-deu-rus-2023.05.29.dictd.tar.xz) = 1693040
++SHA256 (freedict-deu-rus-2024.10.10.dictd.tar.xz) = i0MXNfAvyJmS7JV+HIz+pPShb3tbVLrm58I/MPSndCw=
++SIZE (freedict-deu-rus-2024.10.10.dictd.tar.xz) = 1813484
+Index: deu-spa/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-spa/Makefile,v
+diff -u -p -r1.2 Makefile
+--- deu-spa/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-spa/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	German-Spanish FreeDict+WikDict Dictionary
+ DICT =	deu-spa
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: deu-spa/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-spa/distinfo,v
+diff -u -p -r1.2 distinfo
+--- deu-spa/distinfo	4 Mar 2024 12:47:56 -0000	1.2
++++ deu-spa/distinfo	10 Jan 2025 09:57:20 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-deu-spa-2023.05.29.dictd.tar.xz) = kXFv7+L9jtfLM3t12iLUb84EiEChyLtEhwQyTYcj2lE=
+-SIZE (freedict-deu-spa-2023.05.29.dictd.tar.xz) = 2229700
++SHA256 (freedict-deu-spa-2024.10.10.dictd.tar.xz) = YQRUqF9zrwXkue+v6KsRtIuuuF59ji3WDEpgp/aehOg=
++SIZE (freedict-deu-spa-2024.10.10.dictd.tar.xz) = 2390564
+Index: deu-swe/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-swe/Makefile,v
+diff -u -p -r1.2 Makefile
+--- deu-swe/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-swe/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	German-Swedish FreeDict+WikDict Dictionary
+ DICT =	deu-swe
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: deu-swe/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/deu-swe/distinfo,v
+diff -u -p -r1.2 distinfo
+--- deu-swe/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ deu-swe/distinfo	10 Jan 2025 09:57:21 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-deu-swe-2023.05.29.dictd.tar.xz) = hY1evQ6etp/V//uOQnTECE2MHzJCdEyJuF/7unpRZlc=
+-SIZE (freedict-deu-swe-2023.05.29.dictd.tar.xz) = 2994196
++SHA256 (freedict-deu-swe-2024.10.10.dictd.tar.xz) = Z10l/xL4oubA4+9X5DXQKZXeh6NwJoQNLg9x8xIOfco=
++SIZE (freedict-deu-swe-2024.10.10.dictd.tar.xz) = 3146788
+Index: ell-bul/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-bul/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ell-bul/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-bul/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Greek-Bulgarian FreeDict+WikDict Dictionary
+ DICT =	ell-bul
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ell-bul/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-bul/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ell-bul/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-bul/distinfo	10 Jan 2025 09:57:22 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ell-bul-2023.05.29.dictd.tar.xz) = NclSpZ6rkvGFGxohy+XZ4z45/67N0ZELHHDif6dIhmo=
+-SIZE (freedict-ell-bul-2023.05.29.dictd.tar.xz) = 569564
++SHA256 (freedict-ell-bul-2024.10.10.dictd.tar.xz) = 7xyXr0H7miTxzWk8rufxwzefQarrI52oT27lUok3FCA=
++SIZE (freedict-ell-bul-2024.10.10.dictd.tar.xz) = 427060
+Index: ell-eng/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-eng/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ell-eng/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-eng/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Greek-English FreeDict+WikDict Dictionary
+ DICT =	ell-eng
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ell-eng/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-eng/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ell-eng/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-eng/distinfo	10 Jan 2025 09:57:23 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ell-eng-2023.05.29.dictd.tar.xz) = OjuxWrLp5J2g+OqbsDS1AESbEnquyP/rcARBaxEbpoQ=
+-SIZE (freedict-ell-eng-2023.05.29.dictd.tar.xz) = 1060664
++SHA256 (freedict-ell-eng-2024.10.10.dictd.tar.xz) = 9IFboEyOFgXtnvjK6QnA2n+/rJbyY4aWlPrDdT7BL/I=
++SIZE (freedict-ell-eng-2024.10.10.dictd.tar.xz) = 1291872
+Index: ell-fin/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-fin/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ell-fin/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-fin/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Greek-Finnish FreeDict+WikDict Dictionary
+ DICT =	ell-fin
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ell-fin/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-fin/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ell-fin/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-fin/distinfo	10 Jan 2025 09:57:23 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ell-fin-2023.05.29.dictd.tar.xz) = ZAL6Qteei9t86MdoilAc1oBP+9Rk5rci9/UJrVow4Xc=
+-SIZE (freedict-ell-fin-2023.05.29.dictd.tar.xz) = 358380
++SHA256 (freedict-ell-fin-2024.10.10.dictd.tar.xz) = cP9Veh0sM1YlRfyZl/frm1JupD5JjlaeedqNvyyhfxg=
++SIZE (freedict-ell-fin-2024.10.10.dictd.tar.xz) = 439764
+Index: ell-fra/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-fra/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ell-fra/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-fra/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Greek-French FreeDict+WikDict Dictionary
+ DICT =	ell-fra
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ell-fra/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-fra/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ell-fra/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-fra/distinfo	10 Jan 2025 09:57:24 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ell-fra-2023.05.29.dictd.tar.xz) = zZICvEKEaEweWUsElUz88lsm/yfpADFECKE98Tl5I+I=
+-SIZE (freedict-ell-fra-2023.05.29.dictd.tar.xz) = 787684
++SHA256 (freedict-ell-fra-2024.10.10.dictd.tar.xz) = Z1GxfH0pq6X4x96gZk4vFVBH2Oel1VqIiusCUVKhnD8=
++SIZE (freedict-ell-fra-2024.10.10.dictd.tar.xz) = 970704
+Index: ell-ind/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-ind/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ell-ind/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-ind/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Greek-Indonesian FreeDict+WikDict Dictionary
+ DICT =	ell-ind
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ell-ind/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-ind/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ell-ind/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-ind/distinfo	10 Jan 2025 09:57:24 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ell-ind-2023.05.29.dictd.tar.xz) = 9IBkMU6fHxTxUDaYMSnbtQxwLTT5trDLAnX9EiSE8dU=
+-SIZE (freedict-ell-ind-2023.05.29.dictd.tar.xz) = 399780
++SHA256 (freedict-ell-ind-2024.10.10.dictd.tar.xz) = ViONp8g4k6P1B9GmQ+2WM307njdg6z/mrkoGmovbN6I=
++SIZE (freedict-ell-ind-2024.10.10.dictd.tar.xz) = 526844
+Index: ell-ita/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-ita/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ell-ita/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-ita/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Greek-Italian FreeDict+WikDict Dictionary
+ DICT =	ell-ita
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ell-ita/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-ita/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ell-ita/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-ita/distinfo	10 Jan 2025 09:57:25 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ell-ita-2023.05.29.dictd.tar.xz) = hes88MeEF0XW6Sb0Fre2Q40ryoK/hCz+M+sT40X1Mbk=
+-SIZE (freedict-ell-ita-2023.05.29.dictd.tar.xz) = 394272
++SHA256 (freedict-ell-ita-2024.10.10.dictd.tar.xz) = pBtoju8CUWtt3MLTORdeeUCCsZ4f5FpfuEyDi+CKtOI=
++SIZE (freedict-ell-ita-2024.10.10.dictd.tar.xz) = 379120
+Index: ell-jpn/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-jpn/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ell-jpn/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-jpn/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Greek-Japanese FreeDict+WikDict Dictionary
+ DICT =	ell-jpn
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ell-jpn/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-jpn/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ell-jpn/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-jpn/distinfo	10 Jan 2025 09:57:25 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ell-jpn-2023.05.29.dictd.tar.xz) = ZY21KKwv35EmNr1YosD8eUZv84388jhvmitcEMF9RdM=
+-SIZE (freedict-ell-jpn-2023.05.29.dictd.tar.xz) = 343556
++SHA256 (freedict-ell-jpn-2024.10.10.dictd.tar.xz) = fwUCUWqbLp9xhnR+KqIGHlwpRrecqSzLCM6hzrjlwQU=
++SIZE (freedict-ell-jpn-2024.10.10.dictd.tar.xz) = 429764
+Index: ell-lit/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-lit/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ell-lit/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-lit/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Greek-Lithuanian FreeDict+WikDict Dictionary
+ DICT =	ell-lit
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ell-lit/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-lit/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ell-lit/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-lit/distinfo	10 Jan 2025 09:57:26 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ell-lit-2023.05.29.dictd.tar.xz) = ss7Gv1cRjTpUJyiyabjJFsMzyCuS05Vn2feW844I8W0=
+-SIZE (freedict-ell-lit-2023.05.29.dictd.tar.xz) = 338140
++SHA256 (freedict-ell-lit-2024.10.10.dictd.tar.xz) = E5k8ADVSX1JxeiiGxdEz70DFUUfthtMCfppsqjwJRWM=
++SIZE (freedict-ell-lit-2024.10.10.dictd.tar.xz) = 442024
+Index: ell-nld/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-nld/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ell-nld/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-nld/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Greek-Dutch FreeDict+WikDict Dictionary
+ DICT =	ell-nld
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ell-nld/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-nld/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ell-nld/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-nld/distinfo	10 Jan 2025 09:57:26 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ell-nld-2023.05.29.dictd.tar.xz) = 24Dt7+ND4uZgqEMpr3sRbF5E8S5gCbEfwaKdjVkI4dM=
+-SIZE (freedict-ell-nld-2023.05.29.dictd.tar.xz) = 326576
++SHA256 (freedict-ell-nld-2024.10.10.dictd.tar.xz) = +d+Dk3zLTWnAPPj8+HnsZyQ/zAneY9Ru/uXv14fZEH0=
++SIZE (freedict-ell-nld-2024.10.10.dictd.tar.xz) = 397012
+Index: ell-nor/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-nor/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ell-nor/Makefile	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-nor/Makefile	10 Jan 2025 09:52:34 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Greek-Norwegian FreeDict+WikDict Dictionary
+ DICT =	ell-nor
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ell-nor/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-nor/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ell-nor/distinfo	4 Mar 2024 12:46:55 -0000	1.2
++++ ell-nor/distinfo	10 Jan 2025 09:57:27 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ell-nor-2023.05.29.dictd.tar.xz) = MuBC1/ndcis+pkTUTe0f9v+HoaMkq/ciz7750kTlX20=
+-SIZE (freedict-ell-nor-2023.05.29.dictd.tar.xz) = 363540
++SHA256 (freedict-ell-nor-2024.10.10.dictd.tar.xz) = FZJe9g6fTgOKhixfUAkxvKgzov+L+YzCqDfmkx6CzpA=
++SIZE (freedict-ell-nor-2024.10.10.dictd.tar.xz) = 355932
+Index: ell-por/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-por/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ell-por/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ell-por/Makefile	10 Jan 2025 09:52:35 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Greek-Portuguese FreeDict+WikDict Dictionary
+ DICT =	ell-por
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ell-por/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-por/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ell-por/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ell-por/distinfo	10 Jan 2025 09:57:28 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ell-por-2023.05.29.dictd.tar.xz) = AeaX+u9TeS9mnTFS+XAMlrxvglH1F40DVFdMYxc0CUo=
+-SIZE (freedict-ell-por-2023.05.29.dictd.tar.xz) = 356612
++SHA256 (freedict-ell-por-2024.10.10.dictd.tar.xz) = SfFnh+Cxzij6wKRNfd7AiYhaPWlIbXHpyi5E7wMBHUM=
++SIZE (freedict-ell-por-2024.10.10.dictd.tar.xz) = 441312
+Index: ell-rus/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-rus/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ell-rus/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ell-rus/Makefile	10 Jan 2025 09:52:35 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Greek-Russian FreeDict+WikDict Dictionary
+ DICT =	ell-rus
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ell-rus/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-rus/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ell-rus/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ell-rus/distinfo	10 Jan 2025 09:57:28 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ell-rus-2023.05.29.dictd.tar.xz) = v5l+FYZ9T6Z+H8EKUT28Vg2rRTTzvma2RSTdCxWlFIQ=
+-SIZE (freedict-ell-rus-2023.05.29.dictd.tar.xz) = 419480
++SHA256 (freedict-ell-rus-2024.10.10.dictd.tar.xz) = ZaLJzW/6lJ2uUXgv0dqnZh/WNxrQPSdMxcT3rkr9bKc=
++SIZE (freedict-ell-rus-2024.10.10.dictd.tar.xz) = 525532
+Index: ell-swe/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-swe/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ell-swe/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ell-swe/Makefile	10 Jan 2025 09:52:35 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Greek-Swedish FreeDict+WikDict Dictionary
+ DICT =	ell-swe
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ell-swe/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ell-swe/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ell-swe/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ell-swe/distinfo	10 Jan 2025 09:57:29 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ell-swe-2023.05.29.dictd.tar.xz) = i0O72KStUFYLEGxAEhhsDdq9ylOAL8HqHfI93HVeKBM=
+-SIZE (freedict-ell-swe-2023.05.29.dictd.tar.xz) = 325776
++SHA256 (freedict-ell-swe-2024.10.10.dictd.tar.xz) = SICXjpPK1x26w5O0Kuwm+VZOOyefo+wzgbd7aA+n+h4=
++SIZE (freedict-ell-swe-2024.10.10.dictd.tar.xz) = 411968
+Index: eng-bul/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-bul/Makefile,v
+diff -u -p -r1.2 Makefile
+--- eng-bul/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ eng-bul/Makefile	10 Jan 2025 09:52:35 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	English-Bulgarian FreeDict+WikDict Dictionary
+ DICT =	eng-bul
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: eng-bul/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-bul/distinfo,v
+diff -u -p -r1.2 distinfo
+--- eng-bul/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ eng-bul/distinfo	10 Jan 2025 09:57:31 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-eng-bul-2023.05.29.dictd.tar.xz) = rgV/DTpp/GyNNWg6cB/Kr3/mF+5lDPR7l6es26juIl4=
+-SIZE (freedict-eng-bul-2023.05.29.dictd.tar.xz) = 1826352
++SHA256 (freedict-eng-bul-2024.10.10.dictd.tar.xz) = UE0K4z5cXrJaGL5/bKVePp3sngOdIA3zlNNnaeNsW9M=
++SIZE (freedict-eng-bul-2024.10.10.dictd.tar.xz) = 2938884
+Index: eng-fin/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-fin/Makefile,v
+diff -u -p -r1.2 Makefile
+--- eng-fin/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ eng-fin/Makefile	10 Jan 2025 09:52:35 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	English-Finnish FreeDict+WikDict Dictionary
+ DICT =	eng-fin
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: eng-fin/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-fin/distinfo,v
+diff -u -p -r1.2 distinfo
+--- eng-fin/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ eng-fin/distinfo	10 Jan 2025 09:57:36 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-eng-fin-2023.05.29.dictd.tar.xz) = kSUUa/7kd2xsH75xUvTYKHy4AytksYwvZTiMOiE6czs=
+-SIZE (freedict-eng-fin-2023.05.29.dictd.tar.xz) = 3742996
++SHA256 (freedict-eng-fin-2024.10.10.dictd.tar.xz) = cDdxprE+pkPYirPEZ6dysXLu0hsUd4NLFI2igexMWmw=
++SIZE (freedict-eng-fin-2024.10.10.dictd.tar.xz) = 6215844
+Index: eng-ind/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-ind/Makefile,v
+diff -u -p -r1.2 Makefile
+--- eng-ind/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ eng-ind/Makefile	10 Jan 2025 09:52:35 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	English-Indonesian FreeDict+WikDict Dictionary
+ DICT =	eng-ind
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: eng-ind/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-ind/distinfo,v
+diff -u -p -r1.2 distinfo
+--- eng-ind/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ eng-ind/distinfo	10 Jan 2025 09:57:40 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-eng-ind-2023.05.29.dictd.tar.xz) = hvCFh5wx0oo+/BaMUNdrksZ1UdELsoWr+NTG/kXpacE=
+-SIZE (freedict-eng-ind-2023.05.29.dictd.tar.xz) = 545072
++SHA256 (freedict-eng-ind-2024.10.10.dictd.tar.xz) = oBc4rn2QuG7EaXYuu2PHBfbtfkoN1byHrZSsvESNgjc=
++SIZE (freedict-eng-ind-2024.10.10.dictd.tar.xz) = 1066240
+Index: eng-jpn/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-jpn/Makefile,v
+diff -u -p -r1.2 Makefile
+--- eng-jpn/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ eng-jpn/Makefile	10 Jan 2025 09:52:35 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	English-Japanese FreeDict+WikDict Dictionary
+ DICT =	eng-jpn
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: eng-jpn/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-jpn/distinfo,v
+diff -u -p -r1.2 distinfo
+--- eng-jpn/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ eng-jpn/distinfo	10 Jan 2025 09:57:41 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-eng-jpn-2023.05.29.dictd.tar.xz) = E2UeQnzctSFa8WLIazbW1p1DI0AnTjhf/LZH9BNcu78=
+-SIZE (freedict-eng-jpn-2023.05.29.dictd.tar.xz) = 1788964
++SHA256 (freedict-eng-jpn-2024.10.10.dictd.tar.xz) = 0EIlYcvnEsois4jgVJHlPEqSU+9Vt/RdIvhVuVOQlqU=
++SIZE (freedict-eng-jpn-2024.10.10.dictd.tar.xz) = 3070668
+Index: eng-nor/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-nor/Makefile,v
+diff -u -p -r1.2 Makefile
+--- eng-nor/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ eng-nor/Makefile	10 Jan 2025 09:52:35 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	English-Norwegian FreeDict+WikDict Dictionary
+ DICT =	eng-nor
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: eng-nor/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-nor/distinfo,v
+diff -u -p -r1.2 distinfo
+--- eng-nor/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ eng-nor/distinfo	10 Jan 2025 09:57:43 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-eng-nor-2023.05.29.dictd.tar.xz) = bRytwBiYolDPDSlGt5ib7dnlvuqNT22EOjaGQofzDLg=
+-SIZE (freedict-eng-nor-2023.05.29.dictd.tar.xz) = 558256
++SHA256 (freedict-eng-nor-2024.10.10.dictd.tar.xz) = zLo0za1gJB9hEolpErVFuN9HmrNaA3jAFAVpU5N5Zv0=
++SIZE (freedict-eng-nor-2024.10.10.dictd.tar.xz) = 938940
+Index: eng-pol/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-pol/Makefile,v
+diff -u -p -r1.1.1.1 Makefile
+--- eng-pol/Makefile	16 Oct 2023 13:00:43 -0000	1.1.1.1
++++ eng-pol/Makefile	10 Jan 2025 09:52:35 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	English-Polish Piotrowski+Saloni/FreeDict Dictionary
+ DICT =	eng-pol
+-V =	0.2
++V =	0.2.1
+ 
+ # GPLv3+ and GNU Free Documentation License 1.2+
+ PERMIT_PACKAGE =	Yes
+Index: eng-pol/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-pol/distinfo,v
+diff -u -p -r1.1.1.1 distinfo
+--- eng-pol/distinfo	16 Oct 2023 13:00:43 -0000	1.1.1.1
++++ eng-pol/distinfo	10 Jan 2025 09:57:43 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-eng-pol-0.2.dictd.tar.xz) = HroTr2+VsZLTwMaMeZvC/O0SQaDr8fstGX2vatRIrkQ=
+-SIZE (freedict-eng-pol-0.2.dictd.tar.xz) = 597648
++SHA256 (freedict-eng-pol-0.2.1.dictd.tar.xz) = 3frAzZqpuU718oXJKVA8lgRG8gN6nfRG15BDy4dHBSk=
++SIZE (freedict-eng-pol-0.2.1.dictd.tar.xz) = 587412
+Index: eng-rus/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-rus/Makefile,v
+diff -u -p -r1.1.1.1 Makefile
+--- eng-rus/Makefile	16 Oct 2023 13:00:43 -0000	1.1.1.1
++++ eng-rus/Makefile	10 Jan 2025 09:52:35 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	English-Russian FreeDict Dictionary
+ DICT =	eng-rus
+-V =	0.3.1
++V =	2024.10.10
+ 
+ # GPLv2+
+ PERMIT_PACKAGE =	Yes
+Index: eng-rus/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-rus/distinfo,v
+diff -u -p -r1.1.1.1 distinfo
+--- eng-rus/distinfo	16 Oct 2023 13:00:43 -0000	1.1.1.1
++++ eng-rus/distinfo	10 Jan 2025 09:57:45 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-eng-rus-0.3.1.dictd.tar.xz) = 3rQUFUbCa8YLsP//rTieSfBr4iRqOhSUtWm9o7CU44c=
+-SIZE (freedict-eng-rus-0.3.1.dictd.tar.xz) = 46208
++SHA256 (freedict-eng-rus-2024.10.10.dictd.tar.xz) = gS6QhtiV9UfNKaV5XnEc2Yh0nPdn4Pi3oSGreJR2Tto=
++SIZE (freedict-eng-rus-2024.10.10.dictd.tar.xz) = 5256820
+Index: eng-spa/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-spa/Makefile,v
+diff -u -p -r1.1.1.1 Makefile
+--- eng-spa/Makefile	16 Oct 2023 13:00:43 -0000	1.1.1.1
++++ eng-spa/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	English-Spanish FreeDict Dictionary
+ DICT =	eng-spa
+-V =	0.3.1
++V =	2024.10.10
+ 
+ # GPLv2+
+ PERMIT_PACKAGE =	Yes
+Index: eng-spa/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-spa/distinfo,v
+diff -u -p -r1.1.1.1 distinfo
+--- eng-spa/distinfo	16 Oct 2023 13:00:43 -0000	1.1.1.1
++++ eng-spa/distinfo	10 Jan 2025 09:57:46 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-eng-spa-0.3.1.dictd.tar.xz) = pjgdrEbBHVEez9mBw67T2pBix78dW6FiRucLJhiJCMk=
+-SIZE (freedict-eng-spa-0.3.1.dictd.tar.xz) = 122540
++SHA256 (freedict-eng-spa-2024.10.10.dictd.tar.xz) = p/1WeXrYJKfRaKDZwDgqfq/Kter8oJQNEH61D4FFNfI=
++SIZE (freedict-eng-spa-2024.10.10.dictd.tar.xz) = 4471280
+Index: eng-swe/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-swe/Makefile,v
+diff -u -p -r1.3 Makefile
+--- eng-swe/Makefile	6 Mar 2024 04:14:20 -0000	1.3
++++ eng-swe/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	English-Swedish FreeDict Dictionary
+ DICT =	eng-swe
+-V =	2023.05.29
++V =	2024.10.10
+ REVISION =	0
+ 
+ # GPLv2+
+Index: eng-swe/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/eng-swe/distinfo,v
+diff -u -p -r1.2 distinfo
+--- eng-swe/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ eng-swe/distinfo	10 Jan 2025 09:57:47 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-eng-swe-2023.05.29.dictd.tar.xz) = gZJ4YyfuekzhS+xGTwaZUphV8yGLGbrXjsedsNGTjAo=
+-SIZE (freedict-eng-swe-2023.05.29.dictd.tar.xz) = 1886840
++SHA256 (freedict-eng-swe-2024.10.10.dictd.tar.xz) = zsYpjCWUpTfgokIYvIKJVuNSiHwzB1sccKhroZpCLq0=
++SIZE (freedict-eng-swe-2024.10.10.dictd.tar.xz) = 3313508
+Index: fin-bul/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-bul/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fin-bul/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-bul/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-Bulgarian FreeDict+WikDict Dictionary
+ DICT =	fin-bul
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-bul/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-bul/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fin-bul/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-bul/distinfo	10 Jan 2025 09:57:49 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-bul-2023.05.29.dictd.tar.xz) = bV/dEFM32KBxSPECOBLqPXnnorQAN/LZ0C8vUcfx3aQ=
+-SIZE (freedict-fin-bul-2023.05.29.dictd.tar.xz) = 998520
++SHA256 (freedict-fin-bul-2024.10.10.dictd.tar.xz) = oC0H1wrVnQ4zOdWBOYSEhljjqtdSf/Xjxy2cfPuT8f8=
++SIZE (freedict-fin-bul-2024.10.10.dictd.tar.xz) = 869932
+Index: fin-deu/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-deu/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fin-deu/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-deu/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-German FreeDict+WikDict Dictionary
+ DICT =	fin-deu
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-deu/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-deu/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fin-deu/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-deu/distinfo	10 Jan 2025 09:57:50 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-deu-2023.05.29.dictd.tar.xz) = ePOagNxQwcPwvI7yQHmjCLHU1Q4nqFmUpXRnIf4IYBs=
+-SIZE (freedict-fin-deu-2023.05.29.dictd.tar.xz) = 692648
++SHA256 (freedict-fin-deu-2024.10.10.dictd.tar.xz) = D71irz8R8VRvnMye5ndn9rkuBeceuJ4J3GDKmbxAWzw=
++SIZE (freedict-fin-deu-2024.10.10.dictd.tar.xz) = 718072
+Index: fin-ell/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-ell/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fin-ell/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-ell/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-Greek FreeDict+WikDict Dictionary
+ DICT =	fin-ell
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-ell/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-ell/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fin-ell/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-ell/distinfo	10 Jan 2025 09:57:50 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-ell-2023.05.29.dictd.tar.xz) = KQqzgwmvduMRNZ+F1ZoyJL2UXAszjFkPukGf0r80sXo=
+-SIZE (freedict-fin-ell-2023.05.29.dictd.tar.xz) = 999176
++SHA256 (freedict-fin-ell-2024.10.10.dictd.tar.xz) = GiMDlur5atkaMDg13wZ/t/Ol6hMnKgFUOmPvht9ht54=
++SIZE (freedict-fin-ell-2024.10.10.dictd.tar.xz) = 1062612
+Index: fin-eng/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-eng/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fin-eng/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-eng/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-English FreeDict+WikDict Dictionary
+ DICT =	fin-eng
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-eng/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-eng/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fin-eng/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-eng/distinfo	10 Jan 2025 09:57:51 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-eng-2023.05.29.dictd.tar.xz) = DbjhB5pQrndJ5waneqd69CZK0XEjaHaGiMf22SM5xnA=
+-SIZE (freedict-fin-eng-2023.05.29.dictd.tar.xz) = 2057892
++SHA256 (freedict-fin-eng-2024.10.10.dictd.tar.xz) = Ive5RWHsc/pDsLMJu5UfkdVEWoQtidau9Nl5MpxWq4E=
++SIZE (freedict-fin-eng-2024.10.10.dictd.tar.xz) = 2142256
+Index: fin-fra/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-fra/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fin-fra/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-fra/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-French FreeDict+WikDict Dictionary
+ DICT =	fin-fra
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-fra/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-fra/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fin-fra/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-fra/distinfo	10 Jan 2025 09:57:52 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-fra-2023.05.29.dictd.tar.xz) = G+hk5Tx9zxUsbC6wTtoQAmPOZbSyfXAbMIm1JLE/BNU=
+-SIZE (freedict-fin-fra-2023.05.29.dictd.tar.xz) = 654328
++SHA256 (freedict-fin-fra-2024.10.10.dictd.tar.xz) = F9unYqCBu8VyJ6IwDN8gRV/Zt0xHfz/qVdorzT7pqw4=
++SIZE (freedict-fin-fra-2024.10.10.dictd.tar.xz) = 681000
+Index: fin-ind/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-ind/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fin-ind/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-ind/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-Indonesian FreeDict+WikDict Dictionary
+ DICT =	fin-ind
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-ind/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-ind/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fin-ind/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-ind/distinfo	10 Jan 2025 09:57:52 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-ind-2023.05.29.dictd.tar.xz) = v1amcgDFjQ8Kj3NvhieqK9iPEB3/PWsTwaw1LT8NTF8=
+-SIZE (freedict-fin-ind-2023.05.29.dictd.tar.xz) = 640424
++SHA256 (freedict-fin-ind-2024.10.10.dictd.tar.xz) = z9YHtFzwZseES8qoHws4880IHqRd0oGYBblqgK3X1KY=
++SIZE (freedict-fin-ind-2024.10.10.dictd.tar.xz) = 710724
+Index: fin-ita/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-ita/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fin-ita/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-ita/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-Italian FreeDict+WikDict Dictionary
+ DICT =	fin-ita
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-ita/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-ita/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fin-ita/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-ita/distinfo	10 Jan 2025 09:57:53 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-ita-2023.05.29.dictd.tar.xz) = aLQ45QvEVBraLSh6w5bKeju7b8VL+bbgy0ZoRcIZfYw=
+-SIZE (freedict-fin-ita-2023.05.29.dictd.tar.xz) = 763544
++SHA256 (freedict-fin-ita-2024.10.10.dictd.tar.xz) = HmgyMd9nfm7EyAl2AVbbCB75+YTdLZFV4VHZHf6+HLM=
++SIZE (freedict-fin-ita-2024.10.10.dictd.tar.xz) = 807164
+Index: fin-jpn/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-jpn/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fin-jpn/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-jpn/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-Japanese FreeDict+WikDict Dictionary
+ DICT =	fin-jpn
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-jpn/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-jpn/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fin-jpn/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-jpn/distinfo	10 Jan 2025 09:57:53 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-jpn-2023.05.29.dictd.tar.xz) = dba++syXcuYcqz+pZFg+L39XjpWEwdXS1YlULRdolFo=
+-SIZE (freedict-fin-jpn-2023.05.29.dictd.tar.xz) = 917000
++SHA256 (freedict-fin-jpn-2024.10.10.dictd.tar.xz) = GuMLUWLTQMUHFjTEjcIyYvIZtqRVNflxYWphvbARXZo=
++SIZE (freedict-fin-jpn-2024.10.10.dictd.tar.xz) = 838720
+Index: fin-lat/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-lat/Makefile,v
+diff -u -p -r1.1.1.1 Makefile
+--- fin-lat/Makefile	16 Oct 2023 13:00:45 -0000	1.1.1.1
++++ fin-lat/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-Latin FreeDict+WikDict Dictionary
+ DICT =	fin-lat
+-V =	2022.04.06
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-lat/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-lat/distinfo,v
+diff -u -p -r1.1.1.1 distinfo
+--- fin-lat/distinfo	16 Oct 2023 13:00:45 -0000	1.1.1.1
++++ fin-lat/distinfo	10 Jan 2025 09:57:54 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-lat-2022.04.06.dictd.tar.xz) = +lRJqKvFwPs/kwWwuPoGGG793uF0X12pWQok9nO4Rlw=
+-SIZE (freedict-fin-lat-2022.04.06.dictd.tar.xz) = 655676
++SHA256 (freedict-fin-lat-2024.10.10.dictd.tar.xz) = G8D/VkxSU8DJmrngi4/dhIVDE9ZDxRy3sf5e+MmxSGg=
++SIZE (freedict-fin-lat-2024.10.10.dictd.tar.xz) = 574984
+Index: fin-lit/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-lit/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fin-lit/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-lit/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-Lithuanian FreeDict+WikDict Dictionary
+ DICT =	fin-lit
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-lit/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-lit/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fin-lit/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-lit/distinfo	10 Jan 2025 09:57:54 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-lit-2023.05.29.dictd.tar.xz) = F20sXKsVS/cCKEWsn0/Z75TGKxIyd154S7N0OMNP788=
+-SIZE (freedict-fin-lit-2023.05.29.dictd.tar.xz) = 626836
++SHA256 (freedict-fin-lit-2024.10.10.dictd.tar.xz) = UJ/YJZB0KQqbU1z3eQowFJMnxzUpoTPjn8qY6uPozV0=
++SIZE (freedict-fin-lit-2024.10.10.dictd.tar.xz) = 680864
+Index: fin-nld/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-nld/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fin-nld/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-nld/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-Dutch FreeDict+WikDict Dictionary
+ DICT =	fin-nld
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-nld/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-nld/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fin-nld/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-nld/distinfo	10 Jan 2025 09:57:55 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-nld-2023.05.29.dictd.tar.xz) = 4cVF/IFZv91k+P8r45gTJKToVQADCHZxqgAXxkTU+RA=
+-SIZE (freedict-fin-nld-2023.05.29.dictd.tar.xz) = 718208
++SHA256 (freedict-fin-nld-2024.10.10.dictd.tar.xz) = gUzKj9zU+yLneMdUifAyfETfHrWGLBSGzxWegkFJRvc=
++SIZE (freedict-fin-nld-2024.10.10.dictd.tar.xz) = 762524
+Index: fin-nor/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-nor/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fin-nor/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-nor/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-Norwegian FreeDict+WikDict Dictionary
+ DICT =	fin-nor
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-nor/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-nor/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fin-nor/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-nor/distinfo	10 Jan 2025 09:57:55 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-nor-2023.05.29.dictd.tar.xz) = lKCJTP042Fum9vLk35DX7sLQ9pLmZ4YteLJv07xtjRc=
+-SIZE (freedict-fin-nor-2023.05.29.dictd.tar.xz) = 709380
++SHA256 (freedict-fin-nor-2024.10.10.dictd.tar.xz) = /4YLY8d/BO+QhGHxRKjTeWukHko3NlbdzKBmET94rdQ=
++SIZE (freedict-fin-nor-2024.10.10.dictd.tar.xz) = 757872
+Index: fin-pol/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-pol/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fin-pol/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-pol/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-Polish FreeDict+WikDict Dictionary
+ DICT =	fin-pol
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-pol/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-pol/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fin-pol/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-pol/distinfo	10 Jan 2025 09:57:56 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-pol-2023.05.29.dictd.tar.xz) = Y2Wf8InXslUTceEx6FF537GjpGX2JyykLdCEWhE5B+k=
+-SIZE (freedict-fin-pol-2023.05.29.dictd.tar.xz) = 758452
++SHA256 (freedict-fin-pol-2024.10.10.dictd.tar.xz) = CxprB9bXawu+2c3EgxnhrdX8TsgCZi4PoZfAMRPvlCU=
++SIZE (freedict-fin-pol-2024.10.10.dictd.tar.xz) = 803624
+Index: fin-por/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-por/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fin-por/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-por/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-Portuguese FreeDict+WikDict Dictionary
+ DICT =	fin-por
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-por/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-por/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fin-por/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-por/distinfo	10 Jan 2025 09:57:56 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-por-2023.05.29.dictd.tar.xz) = 1dMarrTjxhAnfTLcQ/EaWUcw1Mrue+gJdZwy1+hBrJM=
+-SIZE (freedict-fin-por-2023.05.29.dictd.tar.xz) = 764244
++SHA256 (freedict-fin-por-2024.10.10.dictd.tar.xz) = 4R0QanYLauVl93/FNIkYRFJJxlU+BOYSiKUIlJB59Y0=
++SIZE (freedict-fin-por-2024.10.10.dictd.tar.xz) = 795316
+Index: fin-swe/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-swe/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fin-swe/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-swe/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Finnish-Swedish FreeDict+WikDict Dictionary
+ DICT =	fin-swe
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fin-swe/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fin-swe/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fin-swe/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fin-swe/distinfo	10 Jan 2025 09:57:57 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fin-swe-2023.05.29.dictd.tar.xz) = RcxTbZjC/oE9Et8zgGgaxBxoIw9VhzoA+6G9eT2ONQo=
+-SIZE (freedict-fin-swe-2023.05.29.dictd.tar.xz) = 914944
++SHA256 (freedict-fin-swe-2024.10.10.dictd.tar.xz) = sQfCFPHwGzV99N8vWcwqTYcyYajsWxSug9ZzZq7LeRA=
++SIZE (freedict-fin-swe-2024.10.10.dictd.tar.xz) = 964676
+Index: fra-deu/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-deu/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fra-deu/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-deu/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	French-German FreeDict+WikDict Dictionary
+ DICT =	fra-deu
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fra-deu/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-deu/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fra-deu/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-deu/distinfo	10 Jan 2025 09:57:59 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fra-deu-2023.05.29.dictd.tar.xz) = SqQFQ0CoxA0ZQUDMNQQf9h1eiKWB9NYQK7q/weUDr5Q=
+-SIZE (freedict-fra-deu-2023.05.29.dictd.tar.xz) = 1517940
++SHA256 (freedict-fra-deu-2024.10.10.dictd.tar.xz) = iejBI8pfWbpIDTPmhbiajIDe5HHHGawNMmdLQTka70w=
++SIZE (freedict-fra-deu-2024.10.10.dictd.tar.xz) = 2038988
+Index: fra-ell/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-ell/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fra-ell/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-ell/Makefile	10 Jan 2025 09:52:36 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	French-Greek FreeDict+WikDict Dictionary
+ DICT =	fra-ell
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fra-ell/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-ell/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fra-ell/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-ell/distinfo	10 Jan 2025 09:57:59 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fra-ell-2023.05.29.dictd.tar.xz) = TuLAjrzfsHwU9Zv867CmwIn61xZPgUivGKFuk0MyFc0=
+-SIZE (freedict-fra-ell-2023.05.29.dictd.tar.xz) = 444160
++SHA256 (freedict-fra-ell-2024.10.10.dictd.tar.xz) = j3tx93Dvu0HNRi/uicInN6c8griC3Cf6Oq2lNC8zYS8=
++SIZE (freedict-fra-ell-2024.10.10.dictd.tar.xz) = 636188
+Index: fra-fin/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-fin/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fra-fin/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-fin/Makefile	10 Jan 2025 09:52:37 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	French-Finnish FreeDict+WikDict Dictionary
+ DICT =	fra-fin
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fra-fin/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-fin/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fra-fin/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-fin/distinfo	10 Jan 2025 09:58:00 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fra-fin-2023.05.29.dictd.tar.xz) = nZwVcD1T2mefCARUYciAmi9oi54uT3bSyjyJZcg4iaU=
+-SIZE (freedict-fra-fin-2023.05.29.dictd.tar.xz) = 495068
++SHA256 (freedict-fra-fin-2024.10.10.dictd.tar.xz) = +keKRJCuOsSq8UtMjh9zLs3QLGCZgniNz/7c1vihqGY=
++SIZE (freedict-fra-fin-2024.10.10.dictd.tar.xz) = 699980
+Index: fra-ita/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-ita/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fra-ita/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-ita/Makefile	10 Jan 2025 09:52:37 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	French-Italian FreeDict+WikDict Dictionary
+ DICT =	fra-ita
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fra-ita/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-ita/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fra-ita/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-ita/distinfo	10 Jan 2025 09:58:01 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fra-ita-2023.05.29.dictd.tar.xz) = DmjYkfQ9LBlL0iimTt+ctvlF8qcFKMW4u3qn8IXVYu4=
+-SIZE (freedict-fra-ita-2023.05.29.dictd.tar.xz) = 1620108
++SHA256 (freedict-fra-ita-2024.10.10.dictd.tar.xz) = QB3lHuAFzinzi1S8X/yU41yO7TMYRvvBDdfwGROzc40=
++SIZE (freedict-fra-ita-2024.10.10.dictd.tar.xz) = 2197044
+Index: fra-jpn/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-jpn/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fra-jpn/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-jpn/Makefile	10 Jan 2025 09:52:37 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	French-Japanese FreeDict+WikDict Dictionary
+ DICT =	fra-jpn
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fra-jpn/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-jpn/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fra-jpn/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-jpn/distinfo	10 Jan 2025 09:58:01 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fra-jpn-2023.05.29.dictd.tar.xz) = cIR37A0FLTo9JRquRGWCBPogvbkuqKWwpqbEjRrGHUc=
+-SIZE (freedict-fra-jpn-2023.05.29.dictd.tar.xz) = 526564
++SHA256 (freedict-fra-jpn-2024.10.10.dictd.tar.xz) = Th9EnZcahYu8ZjVWUA+hlAsBOKIzfSst0iAgx+5t/Y4=
++SIZE (freedict-fra-jpn-2024.10.10.dictd.tar.xz) = 737616
+Index: fra-lit/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-lit/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fra-lit/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-lit/Makefile	10 Jan 2025 09:52:37 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	French-Lithuanian FreeDict+WikDict Dictionary
+ DICT =	fra-lit
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fra-lit/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-lit/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fra-lit/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-lit/distinfo	10 Jan 2025 09:58:02 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fra-lit-2023.05.29.dictd.tar.xz) = TKWtqXOHQKHO7o84MhcZjqBtAFW+g80ATMa1uuAgx7c=
+-SIZE (freedict-fra-lit-2023.05.29.dictd.tar.xz) = 347836
++SHA256 (freedict-fra-lit-2024.10.10.dictd.tar.xz) = yEO22ap4lr3hnLqOlqk0f7t9Efv0UCSRJVEttUPrpts=
++SIZE (freedict-fra-lit-2024.10.10.dictd.tar.xz) = 536824
+Index: fra-pol/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-pol/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fra-pol/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-pol/Makefile	10 Jan 2025 09:52:37 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	French-Polish FreeDict+WikDict Dictionary
+ DICT =	fra-pol
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fra-pol/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-pol/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fra-pol/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-pol/distinfo	10 Jan 2025 09:58:03 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fra-pol-2023.05.29.dictd.tar.xz) = xj+/P91oXtljnocwB8MG6UiH+Dy8VM3IkRHh8I4hqTc=
+-SIZE (freedict-fra-pol-2023.05.29.dictd.tar.xz) = 635464
++SHA256 (freedict-fra-pol-2024.10.10.dictd.tar.xz) = qStRFb/pCUoWwN5BFMDBzX67koc7elgSA3dOi0hCXZo=
++SIZE (freedict-fra-pol-2024.10.10.dictd.tar.xz) = 901236
+Index: fra-por/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-por/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fra-por/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-por/Makefile	10 Jan 2025 09:52:37 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	French-Portuguese FreeDict+WikDict Dictionary
+ DICT =	fra-por
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fra-por/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-por/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fra-por/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-por/distinfo	10 Jan 2025 09:58:04 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fra-por-2023.05.29.dictd.tar.xz) = hIvNfnRsX4/QMOVOQC5r4Mlw3/3qe1Y6w2G1xQOuvsE=
+-SIZE (freedict-fra-por-2023.05.29.dictd.tar.xz) = 766532
++SHA256 (freedict-fra-por-2024.10.10.dictd.tar.xz) = lLTfSs8DmlwJo8EFBvZwDaJ9dJ+LWttEA4AfstUjnAs=
++SIZE (freedict-fra-por-2024.10.10.dictd.tar.xz) = 1075176
+Index: fra-rus/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-rus/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fra-rus/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-rus/Makefile	10 Jan 2025 09:52:37 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	French-Russian FreeDict+WikDict Dictionary
+ DICT =	fra-rus
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fra-rus/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-rus/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fra-rus/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-rus/distinfo	10 Jan 2025 09:58:04 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fra-rus-2023.05.29.dictd.tar.xz) = ONTRlikBCJSsLAK9e3ZReR8ujfUY3+A+GjhIgFbQTeg=
+-SIZE (freedict-fra-rus-2023.05.29.dictd.tar.xz) = 659012
++SHA256 (freedict-fra-rus-2024.10.10.dictd.tar.xz) = QkXPpkB1HN833Qqp5vlw3mTD0fN5n6qzozTV2pCBQ9g=
++SIZE (freedict-fra-rus-2024.10.10.dictd.tar.xz) = 1009216
+Index: fra-spa/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-spa/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fra-spa/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-spa/Makefile	10 Jan 2025 09:52:37 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	French-Spanish FreeDict+WikDict Dictionary
+ DICT =	fra-spa
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fra-spa/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-spa/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fra-spa/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-spa/distinfo	10 Jan 2025 09:58:05 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fra-spa-2023.05.29.dictd.tar.xz) = ihFxubnmaNaNGWh4wiiz5aAU92MHPa6mQlul2/fK/xc=
+-SIZE (freedict-fra-spa-2023.05.29.dictd.tar.xz) = 1363172
++SHA256 (freedict-fra-spa-2024.10.10.dictd.tar.xz) = a/eKGwfdU3WdOwvj/g29q12h/zvXJl9ryyZT4i7GOQ8=
++SIZE (freedict-fra-spa-2024.10.10.dictd.tar.xz) = 1848572
+Index: fra-swe/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-swe/Makefile,v
+diff -u -p -r1.2 Makefile
+--- fra-swe/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-swe/Makefile	10 Jan 2025 09:52:37 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	French-Swedish FreeDict+WikDict Dictionary
+ DICT =	fra-swe
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fra-swe/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-swe/distinfo,v
+diff -u -p -r1.2 distinfo
+--- fra-swe/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ fra-swe/distinfo	10 Jan 2025 09:58:05 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fra-swe-2023.05.29.dictd.tar.xz) = 7KD/hs/+8ntpW65/Z1SBJ0OHxelsvTkfCvvM0ItXi0o=
+-SIZE (freedict-fra-swe-2023.05.29.dictd.tar.xz) = 607300
++SHA256 (freedict-fra-swe-2024.10.10.dictd.tar.xz) = lZGut5ioFazZ/o2RznmKEGyMZaUm7xjVLQ/QsMWvPu0=
++SIZE (freedict-fra-swe-2024.10.10.dictd.tar.xz) = 836300
+Index: fra-tur/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-tur/Makefile,v
+diff -u -p -r1.1.1.1 Makefile
+--- fra-tur/Makefile	16 Oct 2023 13:00:47 -0000	1.1.1.1
++++ fra-tur/Makefile	10 Jan 2025 09:52:37 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	French-Turkish FreeDict+WikDict Dictionary
+ DICT =	fra-tur
+-V =	2018.09.13
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: fra-tur/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/fra-tur/distinfo,v
+diff -u -p -r1.1.1.1 distinfo
+--- fra-tur/distinfo	16 Oct 2023 13:00:47 -0000	1.1.1.1
++++ fra-tur/distinfo	10 Jan 2025 09:58:06 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-fra-tur-2018.09.13.dictd.tar.xz) = 5mpxnEYKoJOXJGwZPUcuYkQnoAtq2fV/UXUo+eMc1mY=
+-SIZE (freedict-fra-tur-2018.09.13.dictd.tar.xz) = 257788
++SHA256 (freedict-fra-tur-2024.10.10.dictd.tar.xz) = H7WIYooLPMy3qzpQw6u07xdYgOhjXzoeR9NeXurpJFM=
++SIZE (freedict-fra-tur-2024.10.10.dictd.tar.xz) = 521076
+Index: ita-bul/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-bul/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ita-bul/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-bul/Makefile	10 Jan 2025 09:52:37 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Italian-Bulgarian FreeDict+WikDict Dictionary
+ DICT =	ita-bul
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ita-bul/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-bul/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ita-bul/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-bul/distinfo	10 Jan 2025 09:58:10 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ita-bul-2023.05.29.dictd.tar.xz) = 6UP+BVw5ShTU6w30k0tjneMLQPLmP2GAdKbNozmpF/o=
+-SIZE (freedict-ita-bul-2023.05.29.dictd.tar.xz) = 639944
++SHA256 (freedict-ita-bul-2024.10.10.dictd.tar.xz) = WvhCQk4W/b2LoRFcYA+eAP6KVjLl0bitYY0ZbtDss/g=
++SIZE (freedict-ita-bul-2024.10.10.dictd.tar.xz) = 1090840
+Index: ita-ell/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-ell/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ita-ell/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-ell/Makefile	10 Jan 2025 09:52:37 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Italian-Greek FreeDict+WikDict Dictionary
+ DICT =	ita-ell
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ita-ell/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-ell/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ita-ell/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-ell/distinfo	10 Jan 2025 09:58:11 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ita-ell-2023.05.29.dictd.tar.xz) = sGg+VVyB4ROMV8rUGI2jpa6qNavax+kpMDBCbwnbKRs=
+-SIZE (freedict-ita-ell-2023.05.29.dictd.tar.xz) = 600540
++SHA256 (freedict-ita-ell-2024.10.10.dictd.tar.xz) = fc4x8k8IoAdnxkxgzuUV3B9cn7zE/Xsi0x+2JMkNnC4=
++SIZE (freedict-ita-ell-2024.10.10.dictd.tar.xz) = 1041656
+Index: ita-fin/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-fin/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ita-fin/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-fin/Makefile	10 Jan 2025 09:52:37 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Italian-Finnish FreeDict+WikDict Dictionary
+ DICT =	ita-fin
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ita-fin/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-fin/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ita-fin/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-fin/distinfo	10 Jan 2025 09:58:11 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ita-fin-2023.05.29.dictd.tar.xz) = CwyG/2KPOJV8x4K5lASFT3HNn4iKoAb0FUQpdicz+48=
+-SIZE (freedict-ita-fin-2023.05.29.dictd.tar.xz) = 610976
++SHA256 (freedict-ita-fin-2024.10.10.dictd.tar.xz) = DxFwWNP9/7xTdxN2FSPFWwdy7LrGgT3IK3VdI1rMj70=
++SIZE (freedict-ita-fin-2024.10.10.dictd.tar.xz) = 1055740
+Index: ita-ind/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-ind/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ita-ind/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-ind/Makefile	10 Jan 2025 09:52:37 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Italian-Indonesian FreeDict+WikDict Dictionary
+ DICT =	ita-ind
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ita-ind/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-ind/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ita-ind/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-ind/distinfo	10 Jan 2025 09:58:12 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ita-ind-2023.05.29.dictd.tar.xz) = 4HsBfgX5HDTTkfd7gvEfkKwpHfEOMbl2gM9+CVKo0C8=
+-SIZE (freedict-ita-ind-2023.05.29.dictd.tar.xz) = 365868
++SHA256 (freedict-ita-ind-2024.10.10.dictd.tar.xz) = fSY9LeTk8hIq0OCli2dsNThc7vMF91M4DDRqjMQHM2E=
++SIZE (freedict-ita-ind-2024.10.10.dictd.tar.xz) = 705468
+Index: ita-jpn/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-jpn/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ita-jpn/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-jpn/Makefile	10 Jan 2025 09:52:38 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Italian-Japanese FreeDict+WikDict Dictionary
+ DICT =	ita-jpn
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ita-jpn/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-jpn/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ita-jpn/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-jpn/distinfo	10 Jan 2025 09:58:12 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ita-jpn-2023.05.29.dictd.tar.xz) = rnFURBHkMvxEQ2NiQ4sf/64A0KhNPgD2vhoXQBJNzbA=
+-SIZE (freedict-ita-jpn-2023.05.29.dictd.tar.xz) = 602096
++SHA256 (freedict-ita-jpn-2024.10.10.dictd.tar.xz) = s498n91NGpgqGA6CUCDOG+cvkhuhSeTAWYBqFAqwcT4=
++SIZE (freedict-ita-jpn-2024.10.10.dictd.tar.xz) = 1048728
+Index: ita-lit/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-lit/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ita-lit/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-lit/Makefile	10 Jan 2025 09:52:38 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Italian-Lithuanian FreeDict+WikDict Dictionary
+ DICT =	ita-lit
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ita-lit/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-lit/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ita-lit/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-lit/distinfo	10 Jan 2025 09:58:13 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ita-lit-2023.05.29.dictd.tar.xz) = WC8HIBUxWPdI+vm9yFvQ454a/Gye2BfJhpgeN+VXlik=
+-SIZE (freedict-ita-lit-2023.05.29.dictd.tar.xz) = 335744
++SHA256 (freedict-ita-lit-2024.10.10.dictd.tar.xz) = 3IEIDwgIMo3sKsvK+bv7hfV09SM4kAqv0Oi4ytZ+fVg=
++SIZE (freedict-ita-lit-2024.10.10.dictd.tar.xz) = 644992
+Index: ita-nor/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-nor/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ita-nor/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-nor/Makefile	10 Jan 2025 09:52:38 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Italian-Norwegian FreeDict+WikDict Dictionary
+ DICT =	ita-nor
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ita-nor/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-nor/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ita-nor/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-nor/distinfo	10 Jan 2025 09:58:13 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ita-nor-2023.05.29.dictd.tar.xz) = a119l0XuqiuW063Uc2P/aunGyCUQnx4ssa8Ve5mFMys=
+-SIZE (freedict-ita-nor-2023.05.29.dictd.tar.xz) = 327588
++SHA256 (freedict-ita-nor-2024.10.10.dictd.tar.xz) = WdSAWg45/39yKmz4MikE3nF1R3IcLQoeUdGTd+LqdIA=
++SIZE (freedict-ita-nor-2024.10.10.dictd.tar.xz) = 590196
+Index: ita-pol/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-pol/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ita-pol/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-pol/Makefile	10 Jan 2025 09:52:38 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Italian-Polish FreeDict+WikDict Dictionary
+ DICT =	ita-pol
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ita-pol/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-pol/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ita-pol/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-pol/distinfo	10 Jan 2025 09:58:14 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ita-pol-2023.05.29.dictd.tar.xz) = QTyr9gtqZgqZrp5FcFKG12e0Pxi0aMK/PL6kTkjA0L0=
+-SIZE (freedict-ita-pol-2023.05.29.dictd.tar.xz) = 508440
++SHA256 (freedict-ita-pol-2024.10.10.dictd.tar.xz) = A3IrypSX1VBzsZw68Jxzr29uPhpS79W7nU4eIIA7Lag=
++SIZE (freedict-ita-pol-2024.10.10.dictd.tar.xz) = 918996
+Index: ita-por/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-por/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ita-por/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-por/Makefile	10 Jan 2025 09:52:38 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Italian-Portuguese FreeDict+WikDict Dictionary
+ DICT =	ita-por
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ita-por/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-por/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ita-por/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-por/distinfo	10 Jan 2025 09:58:14 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ita-por-2023.05.29.dictd.tar.xz) = Hwgt6zuK4oIzjrDE9u/cO+81wOrfd2MnSm+XIweA2/k=
+-SIZE (freedict-ita-por-2023.05.29.dictd.tar.xz) = 339440
++SHA256 (freedict-ita-por-2024.10.10.dictd.tar.xz) = 11D4+Xrm/KJ5TrIzjb2mg9wrpxsPR5NqjSV1ZEJRLGE=
++SIZE (freedict-ita-por-2024.10.10.dictd.tar.xz) = 646576
+Index: ita-rus/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-rus/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ita-rus/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-rus/Makefile	10 Jan 2025 09:52:38 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Italian-Russian FreeDict+WikDict Dictionary
+ DICT =	ita-rus
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ita-rus/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-rus/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ita-rus/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-rus/distinfo	10 Jan 2025 09:58:15 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ita-rus-2023.05.29.dictd.tar.xz) = P6o/GRycP/1oaFRdrL6IBXD2rwbt8TubpoVxLNHwPBc=
+-SIZE (freedict-ita-rus-2023.05.29.dictd.tar.xz) = 422332
++SHA256 (freedict-ita-rus-2024.10.10.dictd.tar.xz) = LYr/bDTmm4p9GfDHK2hCcQsuPD7m6jdCceeAhRVLYPs=
++SIZE (freedict-ita-rus-2024.10.10.dictd.tar.xz) = 763408
+Index: ita-spa/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-spa/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ita-spa/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-spa/Makefile	10 Jan 2025 09:52:38 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Italian-Spanish FreeDict+WikDict Dictionary
+ DICT =	ita-spa
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ita-spa/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-spa/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ita-spa/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-spa/distinfo	10 Jan 2025 09:58:15 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ita-spa-2023.05.29.dictd.tar.xz) = Ah8qX+YWHBlLbY6z0AR1+8UzTwiNwGCqsR501hPRyA0=
+-SIZE (freedict-ita-spa-2023.05.29.dictd.tar.xz) = 370104
++SHA256 (freedict-ita-spa-2024.10.10.dictd.tar.xz) = QLjll6F+cXg5gUUDtT0B6WUPRgCuSLyk40Al/zvKn94=
++SIZE (freedict-ita-spa-2024.10.10.dictd.tar.xz) = 701736
+Index: ita-swe/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-swe/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ita-swe/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-swe/Makefile	10 Jan 2025 09:52:38 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Italian-Swedish FreeDict+WikDict Dictionary
+ DICT =	ita-swe
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ita-swe/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-swe/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ita-swe/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-swe/distinfo	10 Jan 2025 09:58:16 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ita-swe-2023.05.29.dictd.tar.xz) = p/vaWK2rMXu0sDC1ye2+5rA4kbA5KcFLskVpHl/lYEI=
+-SIZE (freedict-ita-swe-2023.05.29.dictd.tar.xz) = 498452
++SHA256 (freedict-ita-swe-2024.10.10.dictd.tar.xz) = NhyggPpjBipiyD91a0POzCrDXPcCY7lJ0jTPuCaI490=
++SIZE (freedict-ita-swe-2024.10.10.dictd.tar.xz) = 900448
+Index: ita-tur/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-tur/Makefile,v
+diff -u -p -r1.2 Makefile
+--- ita-tur/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-tur/Makefile	10 Jan 2025 09:52:38 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Italian-Turkish FreeDict+WikDict Dictionary
+ DICT =	ita-tur
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: ita-tur/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/ita-tur/distinfo,v
+diff -u -p -r1.2 distinfo
+--- ita-tur/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ ita-tur/distinfo	10 Jan 2025 09:58:17 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-ita-tur-2023.05.29.dictd.tar.xz) = 3Oz/Mh9bzGGu/1fAgQknMKsoFUKGJ9eYHO7gaYILJO8=
+-SIZE (freedict-ita-tur-2023.05.29.dictd.tar.xz) = 510824
++SHA256 (freedict-ita-tur-2024.10.10.dictd.tar.xz) = CT7AkoXyOlzcBV39HSXhsD66QoEBSxF+EMJd6twC6yc=
++SIZE (freedict-ita-tur-2024.10.10.dictd.tar.xz) = 932020
+Index: nld-bul/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-bul/Makefile,v
+diff -u -p -r1.2 Makefile
+--- nld-bul/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-bul/Makefile	10 Jan 2025 09:52:38 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Dutch-Bulgarian FreeDict+WikDict Dictionary
+ DICT =	nld-bul
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: nld-bul/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-bul/distinfo,v
+diff -u -p -r1.2 distinfo
+--- nld-bul/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-bul/distinfo	10 Jan 2025 09:58:24 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-nld-bul-2023.05.29.dictd.tar.xz) = OxXjkCpL6c4NV++luutEAEbfplBFwRbc98McO3UUtXk=
+-SIZE (freedict-nld-bul-2023.05.29.dictd.tar.xz) = 511708
++SHA256 (freedict-nld-bul-2024.10.10.dictd.tar.xz) = RU8Vn75mCriIUyBH3rxJ1lTBNGLc3gTkguaEhVIC/n4=
++SIZE (freedict-nld-bul-2024.10.10.dictd.tar.xz) = 654820
+Index: nld-ell/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-ell/Makefile,v
+diff -u -p -r1.2 Makefile
+--- nld-ell/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-ell/Makefile	10 Jan 2025 09:52:38 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Dutch-Greek FreeDict+WikDict Dictionary
+ DICT =	nld-ell
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: nld-ell/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-ell/distinfo,v
+diff -u -p -r1.2 distinfo
+--- nld-ell/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-ell/distinfo	10 Jan 2025 09:58:25 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-nld-ell-2023.05.29.dictd.tar.xz) = QSfDLJ9bxNxJX5hnlQXiRCekNNXVj1xFHSTLP4yMBZo=
+-SIZE (freedict-nld-ell-2023.05.29.dictd.tar.xz) = 504748
++SHA256 (freedict-nld-ell-2024.10.10.dictd.tar.xz) = /T+o3WUsbu5ffgxFuqDZYfFh+6M+4izS9PrqIedH9wo=
++SIZE (freedict-nld-ell-2024.10.10.dictd.tar.xz) = 644924
+Index: nld-fin/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-fin/Makefile,v
+diff -u -p -r1.2 Makefile
+--- nld-fin/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-fin/Makefile	10 Jan 2025 09:52:38 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Dutch-Finnish FreeDict+WikDict Dictionary
+ DICT =	nld-fin
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: nld-fin/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-fin/distinfo,v
+diff -u -p -r1.2 distinfo
+--- nld-fin/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-fin/distinfo	10 Jan 2025 09:58:26 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-nld-fin-2023.05.29.dictd.tar.xz) = 6O5Rm4nlvfWcltmwkkMWkEiwYSbuudS7EtKlFwrpLp4=
+-SIZE (freedict-nld-fin-2023.05.29.dictd.tar.xz) = 515100
++SHA256 (freedict-nld-fin-2024.10.10.dictd.tar.xz) = vAfRqg4kLbA97qRZQX/mA2qKKLqa+37vxEvyV7C7MxI=
++SIZE (freedict-nld-fin-2024.10.10.dictd.tar.xz) = 656064
+Index: nld-lat/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-lat/Makefile,v
+diff -u -p -r1.2 Makefile
+--- nld-lat/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-lat/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Dutch-Latin FreeDict+WikDict Dictionary
+ DICT =	nld-lat
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: nld-lat/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-lat/distinfo,v
+diff -u -p -r1.2 distinfo
+--- nld-lat/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-lat/distinfo	10 Jan 2025 09:58:28 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-nld-lat-2023.05.29.dictd.tar.xz) = SvuJe3VC4KnUdbt2phHkIv5jI5+6cj6IsoXxQQaS1E8=
+-SIZE (freedict-nld-lat-2023.05.29.dictd.tar.xz) = 480300
++SHA256 (freedict-nld-lat-2024.10.10.dictd.tar.xz) = 24NHwW/DKALuH6WnsBJ3++yn8Mx2QnDzFvoPnAd184M=
++SIZE (freedict-nld-lat-2024.10.10.dictd.tar.xz) = 625632
+Index: nld-pol/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-pol/Makefile,v
+diff -u -p -r1.2 Makefile
+--- nld-pol/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-pol/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Dutch-Polish FreeDict+WikDict Dictionary
+ DICT =	nld-pol
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: nld-pol/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-pol/distinfo,v
+diff -u -p -r1.2 distinfo
+--- nld-pol/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-pol/distinfo	10 Jan 2025 09:58:29 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-nld-pol-2023.05.29.dictd.tar.xz) = Oq7xTa1lbNJISVj20NjjXbZ7C9TT/3bUEeskYf0XJ38=
+-SIZE (freedict-nld-pol-2023.05.29.dictd.tar.xz) = 517080
++SHA256 (freedict-nld-pol-2024.10.10.dictd.tar.xz) = 1IjBi+KjOS0UgElUJBqqmDxQZZTn/QHpUPh2kTM2qDY=
++SIZE (freedict-nld-pol-2024.10.10.dictd.tar.xz) = 672472
+Index: nld-por/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-por/Makefile,v
+diff -u -p -r1.2 Makefile
+--- nld-por/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-por/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Dutch-Portuguese FreeDict+WikDict Dictionary
+ DICT =	nld-por
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: nld-por/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-por/distinfo,v
+diff -u -p -r1.2 distinfo
+--- nld-por/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-por/distinfo	10 Jan 2025 09:58:30 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-nld-por-2023.05.29.dictd.tar.xz) = LYUrfBsa+LQBN4hPmBQ/7/nBZCpOKt2jB3YQdsz8HMQ=
+-SIZE (freedict-nld-por-2023.05.29.dictd.tar.xz) = 526792
++SHA256 (freedict-nld-por-2024.10.10.dictd.tar.xz) = IlFAPww1xOpWFKDlBQvquq0VL2d4NhbCmS4k5P4mRnU=
++SIZE (freedict-nld-por-2024.10.10.dictd.tar.xz) = 678664
+Index: nld-rus/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-rus/Makefile,v
+diff -u -p -r1.2 Makefile
+--- nld-rus/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-rus/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Dutch-Russian FreeDict+WikDict Dictionary
+ DICT =	nld-rus
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: nld-rus/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-rus/distinfo,v
+diff -u -p -r1.2 distinfo
+--- nld-rus/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-rus/distinfo	10 Jan 2025 09:58:30 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-nld-rus-2023.05.29.dictd.tar.xz) = VtgopVribS64f5VCBns0/bjhX6tFwKjvMRkIN+QlvkA=
+-SIZE (freedict-nld-rus-2023.05.29.dictd.tar.xz) = 567820
++SHA256 (freedict-nld-rus-2024.10.10.dictd.tar.xz) = R+4N+ds5pEg9h5c/CeVQvZ7OQ8wikSpS0Mgn9bOyKW8=
++SIZE (freedict-nld-rus-2024.10.10.dictd.tar.xz) = 721856
+Index: nld-spa/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-spa/Makefile,v
+diff -u -p -r1.2 Makefile
+--- nld-spa/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-spa/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Dutch-Spanish FreeDict+WikDict Dictionary
+ DICT =	nld-spa
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: nld-spa/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-spa/distinfo,v
+diff -u -p -r1.2 distinfo
+--- nld-spa/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-spa/distinfo	10 Jan 2025 09:58:31 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-nld-spa-2023.05.29.dictd.tar.xz) = q8KRs/4oE3bMkJpmsleROx4jPMvAxUTC9GAq6fWQQU8=
+-SIZE (freedict-nld-spa-2023.05.29.dictd.tar.xz) = 1054580
++SHA256 (freedict-nld-spa-2024.10.10.dictd.tar.xz) = 1R7E4a3+sB5kueVVbV5E5JKvoM9u2wrH8+m/LCWsijk=
++SIZE (freedict-nld-spa-2024.10.10.dictd.tar.xz) = 1259248
+Index: nld-swe/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-swe/Makefile,v
+diff -u -p -r1.2 Makefile
+--- nld-swe/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-swe/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Dutch-Swedish FreeDict+WikDict Dictionary
+ DICT =	nld-swe
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: nld-swe/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/nld-swe/distinfo,v
+diff -u -p -r1.2 distinfo
+--- nld-swe/distinfo	4 Mar 2024 12:46:56 -0000	1.2
++++ nld-swe/distinfo	10 Jan 2025 09:58:31 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-nld-swe-2023.05.29.dictd.tar.xz) = ZPS8qOSSADr84DxYz9k4pWBV74gJVpBHlmVBeV6ocG4=
+-SIZE (freedict-nld-swe-2023.05.29.dictd.tar.xz) = 526768
++SHA256 (freedict-nld-swe-2024.10.10.dictd.tar.xz) = 2prXL2Ko0fkITAQ8qPG9xRVDVeTDu2yAeITTAR7ki3w=
++SIZE (freedict-nld-swe-2024.10.10.dictd.tar.xz) = 675440
+Index: pol-bul/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-bul/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-bul/Makefile	4 Mar 2024 12:46:56 -0000	1.2
++++ pol-bul/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-Bulgarian FreeDict+WikDict Dictionary
+ DICT =	pol-bul
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-bul/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-bul/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-bul/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-bul/distinfo	10 Jan 2025 09:58:33 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-bul-2023.05.29.dictd.tar.xz) = MkQOEJzWQlFz+564HMQWhLQ0Qda+5jTbK3axxA7hAkM=
+-SIZE (freedict-pol-bul-2023.05.29.dictd.tar.xz) = 760452
++SHA256 (freedict-pol-bul-2024.10.10.dictd.tar.xz) = hXV95bggljbACil9XCltyjdB7XuP4++nhQpJU0e3nNc=
++SIZE (freedict-pol-bul-2024.10.10.dictd.tar.xz) = 837388
+Index: pol-deu/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-deu/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-deu/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-deu/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-German FreeDict+WikDict Dictionary
+ DICT =	pol-deu
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-deu/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-deu/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-deu/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-deu/distinfo	10 Jan 2025 09:58:33 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-deu-2023.05.29.dictd.tar.xz) = G9Zfd1cv8U5wgKT6sYXRHIY4yL2/JJo+V0SB4j//do4=
+-SIZE (freedict-pol-deu-2023.05.29.dictd.tar.xz) = 1553384
++SHA256 (freedict-pol-deu-2024.10.10.dictd.tar.xz) = 6l3OjGA4Q/a7tta4oyb5T0KwG1g8g9c7eGLQ/HK9QUU=
++SIZE (freedict-pol-deu-2024.10.10.dictd.tar.xz) = 1626884
+Index: pol-ell/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-ell/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-ell/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-ell/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-Greek FreeDict+WikDict Dictionary
+ DICT =	pol-ell
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-ell/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-ell/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-ell/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-ell/distinfo	10 Jan 2025 09:58:34 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-ell-2023.05.29.dictd.tar.xz) = fvjIGqqqsFT3FsSAYQqkMLDW8IzgwoMs8cMS3pIgGso=
+-SIZE (freedict-pol-ell-2023.05.29.dictd.tar.xz) = 946664
++SHA256 (freedict-pol-ell-2024.10.10.dictd.tar.xz) = tpOgc2ywii/IQJdr0JCdMzkvXHspwOlEfIZA//Rcr20=
++SIZE (freedict-pol-ell-2024.10.10.dictd.tar.xz) = 974224
+Index: pol-eng/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-eng/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-eng/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-eng/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-English FreeDict+WikDict Dictionary
+ DICT =	pol-eng
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-eng/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-eng/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-eng/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-eng/distinfo	10 Jan 2025 09:58:35 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-eng-2023.05.29.dictd.tar.xz) = e9Y/e5OXbybMOS+8NuJ9E2STfy1nAgkjuy6VGBKl9Rk=
+-SIZE (freedict-pol-eng-2023.05.29.dictd.tar.xz) = 2441308
++SHA256 (freedict-pol-eng-2024.10.10.dictd.tar.xz) = ZIn08q7KgGEb1F7jY0bAQXzUsWRilQGMNP7of4Wfxds=
++SIZE (freedict-pol-eng-2024.10.10.dictd.tar.xz) = 2560096
+Index: pol-fin/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-fin/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-fin/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-fin/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-Finnish FreeDict+WikDict Dictionary
+ DICT =	pol-fin
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-fin/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-fin/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-fin/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-fin/distinfo	10 Jan 2025 09:58:35 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-fin-2023.05.29.dictd.tar.xz) = 2SvMmxw4oeL7yJxn38gjAcPkNvz+FD9uIRq/vrF1yds=
+-SIZE (freedict-pol-fin-2023.05.29.dictd.tar.xz) = 1035276
++SHA256 (freedict-pol-fin-2024.10.10.dictd.tar.xz) = MFhNXPmg31DW3bbSnQsyPyFQk6pwUDIU8zwjKRanj6U=
++SIZE (freedict-pol-fin-2024.10.10.dictd.tar.xz) = 1115740
+Index: pol-fra/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-fra/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-fra/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-fra/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-French FreeDict+WikDict Dictionary
+ DICT =	pol-fra
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-fra/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-fra/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-fra/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-fra/distinfo	10 Jan 2025 09:58:36 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-fra-2023.05.29.dictd.tar.xz) = gB8AY0OvlW0m4Hnbws4kZqMmAT6vq8KT2qwiy+TOA7Y=
+-SIZE (freedict-pol-fra-2023.05.29.dictd.tar.xz) = 1236216
++SHA256 (freedict-pol-fra-2024.10.10.dictd.tar.xz) = +kk3erYrhsJzrByrVcNtUUSrw9mdjSRorRsWKPa98oE=
++SIZE (freedict-pol-fra-2024.10.10.dictd.tar.xz) = 1303540
+Index: pol-ind/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-ind/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-ind/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-ind/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-Indonesian FreeDict+WikDict Dictionary
+ DICT =	pol-ind
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-ind/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-ind/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-ind/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-ind/distinfo	10 Jan 2025 09:58:37 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-ind-2023.05.29.dictd.tar.xz) = wNKjnzchV+Hd+lxHdcd6u+TMoaADAi7UqnruIU8W+xs=
+-SIZE (freedict-pol-ind-2023.05.29.dictd.tar.xz) = 897360
++SHA256 (freedict-pol-ind-2024.10.10.dictd.tar.xz) = XZ1A7owSgK6h/ES4iyy3TPcpeMrSRMTjjC3UTobBwBU=
++SIZE (freedict-pol-ind-2024.10.10.dictd.tar.xz) = 991180
+Index: pol-ita/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-ita/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-ita/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-ita/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-Italian FreeDict+WikDict Dictionary
+ DICT =	pol-ita
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-ita/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-ita/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-ita/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-ita/distinfo	10 Jan 2025 09:58:37 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-ita-2023.05.29.dictd.tar.xz) = 4se2tr8LhQagdzAsnC9rWdzXRSdfit48k1V29G/IAWI=
+-SIZE (freedict-pol-ita-2023.05.29.dictd.tar.xz) = 1240936
++SHA256 (freedict-pol-ita-2024.10.10.dictd.tar.xz) = kFDhG6962Ft8yVgex64gDN00fCs5c6DMCvRYrwlEjSA=
++SIZE (freedict-pol-ita-2024.10.10.dictd.tar.xz) = 1326276
+Index: pol-jpn/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-jpn/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-jpn/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-jpn/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-Japanese FreeDict+WikDict Dictionary
+ DICT =	pol-jpn
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-jpn/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-jpn/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-jpn/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-jpn/distinfo	10 Jan 2025 09:58:38 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-jpn-2023.05.29.dictd.tar.xz) = 01raAbNHZxM4NT15uy5LHvyoKkC2p+aQYWdeG34XNNc=
+-SIZE (freedict-pol-jpn-2023.05.29.dictd.tar.xz) = 865060
++SHA256 (freedict-pol-jpn-2024.10.10.dictd.tar.xz) = Z+5HryoBmvtmymkHFoyYT/5SeA7phfcXnZMf3bi6FoA=
++SIZE (freedict-pol-jpn-2024.10.10.dictd.tar.xz) = 923256
+Index: pol-nld/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-nld/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-nld/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-nld/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-Dutch FreeDict+WikDict Dictionary
+ DICT =	pol-nld
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-nld/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-nld/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-nld/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-nld/distinfo	10 Jan 2025 09:58:38 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-nld-2023.05.29.dictd.tar.xz) = 2tY9KxjgrBxROChBT6oNpOXb8tx24Lajbc2iy+fayKo=
+-SIZE (freedict-pol-nld-2023.05.29.dictd.tar.xz) = 932864
++SHA256 (freedict-pol-nld-2024.10.10.dictd.tar.xz) = T/Th45nAkHim3B1UPA46hVRJDw0Xfi04FiAcEXkX+70=
++SIZE (freedict-pol-nld-2024.10.10.dictd.tar.xz) = 1022728
+Index: pol-nor/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-nor/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-nor/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-nor/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-Norwegian FreeDict+WikDict Dictionary
+ DICT =	pol-nor
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-nor/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-nor/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-nor/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-nor/distinfo	10 Jan 2025 09:58:39 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-nor-2023.05.29.dictd.tar.xz) = FpXswkgo6D9NFmzo47HSloOfCSnDR5MQ1XuAb/aExI0=
+-SIZE (freedict-pol-nor-2023.05.29.dictd.tar.xz) = 970212
++SHA256 (freedict-pol-nor-2024.10.10.dictd.tar.xz) = TxAfvR0wE55fHf4ssIlgqm3nI7kzU/Gidkx8TLT+nCE=
++SIZE (freedict-pol-nor-2024.10.10.dictd.tar.xz) = 1038800
+Index: pol-por/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-por/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-por/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-por/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-Portuguese FreeDict+WikDict Dictionary
+ DICT =	pol-por
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-por/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-por/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-por/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-por/distinfo	10 Jan 2025 09:58:39 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-por-2023.05.29.dictd.tar.xz) = NTIgBX7lGVMnuiO+ujcieGHdbLAseOHVPHFatOl3mQc=
+-SIZE (freedict-pol-por-2023.05.29.dictd.tar.xz) = 741296
++SHA256 (freedict-pol-por-2024.10.10.dictd.tar.xz) = 9YV2oqdo7CZkb7TyFQyQyARq3W7k3GdSr+XyynQ+qLM=
++SIZE (freedict-pol-por-2024.10.10.dictd.tar.xz) = 754104
+Index: pol-rus/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-rus/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-rus/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-rus/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-Russian FreeDict+WikDict Dictionary
+ DICT =	pol-rus
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-rus/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-rus/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-rus/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-rus/distinfo	10 Jan 2025 09:58:40 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-rus-2023.05.29.dictd.tar.xz) = RlJjsqmf/0Ki/9lzzYInSgsRnF1ajDbvXUAulzrlJP8=
+-SIZE (freedict-pol-rus-2023.05.29.dictd.tar.xz) = 1670228
++SHA256 (freedict-pol-rus-2024.10.10.dictd.tar.xz) = 5+RVF9Xom6oloLW3B9APYzdaiWm3Rua7F85RFyfu5zQ=
++SIZE (freedict-pol-rus-2024.10.10.dictd.tar.xz) = 1744636
+Index: pol-spa/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-spa/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-spa/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-spa/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-Spanish FreeDict+WikDict Dictionary
+ DICT =	pol-spa
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-spa/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-spa/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-spa/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-spa/distinfo	10 Jan 2025 09:58:41 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-spa-2023.05.29.dictd.tar.xz) = Dq1hd4QrD9hPdZJAWewaiGuMlYuVkgHUl47mendQ+ks=
+-SIZE (freedict-pol-spa-2023.05.29.dictd.tar.xz) = 1432088
++SHA256 (freedict-pol-spa-2024.10.10.dictd.tar.xz) = 2Hf0Z5hxpkRClh6WlUXcmdDq4hq+3N9pZews11UM5S4=
++SIZE (freedict-pol-spa-2024.10.10.dictd.tar.xz) = 1489636
+Index: pol-swe/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-swe/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-swe/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-swe/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-Swedish FreeDict+WikDict Dictionary
+ DICT =	pol-swe
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-swe/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-swe/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-swe/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-swe/distinfo	10 Jan 2025 09:58:41 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-swe-2023.05.29.dictd.tar.xz) = NGCSMVZMmQ7mdks4tpiUTvwr5mvZWFJQfJaEP6bgLfA=
+-SIZE (freedict-pol-swe-2023.05.29.dictd.tar.xz) = 780564
++SHA256 (freedict-pol-swe-2024.10.10.dictd.tar.xz) = lCpIVl3+bNwyL1vDH9QlIzUA6bucFlXEe1xCDNrFYEU=
++SIZE (freedict-pol-swe-2024.10.10.dictd.tar.xz) = 813480
+Index: pol-tur/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-tur/Makefile,v
+diff -u -p -r1.2 Makefile
+--- pol-tur/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-tur/Makefile	10 Jan 2025 09:52:39 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Polish-Turkish FreeDict+WikDict Dictionary
+ DICT =	pol-tur
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: pol-tur/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/pol-tur/distinfo,v
+diff -u -p -r1.2 distinfo
+--- pol-tur/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ pol-tur/distinfo	10 Jan 2025 09:58:42 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-pol-tur-2023.05.29.dictd.tar.xz) = 3+uROl7Su3mnE0Umv3iAn18WntCnQ9k6y+KD3u08oRY=
+-SIZE (freedict-pol-tur-2023.05.29.dictd.tar.xz) = 720084
++SHA256 (freedict-pol-tur-2024.10.10.dictd.tar.xz) = 3SMDxRw6W8/jv9dzLpWxTih7+5m2likLWiX9IygxCr0=
++SIZE (freedict-pol-tur-2024.10.10.dictd.tar.xz) = 793532
+Index: por-fra/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/por-fra/Makefile,v
+diff -u -p -r1.2 Makefile
+--- por-fra/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ por-fra/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Portuguese-French FreeDict+WikDict Dictionary
+ DICT =	por-fra
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: por-fra/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/por-fra/distinfo,v
+diff -u -p -r1.2 distinfo
+--- por-fra/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ por-fra/distinfo	10 Jan 2025 09:58:43 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-por-fra-2023.05.29.dictd.tar.xz) = n0WCWi++3NB9PlabtQn79Wi2Lq3vcnOWy6H45+m6yMU=
+-SIZE (freedict-por-fra-2023.05.29.dictd.tar.xz) = 270840
++SHA256 (freedict-por-fra-2024.10.10.dictd.tar.xz) = oIJRq8vWZDpBqGqODhjWC+22va+gYe5MW5HNfDCcmWE=
++SIZE (freedict-por-fra-2024.10.10.dictd.tar.xz) = 319396
+Index: por-spa/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/por-spa/Makefile,v
+diff -u -p -r1.2 Makefile
+--- por-spa/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ por-spa/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Portuguese-Spanish FreeDict+WikDict Dictionary
+ DICT =	por-spa
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: por-spa/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/por-spa/distinfo,v
+diff -u -p -r1.2 distinfo
+--- por-spa/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ por-spa/distinfo	10 Jan 2025 09:58:44 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-por-spa-2023.05.29.dictd.tar.xz) = qTR4seW+A2K1H19qF/5f/R0PMPYZ2eIwjTM129hsqSU=
+-SIZE (freedict-por-spa-2023.05.29.dictd.tar.xz) = 273740
++SHA256 (freedict-por-spa-2024.10.10.dictd.tar.xz) = tmRgcB/Erzdm0Mri9PoAM5mVU3wYIBomBM7zWL2Qtv8=
++SIZE (freedict-por-spa-2024.10.10.dictd.tar.xz) = 324512
+Index: swe-bul/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-bul/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-bul/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-bul/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-Bulgarian FreeDict+WikDict Dictionary
+ DICT =	swe-bul
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-bul/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-bul/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-bul/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-bul/distinfo	10 Jan 2025 09:58:47 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-bul-2023.05.29.dictd.tar.xz) = /svNMNTZgUlgemcx9DVvYdLYOFFDHzJOr3I3hpUlylM=
+-SIZE (freedict-swe-bul-2023.05.29.dictd.tar.xz) = 544192
++SHA256 (freedict-swe-bul-2024.10.10.dictd.tar.xz) = U9TnbojGUeX8PoWNae2WPNje47PFpK/vIPZeMfvAIiQ=
++SIZE (freedict-swe-bul-2024.10.10.dictd.tar.xz) = 814104
+Index: swe-deu/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-deu/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-deu/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-deu/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-German FreeDict+WikDict Dictionary
+ DICT =	swe-deu
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-deu/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-deu/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-deu/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-deu/distinfo	10 Jan 2025 09:58:48 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-deu-2023.05.29.dictd.tar.xz) = bhJ3c2VASg8d3qlcQJ/zs0B7qJqAsTKY8zYdldGYF+M=
+-SIZE (freedict-swe-deu-2023.05.29.dictd.tar.xz) = 1660616
++SHA256 (freedict-swe-deu-2024.10.10.dictd.tar.xz) = EKgMNBoGBSLXeSZw+5rTkzooHnK9nI+MP2KBnJC24wo=
++SIZE (freedict-swe-deu-2024.10.10.dictd.tar.xz) = 2214792
+Index: swe-ell/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-ell/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-ell/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-ell/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-Greek FreeDict+WikDict Dictionary
+ DICT =	swe-ell
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-ell/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-ell/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-ell/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-ell/distinfo	10 Jan 2025 09:58:48 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-ell-2023.05.29.dictd.tar.xz) = 1tobNPLG8npZ253ImqVzH9EXBU5Q2/S6IIIl98I7JYQ=
+-SIZE (freedict-swe-ell-2023.05.29.dictd.tar.xz) = 571592
++SHA256 (freedict-swe-ell-2024.10.10.dictd.tar.xz) = blIpl7DRsz1Hgp0/z4NK6lIE3+5mSveyxJnmvg1jka4=
++SIZE (freedict-swe-ell-2024.10.10.dictd.tar.xz) = 838940
+Index: swe-fin/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-fin/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-fin/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-fin/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-Finnish FreeDict+WikDict Dictionary
+ DICT =	swe-fin
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-fin/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-fin/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-fin/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-fin/distinfo	10 Jan 2025 09:58:49 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-fin-2023.05.29.dictd.tar.xz) = PVCcyCen7ZnPgZCcd9BC+JyxikmMjRiTgbeVV0ea8b0=
+-SIZE (freedict-swe-fin-2023.05.29.dictd.tar.xz) = 599316
++SHA256 (freedict-swe-fin-2024.10.10.dictd.tar.xz) = 4Z4jYaSP6BEdsA4wEBjsQGsrIayI2478Jxx0hEeia88=
++SIZE (freedict-swe-fin-2024.10.10.dictd.tar.xz) = 883820
+Index: swe-fra/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-fra/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-fra/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-fra/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-French FreeDict+WikDict Dictionary
+ DICT =	swe-fra
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-fra/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-fra/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-fra/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-fra/distinfo	10 Jan 2025 09:58:50 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-fra-2023.05.29.dictd.tar.xz) = g85kWKSlRze+FmGoWW/HX8wyTJpCG9E39CnUb9rSv+A=
+-SIZE (freedict-swe-fra-2023.05.29.dictd.tar.xz) = 730164
++SHA256 (freedict-swe-fra-2024.10.10.dictd.tar.xz) = 0hPIKCvX6cKxXNeE+VX3/rwLvGla7PW8/xx6kE5+VKY=
++SIZE (freedict-swe-fra-2024.10.10.dictd.tar.xz) = 1010976
+Index: swe-ita/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-ita/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-ita/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-ita/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-Italian FreeDict+WikDict Dictionary
+ DICT =	swe-ita
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-ita/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-ita/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-ita/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-ita/distinfo	10 Jan 2025 09:58:50 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-ita-2023.05.29.dictd.tar.xz) = G7hif0EpBKARM+dwpNC75zES0zaIB6MDOT1RJ3UTsJY=
+-SIZE (freedict-swe-ita-2023.05.29.dictd.tar.xz) = 440240
++SHA256 (freedict-swe-ita-2024.10.10.dictd.tar.xz) = fsgfeEVXdjE4gJeD5CjeHn+an0gKOqvz5xEqNkotiA4=
++SIZE (freedict-swe-ita-2024.10.10.dictd.tar.xz) = 652928
+Index: swe-jpn/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-jpn/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-jpn/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-jpn/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-Japanese FreeDict+WikDict Dictionary
+ DICT =	swe-jpn
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-jpn/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-jpn/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-jpn/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-jpn/distinfo	10 Jan 2025 09:58:51 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-jpn-2023.05.29.dictd.tar.xz) = sVj7Dh53DLHEPdpMChpENw9DWv5GYfLr6u5aOjEZcGQ=
+-SIZE (freedict-swe-jpn-2023.05.29.dictd.tar.xz) = 510620
++SHA256 (freedict-swe-jpn-2024.10.10.dictd.tar.xz) = XsGYsgH/kZlZQS4Q2SjwxNP4g9csn+f8gNGRfOAhix8=
++SIZE (freedict-swe-jpn-2024.10.10.dictd.tar.xz) = 737872
+Index: swe-lat/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-lat/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-lat/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-lat/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-Latin FreeDict+WikDict Dictionary
+ DICT =	swe-lat
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-lat/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-lat/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-lat/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-lat/distinfo	10 Jan 2025 09:58:51 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-lat-2023.05.29.dictd.tar.xz) = DrhNpFuw+ftEQ8UljlQJLRa6kIp9WtLif7w7PtbTEP4=
+-SIZE (freedict-swe-lat-2023.05.29.dictd.tar.xz) = 456132
++SHA256 (freedict-swe-lat-2024.10.10.dictd.tar.xz) = aKt5WSpKU81C/r3j+8pnQ94BmwkABCxPh10/ltJPHy0=
++SIZE (freedict-swe-lat-2024.10.10.dictd.tar.xz) = 692752
+Index: swe-nld/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-nld/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-nld/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-nld/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-Dutch FreeDict+WikDict Dictionary
+ DICT =	swe-nld
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-nld/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-nld/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-nld/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-nld/distinfo	10 Jan 2025 09:58:52 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-nld-2023.05.29.dictd.tar.xz) = Jr0MsBZ35b0Pc7wOr9mBcloP7BI9BTduGaxtdH1EM8Y=
+-SIZE (freedict-swe-nld-2023.05.29.dictd.tar.xz) = 414748
++SHA256 (freedict-swe-nld-2024.10.10.dictd.tar.xz) = n/LGbB69R7cVw+JpxI5MWoN4BylfwKTTkxGl38TNuvw=
++SIZE (freedict-swe-nld-2024.10.10.dictd.tar.xz) = 623904
+Index: swe-nor/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-nor/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-nor/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-nor/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-Norwegian FreeDict+WikDict Dictionary
+ DICT =	swe-nor
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-nor/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-nor/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-nor/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-nor/distinfo	10 Jan 2025 09:58:52 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-nor-2023.05.29.dictd.tar.xz) = +99WmI+PmhaTsfJodyCXo3WFyg5WiS/iCwkSwTOW/Gk=
+-SIZE (freedict-swe-nor-2023.05.29.dictd.tar.xz) = 622096
++SHA256 (freedict-swe-nor-2024.10.10.dictd.tar.xz) = 8hKeO3dCqMx8ZiM+v3JQoAC+I5mUGsp1XpHQEDow6VU=
++SIZE (freedict-swe-nor-2024.10.10.dictd.tar.xz) = 882832
+Index: swe-pol/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-pol/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-pol/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-pol/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-Polish FreeDict+WikDict Dictionary
+ DICT =	swe-pol
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-pol/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-pol/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-pol/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-pol/distinfo	10 Jan 2025 09:58:53 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-pol-2023.05.29.dictd.tar.xz) = PBN/9liGsDzJ4I3wJXbWf9/qIbnIa9CoCMqGmcx9ZLQ=
+-SIZE (freedict-swe-pol-2023.05.29.dictd.tar.xz) = 501540
++SHA256 (freedict-swe-pol-2024.10.10.dictd.tar.xz) = hTYaCqJRj3JsOjFWY1S6Xs6Q+pZ6PSJrxf+pL71UCdM=
++SIZE (freedict-swe-pol-2024.10.10.dictd.tar.xz) = 716972
+Index: swe-por/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-por/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-por/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-por/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-Portuguese FreeDict+WikDict Dictionary
+ DICT =	swe-por
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-por/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-por/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-por/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-por/distinfo	10 Jan 2025 09:58:54 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-por-2023.05.29.dictd.tar.xz) = Oa1s49u4yMW1MWS5qi8yovmVGC6hATmrBiXYDjQkcak=
+-SIZE (freedict-swe-por-2023.05.29.dictd.tar.xz) = 389416
++SHA256 (freedict-swe-por-2024.10.10.dictd.tar.xz) = 0uYztLPjLZuaJ8f9IE8aM5mkCiIM1tsMO+Ch+SS3mHw=
++SIZE (freedict-swe-por-2024.10.10.dictd.tar.xz) = 582124
+Index: swe-rus/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-rus/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-rus/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-rus/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-Russian FreeDict+WikDict Dictionary
+ DICT =	swe-rus
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-rus/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-rus/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-rus/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-rus/distinfo	10 Jan 2025 09:58:54 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-rus-2023.05.29.dictd.tar.xz) = Zv+h4i7gkDfvXX2VSjN2qep1LbCPoIZBEMfZPf0QtFw=
+-SIZE (freedict-swe-rus-2023.05.29.dictd.tar.xz) = 452912
++SHA256 (freedict-swe-rus-2024.10.10.dictd.tar.xz) = sWs7HJUGpYQenzjiAn6zzTjofTa0rnKHu1zQ1942dGU=
++SIZE (freedict-swe-rus-2024.10.10.dictd.tar.xz) = 645344
+Index: swe-spa/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-spa/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-spa/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-spa/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-Spanish FreeDict+WikDict Dictionary
+ DICT =	swe-spa
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-spa/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-spa/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-spa/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-spa/distinfo	10 Jan 2025 09:58:55 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-spa-2023.05.29.dictd.tar.xz) = DGo1/VZ4WeV6N6IpFY6Vuulvadzm6Ivh5Td6J1jxGHA=
+-SIZE (freedict-swe-spa-2023.05.29.dictd.tar.xz) = 558980
++SHA256 (freedict-swe-spa-2024.10.10.dictd.tar.xz) = se6qTald5QeGr88k4WFK3kKBjL4YnDQYjsd3U/QHqr8=
++SIZE (freedict-swe-spa-2024.10.10.dictd.tar.xz) = 797796
+Index: swe-tur/Makefile
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-tur/Makefile,v
+diff -u -p -r1.2 Makefile
+--- swe-tur/Makefile	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-tur/Makefile	10 Jan 2025 09:52:40 -0000
+@@ -1,6 +1,6 @@
+ COMMENT =	Swedish-Turkish FreeDict+WikDict Dictionary
+ DICT =	swe-tur
+-V =	2023.05.29
++V =	2024.10.10
+ 
+ # Creative Commons Attribution-ShareAlike 3.0
+ PERMIT_PACKAGE =	Yes
+Index: swe-tur/distinfo
+===================================================================
+RCS file: /cvs/ports/education/freedict/swe-tur/distinfo,v
+diff -u -p -r1.2 distinfo
+--- swe-tur/distinfo	4 Mar 2024 12:46:57 -0000	1.2
++++ swe-tur/distinfo	10 Jan 2025 09:58:55 -0000
+@@ -1,2 +1,2 @@
+-SHA256 (freedict-swe-tur-2023.05.29.dictd.tar.xz) = +fxF1CL9uCWPZXHGCNvPxjg31149zuDuf7mJwEpGmpY=
+-SIZE (freedict-swe-tur-2023.05.29.dictd.tar.xz) = 457436
++SHA256 (freedict-swe-tur-2024.10.10.dictd.tar.xz) = oT+ovlcZVtLWwbciV4DqH0rwGwXSR2wzwpfYa8qQ5JY=
++SIZE (freedict-swe-tur-2024.10.10.dictd.tar.xz) = 703696
