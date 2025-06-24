@@ -1,0 +1,108 @@
+Index: lib/mesa/mk/libgallium_dri/Makefile
+===================================================================
+RCS file: /cvs/xenocara/lib/mesa/mk/libgallium_dri/Makefile,v
+diff -u -p -r1.14 Makefile
+--- lib/mesa/mk/libgallium_dri/Makefile	7 Jun 2025 09:07:04 -0000	1.14
++++ lib/mesa/mk/libgallium_dri/Makefile	22 Jun 2025 18:37:07 -0000
+@@ -1,4 +1,5 @@
+ #	$OpenBSD: Makefile,v 1.14 2025/06/07 09:07:04 jsg Exp $
++CFLAGS+=	-g
+ 
+ LIB=	gallium_dri
+ 
+@@ -60,7 +61,7 @@ CPPFLAGS+=	-DGALLIUM_LLVMPIPE
+ .endif
+ 
+ install:
+-	${INSTALL} ${INSTALL_COPY} ${INSTALL_STRIP} \
++	${INSTALL} ${INSTALL_COPY} \
+ 	    -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
+ 	    lib${LIB}.so ${DESTDIR}${X11BASE}/lib
+ #.for driver in ${GALLIUM_DRIVERS}
+Index: lib/mesa/mk/libgallium_drv_video/Makefile
+===================================================================
+RCS file: /cvs/xenocara/lib/mesa/mk/libgallium_drv_video/Makefile,v
+diff -u -p -r1.5 Makefile
+--- lib/mesa/mk/libgallium_drv_video/Makefile	5 Jun 2025 14:18:41 -0000	1.5
++++ lib/mesa/mk/libgallium_drv_video/Makefile	22 Jun 2025 18:37:19 -0000
+@@ -38,7 +38,7 @@ CPPFLAGS+=	-DGALLIUM_LLVMPIPE
+ .endif
+ 
+ install:
+-	${INSTALL} ${INSTALL_COPY} ${INSTALL_STRIP} \
++	${INSTALL} ${INSTALL_COPY} \
+ 	    -o ${LIBOWN} -g ${LIBGRP} -m ${LIBMODE} \
+ 	    lib${LIB}.so ${DESTDIR}${X11BASE}/lib/modules/dri
+ .for driver in ${GALLIUM_DRIVERS}
+Index: lib/mesa/src/gallium/auxiliary/gallivm/lp_bld_init.c
+===================================================================
+RCS file: /cvs/xenocara/lib/mesa/src/gallium/auxiliary/gallivm/lp_bld_init.c,v
+diff -u -p -r1.20 lp_bld_init.c
+--- lib/mesa/src/gallium/auxiliary/gallivm/lp_bld_init.c	5 Jun 2025 14:19:08 -0000	1.20
++++ lib/mesa/src/gallium/auxiliary/gallivm/lp_bld_init.c	24 Jun 2025 13:43:19 -0000
+@@ -234,10 +234,6 @@ init_gallivm_state(struct gallivm_state 
+    lp_set_module_stack_alignment_override(gallivm->module, 4);
+ #endif
+ 
+-#if DETECT_ARCH_AARCH64
+-   lp_set_module_branch_protection(gallivm->module);
+-#endif
+-
+    gallivm->builder = LLVMCreateBuilderInContext(gallivm->context);
+    if (!gallivm->builder)
+       goto fail;
+@@ -404,6 +400,15 @@ gallivm_compile_module(struct gallivm_st
+                    "[-mcpu=<-mcpu option>] ",
+                    "[-mattr=<-mattr option(s)>]");
+    }
++
++#if DETECT_ARCH_AARCH64
++    LLVMValueRef func = LLVMGetFirstFunction(gallivm->module);
++    while(func) {
++        LLVMAddTargetDependentFunctionAttr(func, "branch-target-enforcement", "true");
++        LLVMAddTargetDependentFunctionAttr(func, "sign-return-address", "non-leaf");
++        func = LLVMGetNextFunction(func);
++    }
++#endif
+ 
+    lp_passmgr_run(gallivm->passmgr,
+                   gallivm->module,
+Index: lib/mesa/src/gallium/auxiliary/gallivm/lp_bld_misc.cpp
+===================================================================
+RCS file: /cvs/xenocara/lib/mesa/src/gallium/auxiliary/gallivm/lp_bld_misc.cpp,v
+diff -u -p -r1.22 lp_bld_misc.cpp
+--- lib/mesa/src/gallium/auxiliary/gallivm/lp_bld_misc.cpp	5 Jun 2025 14:19:08 -0000	1.22
++++ lib/mesa/src/gallium/auxiliary/gallivm/lp_bld_misc.cpp	24 Jun 2025 13:47:26 -0000
+@@ -675,15 +675,6 @@ lp_set_module_stack_alignment_override(L
+ #endif
+ }
+ 
+-extern "C" void
+-lp_set_module_branch_protection(LLVMModuleRef MRef)
+-{
+-   /* Enable standard (bti+pac-ret) branch protection */
+-   llvm::Module *M = llvm::unwrap(MRef);
+-   M->addModuleFlag(llvm::Module::Override, "branch-target-enforcement", 1);
+-   M->addModuleFlag(llvm::Module::Override, "sign-return-address", 1);
+-}
+-
+ using namespace llvm;
+ 
+ class GallivmRunAtExitForStaticDestructors : public SDNode
+Index: lib/mesa/src/gallium/auxiliary/gallivm/lp_bld_misc.h
+===================================================================
+RCS file: /cvs/xenocara/lib/mesa/src/gallium/auxiliary/gallivm/lp_bld_misc.h,v
+diff -u -p -r1.13 lp_bld_misc.h
+--- lib/mesa/src/gallium/auxiliary/gallivm/lp_bld_misc.h	5 Jun 2025 14:19:08 -0000	1.13
++++ lib/mesa/src/gallium/auxiliary/gallivm/lp_bld_misc.h	24 Jun 2025 13:48:10 -0000
+@@ -96,10 +96,6 @@ lp_free_objcache(void *objcache);
+ 
+ void
+ lp_set_module_stack_alignment_override(LLVMModuleRef M, unsigned align);
+-
+-void
+-lp_set_module_branch_protection(LLVMModuleRef M);
+-
+ #ifdef __cplusplus
+ 
+ void
