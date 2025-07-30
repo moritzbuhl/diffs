@@ -1,0 +1,436 @@
+Index: ic/bwfm.c
+===================================================================
+RCS file: /cvs/src/sys/dev/ic/bwfm.c,v
+diff -u -p -r1.111 bwfm.c
+--- ic/bwfm.c	19 Feb 2024 21:23:02 -0000	1.111
++++ ic/bwfm.c	30 Jul 2025 21:41:08 -0000
+@@ -48,11 +48,10 @@
+ #include <dev/ic/bwfmvar.h>
+ #include <dev/ic/bwfmreg.h>
+ 
+-/* #define BWFM_DEBUG */
+ #ifdef BWFM_DEBUG
+ #define DPRINTF(x)	do { if (bwfm_debug > 0) printf x; } while (0)
+ #define DPRINTFN(n, x)	do { if (bwfm_debug >= (n)) printf x; } while (0)
+-static int bwfm_debug = 1;
++static int bwfm_debug = 10000;
+ #else
+ #define DPRINTF(x)	do { ; } while (0)
+ #define DPRINTFN(n, x)	do { ; } while (0)
+@@ -193,6 +192,7 @@ bwfm_attach(struct bwfm_softc *sc)
+ 	sc->sc_taskq = taskq_create(DEVNAME(sc), 1, IPL_SOFTNET, 0);
+ 	task_set(&sc->sc_task, bwfm_task, sc);
+ 	ml_init(&sc->sc_evml);
++	ml_init(&sc->sc_dataml);
+ 
+ 	ic->ic_phytype = IEEE80211_T_OFDM;	/* not only, but not used */
+ 	ic->ic_opmode = IEEE80211_M_STA;	/* default to BSS mode */
+@@ -247,13 +247,19 @@ bwfm_preinit(struct bwfm_softc *sc)
+ {
+ 	struct ieee80211com *ic = &sc->sc_ic;
+ 	struct ifnet *ifp = &ic->ic_if;
+-	int i, j, nbands, nmode, vhtmode;
++	int i, j, nbands, nmode, vhtmode, try = 0;
+ 	uint32_t bandlist[3], tmp;
+ 
+ 	if (sc->sc_initialized)
+ 		return 0;
+ 
++ retry:
+ 	if (bwfm_fwvar_cmd_get_int(sc, BWFM_C_GET_VERSION, &tmp)) {
++		try++;
++		if (try < 5) {
++			delay(100);
++			goto retry;
++		}
+ 		printf("%s: could not read io type\n", DEVNAME(sc));
+ 		return 1;
+ 	} else
+@@ -1702,8 +1708,11 @@ bwfm_proto_bcdc_txctl(struct bwfm_softc 
+ 		return 1;
+ 	}
+ 
+-	if (tsleep_nsec(ctl, PWAIT, "bwfm", SEC_TO_NSEC(1)))
++	if (tsleep_nsec(ctl, PWAIT, "bwfm", SEC_TO_NSEC(1))) {
++		printf("%s: timeout reqid=%d, buf=%p, len=%p *len=%lu\n",
++		    DEVNAME(sc), reqid, buf, len, *len);
+ 		timeout = 1;
++	}
+ 
+ 	TAILQ_FOREACH_SAFE(ctl, &sc->sc_bcdc_rxctlq, next, tmp) {
+ 		if (ctl->reqid != reqid)
+@@ -1811,31 +1820,42 @@ bwfm_fwvar_cmd_set_int(struct bwfm_softc
+ int
+ bwfm_fwvar_var_get_data(struct bwfm_softc *sc, char *name, void *data, size_t len)
+ {
+-	char *buf;
++	size_t buflen = len + 1 + strlen(name);
++	char *buf, sbuf[192];
+ 	int ret;
+ 
+-	buf = malloc(strlen(name) + 1 + len, M_TEMP, M_WAITOK);
++	if (buflen > sizeof(sbuf))
++		buf = malloc(strlen(name) + 1 + len, M_TEMP, M_WAITOK);
++	else
++		buf = sbuf;
+ 	memcpy(buf, name, strlen(name) + 1);
+ 	memcpy(buf + strlen(name) + 1, data, len);
+ 	ret = bwfm_fwvar_cmd_get_data(sc, BWFM_C_GET_VAR,
+ 	    buf, strlen(name) + 1 + len);
+ 	memcpy(data, buf, len);
+-	free(buf, M_TEMP, strlen(name) + 1 + len);
++	if (buf != sbuf)
++		free(buf, M_TEMP, strlen(name) + 1 + len);
+ 	return ret;
+ }
+ 
+ int
+ bwfm_fwvar_var_set_data(struct bwfm_softc *sc, char *name, void *data, size_t len)
+ {
+-	char *buf;
++	size_t buflen = len + 1 + strlen(name);
++	char *buf, sbuf[192];
+ 	int ret;
+ 
+-	buf = malloc(strlen(name) + 1 + len, M_TEMP, M_WAITOK);
++	if (buflen > sizeof(sbuf))
++		buf = malloc(strlen(name) + 1 + len, M_TEMP, M_WAITOK);
++	else
++		buf = sbuf;
++
+ 	memcpy(buf, name, strlen(name) + 1);
+ 	memcpy(buf + strlen(name) + 1, data, len);
+ 	ret = bwfm_fwvar_cmd_set_data(sc, BWFM_C_SET_VAR,
+ 	    buf, strlen(name) + 1 + len);
+-	free(buf, M_TEMP, strlen(name) + 1 + len);
++	if (buf != sbuf)
++		free(buf, M_TEMP, strlen(name) + 1 + len);
+ 	return ret;
+ }
+ 
+@@ -1984,9 +2004,12 @@ bwfm_connect(struct bwfm_softc *sc)
+ {
+ 	struct ieee80211com *ic = &sc->sc_ic;
+ 	struct bwfm_ext_join_params *params;
+-	uint8_t buf[64];	/* XXX max WPA/RSN/WMM IE length */
++	uint8_t buf[2*64];	/* XXX max WPA/RSN/WMM IE length */
+ 	uint8_t *frm;
+ 
++	if(bwfm_fwvar_var_set_int(sc, "mfp", BWFM_MFP_NONE))
++		return;
++
+ 	/*
+ 	 * OPEN: Open or WEP or WPA/WPA2 on newer Chips/Firmware.
+ 	 * AUTO: Automatic, probably for older Chips/Firmware.
+@@ -2000,7 +2023,8 @@ bwfm_connect(struct bwfm_softc *sc)
+ 			frm = ieee80211_add_rsn(buf, ic, ic->ic_bss);
+ 		else
+ 			frm = ieee80211_add_wpa(buf, ic, ic->ic_bss);
+-		bwfm_fwvar_var_set_data(sc, "wpaie", buf, frm - buf);
++		if(bwfm_fwvar_var_set_data(sc, "wpaie", buf, frm - buf))
++			return;
+ 
+ 		if (ic->ic_rsnprotos & IEEE80211_PROTO_WPA) {
+ 			if (ic->ic_rsnakms & IEEE80211_AKM_PSK)
+@@ -2025,17 +2049,23 @@ bwfm_connect(struct bwfm_softc *sc)
+ 		    ic->ic_rsngroupcipher & IEEE80211_WPA_CIPHER_CCMP)
+ 			wsec |= BWFM_WSEC_AES;
+ 
+-		bwfm_fwvar_var_set_int(sc, "wpa_auth", wpa);
+-		bwfm_fwvar_var_set_int(sc, "wsec", wsec);
++		if(bwfm_fwvar_var_set_int(sc, "wpa_auth", wpa))
++			return;
++		if(bwfm_fwvar_var_set_int(sc, "wsec", wsec))
++			return;
+ 	} else if (ic->ic_flags & IEEE80211_F_WEPON) {
+-		bwfm_fwvar_var_set_int(sc, "wpa_auth", BWFM_WPA_AUTH_DISABLED);
+-		bwfm_fwvar_var_set_int(sc, "wsec", BWFM_WSEC_WEP);
++		if(bwfm_fwvar_var_set_int(sc, "wpa_auth", BWFM_WPA_AUTH_DISABLED))
++			return;
++		if(bwfm_fwvar_var_set_int(sc, "wsec", BWFM_WSEC_WEP))
++			return;
+ 	} else {
+-		bwfm_fwvar_var_set_int(sc, "wpa_auth", BWFM_WPA_AUTH_DISABLED);
+-		bwfm_fwvar_var_set_int(sc, "wsec", BWFM_WSEC_NONE);
++		if(bwfm_fwvar_var_set_int(sc, "wpa_auth", BWFM_WPA_AUTH_DISABLED))
++			return;
++		if(bwfm_fwvar_var_set_int(sc, "wsec", BWFM_WSEC_NONE))
++			return;
+ 	}
+-	bwfm_fwvar_var_set_int(sc, "auth", BWFM_AUTH_OPEN);
+-	bwfm_fwvar_var_set_int(sc, "mfp", BWFM_MFP_NONE);
++	if(bwfm_fwvar_var_set_int(sc, "auth", BWFM_AUTH_OPEN))
++		return;
+ 
+ 	if (ic->ic_des_esslen && ic->ic_des_esslen <= BWFM_MAX_SSID_LEN) {
+ 		params = malloc(sizeof(*params), M_TEMP, M_WAITOK | M_ZERO);
+@@ -2044,10 +2074,11 @@ bwfm_connect(struct bwfm_softc *sc)
+ 		memcpy(params->assoc.bssid, ic->ic_bss->ni_bssid,
+ 		    sizeof(params->assoc.bssid));
+ 		params->scan.scan_type = -1;
+-		params->scan.nprobes = htole32(-1);
+-		params->scan.active_time = htole32(-1);
+-		params->scan.passive_time = htole32(-1);
++		params->scan.nprobes = htole32(16);
++		params->scan.active_time = htole32(320);
++		params->scan.passive_time = htole32(400);
+ 		params->scan.home_time = htole32(-1);
++		//params->assoc.chanspec_num = htole32(1);
+ 		if (bwfm_fwvar_var_set_data(sc, "join", params, sizeof(*params))) {
+ 			struct bwfm_join_params join;
+ 			memset(&join, 0, sizeof(join));
+@@ -2371,8 +2402,15 @@ bwfm_rx(struct bwfm_softc *sc, struct mb
+ 		return;
+ 	}
+ 
+-	/* Drop network packets if we are not in RUN state. */
++
++	/* Drop or enqueue data packets if we are not in RUN state. */
+ 	if (ic->ic_state != IEEE80211_S_RUN) {
++		/* if (ic->ic_state == IEEE80211_S_ASSOC ||
++		    ic->ic_state == IEEE80211_S_AUTH) {
++			ml_enqueue(&sc->sc_dataml, m);
++			return;
++		} */
++printf("have too early (probably) run data again\n");
+ 		m_freem(m);
+ 		return;
+ 	}
+@@ -2551,8 +2589,24 @@ void
+ bwfm_rx_event(struct bwfm_softc *sc, struct mbuf *m)
+ {
+ 	int s;
++	struct ieee80211com *ic = &sc->sc_ic;
++	struct bwfm_event *e = mtod(m, void *);
+ 
+ 	s = splnet();
++	if (ntohl(e->msg.event_type) == BWFM_E_ASSOC) {
++		if (ntohl(e->msg.status) == BWFM_E_STATUS_SUCCESS &&
++		    ic->ic_state == IEEE80211_S_ASSOC) {
++			struct ifnet *ifp = &ic->ic_if;
++			struct mbuf_list ml = MBUF_LIST_INITIALIZER();
++			ieee80211_new_state(ic, IEEE80211_S_RUN, -1);
++			m_freem(m);
++			while ((m = ml_dequeue(&sc->sc_dataml)) != NULL)
++				bwfm_rx(sc, m, &ml);
++			ifiq_input(&ifp->if_rcv, &ml);
++			splx(s);
++			return;
++		}
++	}
+ 	ml_enqueue(&sc->sc_evml, m);
+ 	splx(s);
+ 
+@@ -2824,11 +2878,9 @@ bwfm_set_key_cb(struct bwfm_softc *sc, v
+ 	struct ieee80211_node *ni = cmd->ni;
+ 	struct ieee80211com *ic = &sc->sc_ic;
+ 	struct bwfm_wsec_key key;
+-	uint32_t wsec, wsec_enable;
++	uint32_t wsec = 0, wsec_enable;
+ 	int ext_key = 0;
+ 
+-	sc->sc_key_tasks--;
+-
+ 	if ((k->k_flags & IEEE80211_KEY_GROUP) == 0 &&
+ 	    k->k_cipher != IEEE80211_CIPHER_WEP40 &&
+ 	    k->k_cipher != IEEE80211_CIPHER_WEP104)
+@@ -2837,6 +2889,7 @@ bwfm_set_key_cb(struct bwfm_softc *sc, v
+ 	memset(&key, 0, sizeof(key));
+ 	if (ext_key && !IEEE80211_IS_MULTICAST(ni->ni_macaddr))
+ 		memcpy(key.ea, ni->ni_macaddr, sizeof(key.ea));
++
+ 	key.index = htole32(k->k_id);
+ 	key.len = htole32(k->k_len);
+ 	memcpy(key.data, k->k_key, sizeof(key.data));
+@@ -2867,14 +2920,25 @@ bwfm_set_key_cb(struct bwfm_softc *sc, v
+ 		return;
+ 	}
+ 
+-	delay(100);
++	// delay(100);
+ 
+-	bwfm_fwvar_var_set_data(sc, "wsec_key", &key, sizeof(key));
+-	bwfm_fwvar_var_get_int(sc, "wsec", &wsec);
+-	wsec &= ~(BWFM_WSEC_WEP | BWFM_WSEC_TKIP | BWFM_WSEC_AES);
+-	wsec |= wsec_enable;
+-	bwfm_fwvar_var_set_int(sc, "wsec", wsec);
++	if(bwfm_fwvar_var_set_data(sc, "wsec_key", &key, sizeof(key))) {
++		sc->sc_key_tasks--;
++		return;
++	}
+ 
++	if(bwfm_fwvar_var_get_int(sc, "wsec", &wsec))
++		wsec = 0;
++	if (wsec != wsec_enable) {
++		wsec &= ~(BWFM_WSEC_WEP | BWFM_WSEC_TKIP | BWFM_WSEC_AES);
++		wsec |= wsec_enable;
++		if(bwfm_fwvar_var_set_int(sc, "wsec", wsec)) {
++			sc->sc_key_tasks--;
++			return;
++		}
++	}
++
++	sc->sc_key_tasks--;
+ 	if (wsec_enable != BWFM_WSEC_WEP && cmd->ni != NULL &&
+ 	    sc->sc_key_tasks == 0) {
+ 		DPRINTF(("%s: marking port %s valid\n", DEVNAME(sc),
+@@ -2906,6 +2970,7 @@ bwfm_delete_key_cb(struct bwfm_softc *sc
+ 	memset(&key, 0, sizeof(key));
+ 	key.index = htole32(k->k_id);
+ 	key.flags = htole32(BWFM_WSEC_PRIMARY_KEY);
++	delay(5000);
+ 	bwfm_fwvar_var_set_data(sc, "wsec_key", &key, sizeof(key));
+ }
+ 
+@@ -2920,10 +2985,12 @@ bwfm_newstate(struct ieee80211com *ic, e
+ 
+ 	switch (nstate) {
+ 	case IEEE80211_S_INIT:
++		ml_purge(&sc->sc_dataml);
+ 		if (ic->ic_state == IEEE80211_S_SCAN)
+ 			bwfm_scan_abort(sc);
+ 		break;
+ 	case IEEE80211_S_SCAN:
++		ml_purge(&sc->sc_dataml);
+ #ifndef IEEE80211_STA_ONLY
+ 		/* Don't start a scan if we already have a channel. */
+ 		if (ic->ic_state == IEEE80211_S_INIT &&
+Index: ic/bwfmreg.h
+===================================================================
+RCS file: /cvs/src/sys/dev/ic/bwfmreg.h,v
+diff -u -p -r1.26 bwfmreg.h
+--- ic/bwfmreg.h	4 Mar 2022 22:34:41 -0000	1.26
++++ ic/bwfmreg.h	16 Aug 2024 06:26:10 -0000
+@@ -584,9 +584,9 @@ struct bwfm_escan_results {
+ 
+ struct bwfm_assoc_params {
+ 	uint8_t bssid[ETHER_ADDR_LEN];
+-	uint16_t pad;
++//	uint16_t pad;
+ 	uint32_t chanspec_num;
+-	uint16_t chanspec_list[];
++	uint16_t chanspec_list[1];
+ };
+ 
+ struct bwfm_join_pref_params {
+@@ -612,7 +612,7 @@ struct bwfm_join_params {
+ 
+ struct bwfm_join_scan_params {
+ 	uint8_t scan_type;
+-	uint8_t pad[3];
++//	uint8_t pad[3];
+ 	uint32_t nprobes;
+ 	uint32_t active_time;
+ 	uint32_t passive_time;
+Index: ic/bwfmvar.h
+===================================================================
+RCS file: /cvs/src/sys/dev/ic/bwfmvar.h,v
+diff -u -p -r1.31 bwfmvar.h
+--- ic/bwfmvar.h	6 Mar 2022 18:52:47 -0000	1.31
++++ ic/bwfmvar.h	30 Jul 2025 16:59:55 -0000
+@@ -182,6 +182,7 @@ struct bwfm_softc {
+ 	struct taskq		*sc_taskq;
+ 	struct task		 sc_task;
+ 	struct mbuf_list	 sc_evml;
++	struct mbuf_list	 sc_dataml;
+ 
+ 	int			 sc_bcdc_reqid;
+ 	TAILQ_HEAD(, bwfm_proto_bcdc_ctl) sc_bcdc_rxctlq;
+Index: pci/if_bwfm_pci.c
+===================================================================
+RCS file: /cvs/src/sys/dev/pci/if_bwfm_pci.c,v
+diff -u -p -r1.77 if_bwfm_pci.c
+--- pci/if_bwfm_pci.c	12 Jul 2024 08:33:25 -0000	1.77
++++ pci/if_bwfm_pci.c	30 Jul 2025 21:38:23 -0000
+@@ -1709,7 +1709,9 @@ bwfm_pci_msg_rx(struct bwfm_pci_softc *s
+ 			m = ring->m;
+ 			ring->m = NULL;
+ 			if (bwfm_pci_txdata(&sc->sc_sc, m))
++{ printf("bwfm_pci_txdata failed m=%p ring->m=%p\n", m, ring->m);
+ 				m_freem(ring->m);
++}
+ 		}
+ 		ifq_restart(&ifp->if_snd);
+ 		break;
+@@ -1737,7 +1739,9 @@ bwfm_pci_msg_rx(struct bwfm_pci_softc *s
+ 		m = bwfm_pci_pktid_free(sc, &sc->sc_ioctl_pkts,
+ 		    letoh32(msg->request_id));
+ 		if (m == NULL)
++{ printf("MSGBUF_TYPE_IOCTLPTR_REQ_ACK: m is null!\n");
+ 			break;
++}
+ 		m_freem(m);
+ 		break;
+ 	case MSGBUF_TYPE_IOCTL_CMPLT:
+@@ -1751,7 +1755,9 @@ bwfm_pci_msg_rx(struct bwfm_pci_softc *s
+ 		m = bwfm_pci_pktid_free(sc, &sc->sc_rx_pkts,
+ 		    letoh32(event->msg.request_id));
+ 		if (m == NULL)
++{ printf("MSGBUF_TYPE_WL_EVENT: m is null!\n");
+ 			break;
++}
+ 		m_adj(m, sc->sc_rx_dataoffset);
+ 		m->m_len = m->m_pkthdr.len = letoh16(event->event_data_len);
+ 		bwfm_rx(&sc->sc_sc, m, ml);
+@@ -1763,7 +1769,9 @@ bwfm_pci_msg_rx(struct bwfm_pci_softc *s
+ 		m = bwfm_pci_pktid_free(sc, &sc->sc_tx_pkts,
+ 		    letoh32(tx->msg.request_id) - 1);
+ 		if (m == NULL)
++{ printf("MSGBUF_TYPE_TX_STATUS: m is null!\n");
+ 			break;
++}
+ 		m_freem(m);
+ 		if (sc->sc_tx_pkts_full) {
+ 			sc->sc_tx_pkts_full = 0;
+@@ -1775,7 +1783,9 @@ bwfm_pci_msg_rx(struct bwfm_pci_softc *s
+ 		m = bwfm_pci_pktid_free(sc, &sc->sc_rx_pkts,
+ 		    letoh32(rx->msg.request_id));
+ 		if (m == NULL)
++{ printf("MSGBUF_TYPE_RX_CMPLT: m is null!\n");
+ 			break;
++}
+ 		if (letoh16(rx->data_offset))
+ 			m_adj(m, letoh16(rx->data_offset));
+ 		else if (sc->sc_rx_dataoffset)
+@@ -2227,7 +2237,9 @@ bwfm_pci_txdata(struct bwfm_softc *bwfm,
+ 
+ 	tx = bwfm_pci_ring_write_reserve(sc, ring);
+ 	if (tx == NULL)
++{ printf("in bwfm_pci_txdata: no tx.\n");
+ 		return ENOBUFS;
++}
+ 
+ 	memset(tx, 0, sizeof(*tx));
+ 	tx->msg.msgtype = MSGBUF_TYPE_TX_POST;
+@@ -2369,9 +2381,9 @@ bwfm_pci_intr(void *v)
+ 		mask = BWFM_PCI_64_PCIE2REG_MAILBOXMASK_INT_D2H_DB;
+ 
+ 	if (status & mask) {
++		bwfm_pci_ring_rx(sc, &sc->sc_ctrl_complete, &ml);
+ 		bwfm_pci_ring_rx(sc, &sc->sc_rx_complete, &ml);
+ 		bwfm_pci_ring_rx(sc, &sc->sc_tx_complete, &ml);
+-		bwfm_pci_ring_rx(sc, &sc->sc_ctrl_complete, &ml);
+ 
+ 		if (ifiq_input(&ifp->if_rcv, &ml))
+ 			if_rxr_livelocked(&sc->sc_rxbuf_ring);
+@@ -2458,7 +2470,6 @@ bwfm_pci_hostready(struct bwfm_pci_softc
+ 		    BWFM_PCI_PCIE2REG_H2D_MAILBOX_1, 1);
+ }
+ 
+-/* Msgbuf protocol implementation */
+ int
+ bwfm_pci_msgbuf_query_dcmd(struct bwfm_softc *bwfm, int ifidx,
+     int cmd, char *buf, size_t *len)
+@@ -2517,7 +2528,11 @@ bwfm_pci_msgbuf_query_dcmd(struct bwfm_s
+ 	bwfm_pci_ring_write_commit(sc, &sc->sc_ctrl_submit);
+ 	splx(s);
+ 
+-	tsleep_nsec(ctl, PWAIT, "bwfm", SEC_TO_NSEC(5));
++        if (tsleep_nsec(ctl, PWAIT, "bwfm", SEC_TO_NSEC(5))) {
++                printf("%s: timeout trans_id=%hu, req_buf_addr=%lx, len=%p *len=%lu STACK:\n",
++                    DEVNAME(sc), ctl->transid, paddr, len, *len);
++	}
++
+ 	TAILQ_REMOVE(&sc->sc_ioctlq, ctl, next);
+ 
+ 	if (ctl->m == NULL) {
