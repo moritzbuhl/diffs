@@ -1,0 +1,374 @@
+Index: ic/bwfm.c
+===================================================================
+RCS file: /cvs/src/sys/dev/ic/bwfm.c,v
+diff -u -p -r1.111 bwfm.c
+--- ic/bwfm.c	19 Feb 2024 21:23:02 -0000	1.111
++++ ic/bwfm.c	31 Jul 2025 15:15:47 -0000
+@@ -49,6 +49,7 @@
+ #include <dev/ic/bwfmreg.h>
+ 
+ /* #define BWFM_DEBUG */
++#define BWFM_DEBUG 1
+ #ifdef BWFM_DEBUG
+ #define DPRINTF(x)	do { if (bwfm_debug > 0) printf x; } while (0)
+ #define DPRINTFN(n, x)	do { if (bwfm_debug >= (n)) printf x; } while (0)
+@@ -130,8 +131,11 @@ void	 bwfm_scan(struct bwfm_softc *);
+ void	 bwfm_scan_abort(struct bwfm_softc *);
+ 
+ void	 bwfm_task(void *);
++void	 bwfm_key_task(void *);
+ void	 bwfm_do_async(struct bwfm_softc *,
+ 	     void (*)(struct bwfm_softc *, void *), void *, int);
++void	 bwfm_do_async_key(struct bwfm_softc *,
++	     void (*)(struct bwfm_softc *, void *), void *, int);
+ 
+ int	 bwfm_set_key(struct ieee80211com *, struct ieee80211_node *,
+ 	     struct ieee80211_key *);
+@@ -190,8 +194,11 @@ bwfm_attach(struct bwfm_softc *sc)
+ 
+ 	/* Init host async commands ring. */
+ 	sc->sc_cmdq.cur = sc->sc_cmdq.next = sc->sc_cmdq.queued = 0;
++	sc->sc_key_cmdq.cur = sc->sc_key_cmdq.next = sc->sc_key_cmdq.queued = 0;
+ 	sc->sc_taskq = taskq_create(DEVNAME(sc), 1, IPL_SOFTNET, 0);
++	sc->sc_key_taskq = taskq_create("bwfmkey", 1, IPL_SOFTNET, 0);
+ 	task_set(&sc->sc_task, bwfm_task, sc);
++	task_set(&sc->sc_key_task, bwfm_key_task, sc);
+ 	ml_init(&sc->sc_evml);
+ 
+ 	ic->ic_phytype = IEEE80211_T_OFDM;	/* not only, but not used */
+@@ -357,10 +364,13 @@ bwfm_detach(struct bwfm_softc *sc, int f
+ 	struct ifnet *ifp = &ic->ic_if;
+ 
+ 	task_del(sc->sc_taskq, &sc->sc_task);
++	task_del(sc->sc_key_taskq, &sc->sc_key_task);
+ 	ieee80211_ifdetach(ifp);
+ 	taskq_barrier(sc->sc_taskq);
++	taskq_barrier(sc->sc_key_taskq);
+ 	if_detach(ifp);
+ 	taskq_destroy(sc->sc_taskq);
++	taskq_destroy(sc->sc_key_taskq);
+ 
+ 	bwfm_cleanup(sc);
+ 	return 0;
+@@ -2363,6 +2373,7 @@ bwfm_rx(struct bwfm_softc *sc, struct mb
+ #endif
+ 
+ 	e = mtod(m, struct bwfm_event *);
++printf("bwfm_rx: e->ehdr.ether_type=0x%hx\n", ntohs(e->ehdr.ether_type));
+ 	if (m->m_len >= sizeof(e->ehdr) &&
+ 	    ntohs(e->ehdr.ether_type) == BWFM_ETHERTYPE_LINK_CTL &&
+ 	    memcmp(BWFM_BRCM_OUI, e->hdr.oui, sizeof(e->hdr.oui)) == 0 &&
+@@ -2373,6 +2384,7 @@ bwfm_rx(struct bwfm_softc *sc, struct mb
+ 
+ 	/* Drop network packets if we are not in RUN state. */
+ 	if (ic->ic_state != IEEE80211_S_RUN) {
++printf("bwfm: drops\n");
+ 		m_freem(m);
+ 		return;
+ 	}
+@@ -2396,6 +2408,7 @@ bwfm_rx(struct bwfm_softc *sc, struct mb
+ 		} else
+ #endif
+ 			ni = ic->ic_bss;
++		sc-> sc_eapol_frames++;
+ 		ieee80211_eapol_key_input(ic, m, ni);
+ 	} else
+ 		ml_enqueue(ml, m);
+@@ -2551,12 +2564,45 @@ void
+ bwfm_rx_event(struct bwfm_softc *sc, struct mbuf *m)
+ {
+ 	int s;
++	struct ieee80211com *ic = &sc->sc_ic;
++	struct bwfm_event *e = mtod(m, void *);
+ 
+ 	s = splnet();
++printf("bwfm_rx_event: e->msg.event_type=%u\n", ntohl(e->msg.event_type));
++	switch (ntohl(e->msg.event_type)) {
++	case BWFM_E_AUTH:
++		if (ntohl(e->msg.status) == BWFM_E_STATUS_SUCCESS &&
++		    ic->ic_state == IEEE80211_S_AUTH) {
++			ieee80211_new_state(ic, IEEE80211_S_ASSOC, -1);
++			goto done;
++		}
++		goto enqueue;
++	case BWFM_E_ASSOC:
++		if (ntohl(e->msg.status) == BWFM_E_STATUS_SUCCESS &&
++		    ic->ic_state == IEEE80211_S_ASSOC) {
++			ieee80211_new_state(ic, IEEE80211_S_RUN, -1);
++		} else if (ntohl(e->msg.status) != BWFM_E_STATUS_UNSOLICITED) {
++			goto enqueue;
++		}
++		goto done;
++	case BWFM_E_LINK:
++		if (ntohl(e->msg.status) == BWFM_E_STATUS_SUCCESS &&
++		    ntohl(e->msg.reason) == 0)
++			goto done;
++		goto enqueue;
++	default:
++		goto enqueue;
++	}
++done:
++	splx(s);
++	m_freem(m);
++	return;
++enqueue:
+ 	ml_enqueue(&sc->sc_evml, m);
+ 	splx(s);
+ 
+ 	task_add(sc->sc_taskq, &sc->sc_task);
++	return;
+ }
+ 
+ void
+@@ -2572,6 +2618,7 @@ bwfm_rx_event_cb(struct bwfm_softc *sc, 
+ 		return;
+ 	}
+ 
++printf("bwfm_rx_event_cb: e->msg.event_type=0x%x\n", ntohl(e->msg.event_type));
+ 	switch (ntohl(e->msg.event_type)) {
+ 	case BWFM_E_ESCAN_RESULT: {
+ 		struct bwfm_escan_results *res;
+@@ -2631,18 +2678,10 @@ bwfm_rx_event_cb(struct bwfm_softc *sc, 
+ 		break;
+ 		}
+ 	case BWFM_E_AUTH:
+-		if (ntohl(e->msg.status) == BWFM_E_STATUS_SUCCESS &&
+-		    ic->ic_state == IEEE80211_S_AUTH)
+-			ieee80211_new_state(ic, IEEE80211_S_ASSOC, -1);
+-		else
+-			ieee80211_begin_scan(ifp);
++		ieee80211_begin_scan(ifp);
+ 		break;
+ 	case BWFM_E_ASSOC:
+-		if (ntohl(e->msg.status) == BWFM_E_STATUS_SUCCESS &&
+-		    ic->ic_state == IEEE80211_S_ASSOC)
+-			ieee80211_new_state(ic, IEEE80211_S_RUN, -1);
+-		else if (ntohl(e->msg.status) != BWFM_E_STATUS_UNSOLICITED)
+-			ieee80211_begin_scan(ifp);
++		ieee80211_begin_scan(ifp);
+ 		break;
+ 	case BWFM_E_DEAUTH:
+ 	case BWFM_E_DISASSOC:
+@@ -2650,9 +2689,6 @@ bwfm_rx_event_cb(struct bwfm_softc *sc, 
+ 			ieee80211_begin_scan(ifp);
+ 		break;
+ 	case BWFM_E_LINK:
+-		if (ntohl(e->msg.status) == BWFM_E_STATUS_SUCCESS &&
+-		    ntohl(e->msg.reason) == 0)
+-			break;
+ 		/* Link status has changed */
+ 		if (ic->ic_state > IEEE80211_S_SCAN)
+ 			ieee80211_begin_scan(ifp);
+@@ -2791,6 +2827,50 @@ bwfm_do_async(struct bwfm_softc *sc,
+ 	splx(s);
+ }
+ 
++void
++bwfm_key_task(void *arg)
++{
++	struct bwfm_softc *sc = arg;
++	struct bwfm_host_cmd_ring *ring = &sc->sc_key_cmdq;
++	struct bwfm_host_cmd *cmd;
++	int s;
++
++	s = splnet();
++	while (ring->next != ring->cur) {
++		cmd = &ring->cmd[ring->next];
++		splx(s);
++		cmd->cb(sc, cmd->data);
++		s = splnet();
++		ring->queued--;
++		ring->next = (ring->next + 1) % BWFM_HOST_CMD_RING_COUNT;
++	}
++	splx(s);
++}
++
++void
++bwfm_do_async_key(struct bwfm_softc *sc,
++    void (*cb)(struct bwfm_softc *, void *), void *arg, int len)
++{
++	struct bwfm_host_cmd_ring *ring = &sc->sc_key_cmdq;
++	struct bwfm_host_cmd *cmd;
++	int s;
++
++printf("do async key\n");
++	s = splnet();
++	KASSERT(ring->queued < BWFM_HOST_CMD_RING_COUNT);
++	if (ring->queued >= BWFM_HOST_CMD_RING_COUNT) {
++		splx(s);
++		return;
++	}
++	cmd = &ring->cmd[ring->cur];
++	cmd->cb = cb;
++	KASSERT(len <= sizeof(cmd->data));
++	memcpy(cmd->data, arg, len);
++	ring->cur = (ring->cur + 1) % BWFM_HOST_CMD_RING_COUNT;
++	ring->queued++;
++	splx(s);
++}
++
+ int
+ bwfm_send_mgmt(struct ieee80211com *ic, struct ieee80211_node *ni,
+     int type, int arg1, int arg2)
+@@ -2811,7 +2891,7 @@ bwfm_set_key(struct ieee80211com *ic, st
+ 
+ 	cmd.ni = ni;
+ 	cmd.k = k;
+-	bwfm_do_async(sc, bwfm_set_key_cb, &cmd, sizeof(cmd));
++	bwfm_do_async_key(sc, bwfm_set_key_cb, &cmd, sizeof(cmd));
+ 	sc->sc_key_tasks++;
+ 	return EBUSY;
+ }
+@@ -2827,6 +2907,7 @@ bwfm_set_key_cb(struct bwfm_softc *sc, v
+ 	uint32_t wsec, wsec_enable;
+ 	int ext_key = 0;
+ 
++printf("bwfm_set_key_cb sc_key_tasks=%d\n",sc->sc_key_tasks);
+ 	sc->sc_key_tasks--;
+ 
+ 	if ((k->k_flags & IEEE80211_KEY_GROUP) == 0 &&
+@@ -2867,8 +2948,6 @@ bwfm_set_key_cb(struct bwfm_softc *sc, v
+ 		return;
+ 	}
+ 
+-	delay(100);
+-
+ 	bwfm_fwvar_var_set_data(sc, "wsec_key", &key, sizeof(key));
+ 	bwfm_fwvar_var_get_int(sc, "wsec", &wsec);
+ 	wsec &= ~(BWFM_WSEC_WEP | BWFM_WSEC_TKIP | BWFM_WSEC_AES);
+@@ -2920,6 +2999,7 @@ bwfm_newstate(struct ieee80211com *ic, e
+ 
+ 	switch (nstate) {
+ 	case IEEE80211_S_INIT:
++		sc->sc_eapol_frames = 0;
+ 		if (ic->ic_state == IEEE80211_S_SCAN)
+ 			bwfm_scan_abort(sc);
+ 		break;
+Index: ic/bwfmvar.h
+===================================================================
+RCS file: /cvs/src/sys/dev/ic/bwfmvar.h,v
+diff -u -p -r1.31 bwfmvar.h
+--- ic/bwfmvar.h	6 Mar 2022 18:52:47 -0000	1.31
++++ ic/bwfmvar.h	31 Jul 2025 12:35:43 -0000
+@@ -179,8 +179,11 @@ struct bwfm_softc {
+ 	int			 (*sc_newstate)(struct ieee80211com *,
+ 				     enum ieee80211_state, int);
+ 	struct bwfm_host_cmd_ring sc_cmdq;
++	struct bwfm_host_cmd_ring sc_key_cmdq;
+ 	struct taskq		*sc_taskq;
++	struct taskq		*sc_key_taskq;
+ 	struct task		 sc_task;
++	struct task		 sc_key_task;
+ 	struct mbuf_list	 sc_evml;
+ 
+ 	int			 sc_bcdc_reqid;
+@@ -194,6 +197,7 @@ struct bwfm_softc {
+ 	u_char			*sc_cal;
+ 	size_t			 sc_calsize;
+ 	int			 sc_key_tasks;
++	int			 sc_eapol_frames;
+ 
+ 	char			 sc_board_type[128];
+ 	char			 sc_module[8];
+Index: pci/if_bwfm_pci.c
+===================================================================
+RCS file: /cvs/src/sys/dev/pci/if_bwfm_pci.c,v
+diff -u -p -r1.77 if_bwfm_pci.c
+--- pci/if_bwfm_pci.c	12 Jul 2024 08:33:25 -0000	1.77
++++ pci/if_bwfm_pci.c	31 Jul 2025 13:22:02 -0000
+@@ -61,10 +61,11 @@
+ #define BWFM_NUM_TX_DESCS			1
+ #define BWFM_NUM_RX_DESCS			1
+ 
++#define BWFM_DEBUG 1
+ #ifdef BWFM_DEBUG
+ #define DPRINTF(x)	do { if (bwfm_debug > 0) printf x; } while (0)
+ #define DPRINTFN(n, x)	do { if (bwfm_debug >= (n)) printf x; } while (0)
+-static int bwfm_debug = 2;
++static int bwfm_debug = 3;
+ #else
+ #define DPRINTF(x)	do { ; } while (0)
+ #define DPRINTFN(n, x)	do { ; } while (0)
+@@ -1678,8 +1679,10 @@ bwfm_pci_msg_rx(struct bwfm_pci_softc *s
+ 	struct bwfm_pci_msgring *ring;
+ 	struct mbuf *m;
+ 	int flowid;
++	struct bwfm_host_cmd_ring *cmd_ring = &sc->sc_sc.sc_key_cmdq;
+ 
+ 	msg = (struct msgbuf_common_hdr *)buf;
++printf("bwfm_pci_msg_rx msg->msgtype=0x%hhx\n", msg->msgtype);
+ 	switch (msg->msgtype)
+ 	{
+ 	case MSGBUF_TYPE_FLOW_RING_CREATE_CMPLT:
+@@ -1762,6 +1765,16 @@ bwfm_pci_msg_rx(struct bwfm_pci_softc *s
+ 		tx = (struct msgbuf_tx_status *)buf;
+ 		m = bwfm_pci_pktid_free(sc, &sc->sc_tx_pkts,
+ 		    letoh32(tx->msg.request_id) - 1);
++/* XXX check if we are in RSNA_SUPP_PKTDONE and
++       ni->ni_rsn_supp_state == RSNA_SUPP_PTKDONE &&
++we have > 1 eapol messages received  and
++tasks are on cmd queue ring and
++setkey task pending*/
++		if (sc->sc_sc.sc_eapol_frames > 1 && cmd_ring->queued > 1) {
++			printf("adding task\n");
++			sc->sc_sc.sc_eapol_frames = 0;
++			task_add(sc->sc_sc.sc_key_taskq, &sc->sc_sc.sc_key_task);
++		}
+ 		if (m == NULL)
+ 			break;
+ 		m_freem(m);
+@@ -2046,6 +2059,7 @@ bwfm_pci_flowring_create(struct bwfm_pci
+ void
+ bwfm_pci_flowring_create_cb(struct bwfm_softc *bwfm, void *arg)
+ {
++printf("bwfm_pci_flowring_create_cb start\n");
+ 	struct bwfm_pci_softc *sc = (void *)bwfm;
+ #ifndef IEEE80211_STA_ONLY
+ 	struct ieee80211com *ic = &sc->sc_sc.sc_ic;
+@@ -2103,6 +2117,7 @@ bwfm_pci_flowring_create_cb(struct bwfm_
+ 
+ 	bwfm_pci_ring_write_commit(sc, &sc->sc_ctrl_submit);
+ 	splx(s);
++printf("bwfm_pci_flowring_create_cb done\n");
+ }
+ 
+ void
+@@ -2256,6 +2271,7 @@ bwfm_pci_txdata(struct bwfm_softc *bwfm,
+ 	tx->data_buf_addr.low_addr = htole32(paddr & 0xffffffff);
+ 
+ 	bwfm_pci_ring_write_commit(sc, ring);
++printf("bwfm_pci_txdata done\n");
+ 	return 0;
+ }
+ 
+@@ -2349,6 +2365,11 @@ bwfm_pci_intr(void *v)
+ 	if (!sc->sc_initialized)
+ 		return 0;
+ 
++	printf("bwfm_pci_intr\n");
++#ifdef BWFM_DEBUG
++	bwfm_pci_debug_console(sc);
++#endif
++
+ 	status = bwfm_pci_intr_status(sc);
+ 	/* FIXME: interrupt status seems to be zero? */
+ 	if (status == 0 && sc->sc_pcireg64)
+@@ -2369,17 +2390,13 @@ bwfm_pci_intr(void *v)
+ 		mask = BWFM_PCI_64_PCIE2REG_MAILBOXMASK_INT_D2H_DB;
+ 
+ 	if (status & mask) {
++		bwfm_pci_ring_rx(sc, &sc->sc_ctrl_complete, &ml);
+ 		bwfm_pci_ring_rx(sc, &sc->sc_rx_complete, &ml);
+ 		bwfm_pci_ring_rx(sc, &sc->sc_tx_complete, &ml);
+-		bwfm_pci_ring_rx(sc, &sc->sc_ctrl_complete, &ml);
+ 
+ 		if (ifiq_input(&ifp->if_rcv, &ml))
+ 			if_rxr_livelocked(&sc->sc_rxbuf_ring);
+ 	}
+-
+-#ifdef BWFM_DEBUG
+-	bwfm_pci_debug_console(sc);
+-#endif
+ 
+ 	bwfm_pci_intr_enable(sc);
+ 	return 1;
