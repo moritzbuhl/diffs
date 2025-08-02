@@ -1,0 +1,989 @@
+Index: ic/bwfm.c
+===================================================================
+RCS file: /cvs/src/sys/dev/ic/bwfm.c,v
+diff -u -p -r1.111 bwfm.c
+--- ic/bwfm.c	19 Feb 2024 21:23:02 -0000	1.111
++++ ic/bwfm.c	2 Aug 2025 20:02:21 -0000
+@@ -130,8 +130,10 @@ void	 bwfm_scan(struct bwfm_softc *);
+ void	 bwfm_scan_abort(struct bwfm_softc *);
+ 
+ void	 bwfm_task(void *);
++void	 bwfm_key_task(void *);
+ void	 bwfm_do_async(struct bwfm_softc *,
+ 	     void (*)(struct bwfm_softc *, void *), void *, int);
++void	 bwfm_do_async_key(struct bwfm_softc *, void *, int);
+ 
+ int	 bwfm_set_key(struct ieee80211com *, struct ieee80211_node *,
+ 	     struct ieee80211_key *);
+@@ -174,6 +176,7 @@ struct bwfm_proto_ops bwfm_proto_bcdc_op
+ 	.proto_set_dcmd = bwfm_proto_bcdc_set_dcmd,
+ 	.proto_rx = bwfm_proto_bcdc_rx,
+ 	.proto_rxctl = bwfm_proto_bcdc_rxctl,
++	.proto_flowring = NULL,
+ };
+ 
+ struct cfdriver bwfm_cd = {
+@@ -190,8 +193,11 @@ bwfm_attach(struct bwfm_softc *sc)
+ 
+ 	/* Init host async commands ring. */
+ 	sc->sc_cmdq.cur = sc->sc_cmdq.next = sc->sc_cmdq.queued = 0;
++	sc->sc_key_cmdq.cur = sc->sc_key_cmdq.next = sc->sc_key_cmdq.queued = 0;
+ 	sc->sc_taskq = taskq_create(DEVNAME(sc), 1, IPL_SOFTNET, 0);
++	sc->sc_key_taskq = taskq_create("bwfmkey", 1, IPL_SOFTNET, 0);
+ 	task_set(&sc->sc_task, bwfm_task, sc);
++	task_set(&sc->sc_key_task, bwfm_key_task, sc);
+ 	ml_init(&sc->sc_evml);
+ 
+ 	ic->ic_phytype = IEEE80211_T_OFDM;	/* not only, but not used */
+@@ -357,10 +363,13 @@ bwfm_detach(struct bwfm_softc *sc, int f
+ 	struct ifnet *ifp = &ic->ic_if;
+ 
+ 	task_del(sc->sc_taskq, &sc->sc_task);
++	task_del(sc->sc_key_taskq, &sc->sc_key_task);
+ 	ieee80211_ifdetach(ifp);
+ 	taskq_barrier(sc->sc_taskq);
++	taskq_barrier(sc->sc_key_taskq);
+ 	if_detach(ifp);
+ 	taskq_destroy(sc->sc_taskq);
++	taskq_destroy(sc->sc_key_taskq);
+ 
+ 	bwfm_cleanup(sc);
+ 	return 0;
+@@ -557,7 +566,7 @@ bwfm_init(struct ifnet *ifp)
+ 	bwfm_fwvar_var_set_int(sc, "arp_ol", 0);
+ 	bwfm_fwvar_var_set_int(sc, "arpoe", 0);
+ 	bwfm_fwvar_var_set_int(sc, "ndoe", 0);
+-	bwfm_fwvar_var_set_int(sc, "toe", 0);
++	bwfm_fwvar_var_set_int(sc, "toe_ol", 0);
+ 
+ 	/*
+ 	 * The firmware supplicant can handle the WPA handshake for
+@@ -714,18 +723,26 @@ bwfm_update_node(void *arg, struct ieee8
+ 	memset(&sta, 0, sizeof(sta));
+ 	memcpy((uint8_t *)&sta, ni->ni_macaddr, sizeof(ni->ni_macaddr));
+ 
+-	if (bwfm_fwvar_var_get_data(sc, "sta_info", &sta, sizeof(sta)))
++	if (bwfm_fwvar_var_get_data(sc, "sta_info", &sta, sizeof(sta))) {
++		printf("%s: cannot get sta_info\n", __func__);
+ 		return;
++	}
+ 
+-	if (!IEEE80211_ADDR_EQ(ni->ni_macaddr, sta.ea))
++	if (!IEEE80211_ADDR_EQ(ni->ni_macaddr, sta.ea)) {
++		printf("%s: macs not equal\n", __func__);
+ 		return;
++	}
+ 
+-	if (le16toh(sta.ver) < 3)
++	if (le16toh(sta.ver) < 3) {
++		printf("%s: bad version\n", __func__);
+ 		return;
++	}
+ 
+ 	flags = le32toh(sta.flags);
+-	if ((flags & BWFM_STA_SCBSTATS) == 0)
++	if ((flags & BWFM_STA_SCBSTATS) == 0) {
++		printf("%s: scbstats\n", __func__);
+ 		return;
++	}
+ 
+ 	if (le16toh(sta.ver) >= 4) {
+ 		rssi = 0;
+@@ -740,8 +757,10 @@ bwfm_update_node(void *arg, struct ieee8
+ 	}
+ 
+ 	txrate = le32toh(sta.tx_rate); /* in kbit/s */
+-	if (txrate == 0xffffffff) /* Seen this happening during association. */
++	if (txrate == 0xffffffff) { /* Seen this happening during association. */
++		printf("%s: bad txrate\n", __func__);
+ 		return;
++	}
+ 
+ 	if ((le32toh(sta.flags) & BWFM_STA_VHT_CAP)) {
+ 		int mcs, ss;
+@@ -1779,6 +1798,13 @@ bwfm_proto_bcdc_rx(struct bwfm_softc *sc
+ 	bwfm_rx(sc, m, ml);
+ }
+ 
++void
++bwfm_proto_flowring(struct bwfm_softc *sc, void *arg)
++{
++	if (sc->sc_proto_ops->proto_flowring)
++		return sc->sc_proto_ops->proto_flowring(sc, arg);
++}
++
+ /* FW Variable code */
+ int
+ bwfm_fwvar_cmd_get_data(struct bwfm_softc *sc, int cmd, void *data, size_t len)
+@@ -1811,31 +1837,48 @@ bwfm_fwvar_cmd_set_int(struct bwfm_softc
+ int
+ bwfm_fwvar_var_get_data(struct bwfm_softc *sc, char *name, void *data, size_t len)
+ {
+-	char *buf;
++	size_t buflen;
++	char *buf, sbuf[256];
+ 	int ret;
+ 
+-	buf = malloc(strlen(name) + 1 + len, M_TEMP, M_WAITOK);
+-	memcpy(buf, name, strlen(name) + 1);
+-	memcpy(buf + strlen(name) + 1, data, len);
+-	ret = bwfm_fwvar_cmd_get_data(sc, BWFM_C_GET_VAR,
+-	    buf, strlen(name) + 1 + len);
++	buflen = len + 1 + strlen(name);
++	if (buflen > sizeof(sbuf))
++		buf = malloc(buflen, M_TEMP, M_WAITOK);
++	else
++		buf = sbuf;
++	memcpy(buf, name, buflen - len);
++	memcpy(&buf[buflen - len], data, len);
++	ret = bwfm_fwvar_cmd_get_data(sc, BWFM_C_GET_VAR, buf, buflen);
+ 	memcpy(data, buf, len);
+-	free(buf, M_TEMP, strlen(name) + 1 + len);
++	if (buf != sbuf)
++		free(buf, M_TEMP, buflen);
++
++	DPRINTF(("%s: bwfm_fwvar_var_get_data(%s, %lu)=%d\n",
++	    DEVNAME(sc), name, len, ret));
+ 	return ret;
+ }
+ 
+ int
+ bwfm_fwvar_var_set_data(struct bwfm_softc *sc, char *name, void *data, size_t len)
+ {
+-	char *buf;
++	size_t buflen;
++	char *buf, sbuf[256];
+ 	int ret;
+ 
+-	buf = malloc(strlen(name) + 1 + len, M_TEMP, M_WAITOK);
+-	memcpy(buf, name, strlen(name) + 1);
+-	memcpy(buf + strlen(name) + 1, data, len);
+-	ret = bwfm_fwvar_cmd_set_data(sc, BWFM_C_SET_VAR,
+-	    buf, strlen(name) + 1 + len);
+-	free(buf, M_TEMP, strlen(name) + 1 + len);
++	buflen = len + 1 + strlen(name);
++	if (buflen > sizeof(sbuf))
++		buf = malloc(buflen, M_TEMP, M_WAITOK);
++	else
++		buf = sbuf;
++
++	memcpy(buf, name, buflen - len);
++	memcpy(&buf[buflen - len], data, len);
++	ret = bwfm_fwvar_cmd_set_data(sc, BWFM_C_SET_VAR, buf, buflen);
++	if (buf != sbuf)
++		free(buf, M_TEMP, buflen);
++
++	DPRINTF(("%s: bwfm_fwvar_var_set_data(%s, %lu)=%d\n",
++	    DEVNAME(sc), name, len, ret));
+ 	return ret;
+ }
+ 
+@@ -1987,6 +2030,11 @@ bwfm_connect(struct bwfm_softc *sc)
+ 	uint8_t buf[64];	/* XXX max WPA/RSN/WMM IE length */
+ 	uint8_t *frm;
+ 
++	if (bwfm_fwvar_var_set_int(sc, "mfp", BWFM_MFP_NONE)) {
++		printf("%s: cannot set mfp\n", __func__);
++		return;
++	}
++
+ 	/*
+ 	 * OPEN: Open or WEP or WPA/WPA2 on newer Chips/Firmware.
+ 	 * AUTO: Automatic, probably for older Chips/Firmware.
+@@ -2000,7 +2048,10 @@ bwfm_connect(struct bwfm_softc *sc)
+ 			frm = ieee80211_add_rsn(buf, ic, ic->ic_bss);
+ 		else
+ 			frm = ieee80211_add_wpa(buf, ic, ic->ic_bss);
+-		bwfm_fwvar_var_set_data(sc, "wpaie", buf, frm - buf);
++		if (bwfm_fwvar_var_set_data(sc, "wpaie", buf, frm - buf)) {
++			printf("%s: cannot set wpaie\n", __func__);
++			return;
++		}
+ 
+ 		if (ic->ic_rsnprotos & IEEE80211_PROTO_WPA) {
+ 			if (ic->ic_rsnakms & IEEE80211_AKM_PSK)
+@@ -2025,17 +2076,37 @@ bwfm_connect(struct bwfm_softc *sc)
+ 		    ic->ic_rsngroupcipher & IEEE80211_WPA_CIPHER_CCMP)
+ 			wsec |= BWFM_WSEC_AES;
+ 
+-		bwfm_fwvar_var_set_int(sc, "wpa_auth", wpa);
+-		bwfm_fwvar_var_set_int(sc, "wsec", wsec);
++		if (bwfm_fwvar_var_set_int(sc, "wpa_auth", wpa)) {
++			printf("%s: cannot set wpa_auth\n", __func__);
++			return;
++		}
++		if (bwfm_fwvar_var_set_int(sc, "wsec", wsec)) {
++			printf ("%s: cannot set wsec\n", __func__);
++			return;
++		}
+ 	} else if (ic->ic_flags & IEEE80211_F_WEPON) {
+-		bwfm_fwvar_var_set_int(sc, "wpa_auth", BWFM_WPA_AUTH_DISABLED);
+-		bwfm_fwvar_var_set_int(sc, "wsec", BWFM_WSEC_WEP);
++		if (bwfm_fwvar_var_set_int(sc, "wpa_auth", BWFM_WPA_AUTH_DISABLED)) {
++			printf("%s: cannot set wpa_auth\n", __func__);
++			return;
++		}
++		if (bwfm_fwvar_var_set_int(sc, "wsec", BWFM_WSEC_WEP)) {
++			printf("%s: cannot set wsec\n", __func__);
++			return;
++		}
+ 	} else {
+-		bwfm_fwvar_var_set_int(sc, "wpa_auth", BWFM_WPA_AUTH_DISABLED);
+-		bwfm_fwvar_var_set_int(sc, "wsec", BWFM_WSEC_NONE);
++		if (bwfm_fwvar_var_set_int(sc, "wpa_auth", BWFM_WPA_AUTH_DISABLED)) {
++			printf("%s: cannot set wpa_auth\n", __func__);
++			return;
++		}
++		if (bwfm_fwvar_var_set_int(sc, "wsec", BWFM_WSEC_NONE)) {
++			printf("%s: cannot set wsec\n", __func__);
++			return;
++		}
++	}
++	if (bwfm_fwvar_var_set_int(sc, "auth", BWFM_AUTH_OPEN)) {
++		printf("%s: cannot set auth\n", __func__);
++		return;
+ 	}
+-	bwfm_fwvar_var_set_int(sc, "auth", BWFM_AUTH_OPEN);
+-	bwfm_fwvar_var_set_int(sc, "mfp", BWFM_MFP_NONE);
+ 
+ 	if (ic->ic_des_esslen && ic->ic_des_esslen <= BWFM_MAX_SSID_LEN) {
+ 		params = malloc(sizeof(*params), M_TEMP, M_WAITOK | M_ZERO);
+@@ -2049,6 +2120,8 @@ bwfm_connect(struct bwfm_softc *sc)
+ 		params->scan.passive_time = htole32(-1);
+ 		params->scan.home_time = htole32(-1);
+ 		if (bwfm_fwvar_var_set_data(sc, "join", params, sizeof(*params))) {
++			DPRINTF(("%s: %s: cannot set join\n", DEVNAME(sc),
++			     __func__));
+ 			struct bwfm_join_params join;
+ 			memset(&join, 0, sizeof(join));
+ 			memcpy(join.ssid.ssid, ic->ic_des_essid,
+@@ -2056,8 +2129,9 @@ bwfm_connect(struct bwfm_softc *sc)
+ 			join.ssid.len = htole32(ic->ic_des_esslen);
+ 			memcpy(join.assoc.bssid, ic->ic_bss->ni_bssid,
+ 			    sizeof(join.assoc.bssid));
+-			bwfm_fwvar_cmd_set_data(sc, BWFM_C_SET_SSID, &join,
+-			    sizeof(join));
++			if (bwfm_fwvar_cmd_set_data(sc, BWFM_C_SET_SSID, &join,
++			    sizeof(join)))
++				printf("%s: cannot set join\n", __func__);
+ 		}
+ 		free(params, M_TEMP, sizeof(*params));
+ 	}
+@@ -2352,9 +2426,10 @@ bwfm_rx(struct bwfm_softc *sc, struct mb
+ 	/* Remaining data is an ethernet packet, so align. */
+ 	if ((mtod(m, paddr_t) & 0x3) != ETHER_ALIGN) {
+ 		struct mbuf *m0;
+-		m0 = m_dup_pkt(m, ETHER_ALIGN, M_WAITOK);
++		m0 = m_dup_pkt(m, ETHER_ALIGN, M_DONTWAIT);
+ 		m_freem(m);
+ 		if (m0 == NULL) {
++printf("bwfm_rx: unaligned pkt, dropping\n");
+ 			ifp->if_ierrors++;
+ 			return;
+ 		}
+@@ -2363,6 +2438,7 @@ bwfm_rx(struct bwfm_softc *sc, struct mb
+ #endif
+ 
+ 	e = mtod(m, struct bwfm_event *);
++//printf("bwfm_rx: e->ehdr.ether_type=0x%hx\n", ntohs(e->ehdr.ether_type));
+ 	if (m->m_len >= sizeof(e->ehdr) &&
+ 	    ntohs(e->ehdr.ether_type) == BWFM_ETHERTYPE_LINK_CTL &&
+ 	    memcmp(BWFM_BRCM_OUI, e->hdr.oui, sizeof(e->hdr.oui)) == 0 &&
+@@ -2396,6 +2472,7 @@ bwfm_rx(struct bwfm_softc *sc, struct mb
+ 		} else
+ #endif
+ 			ni = ic->ic_bss;
++		sc->sc_eapol_frames++;
+ 		ieee80211_eapol_key_input(ic, m, ni);
+ 	} else
+ 		ml_enqueue(ml, m);
+@@ -2551,12 +2628,50 @@ void
+ bwfm_rx_event(struct bwfm_softc *sc, struct mbuf *m)
+ {
+ 	int s;
++	struct ieee80211com *ic = &sc->sc_ic;
++	struct bwfm_event *e = mtod(m, void *);
+ 
+ 	s = splnet();
++//printf("bwfm_rx_event: e->msg.event_type=%u\n", ntohl(e->msg.event_type));
++	switch (ntohl(e->msg.event_type)) {
++	case BWFM_E_AUTH:
++		if (ntohl(e->msg.status) == BWFM_E_STATUS_SUCCESS &&
++		    ic->ic_state == IEEE80211_S_AUTH) {
++			struct bwfm_cmd_flowring_create_be cmd;
++
++			ieee80211_new_state(ic, IEEE80211_S_ASSOC, -1);
++			cmd.sa = ic->ic_myaddr;
++			cmd.da = ic->ic_bss->ni_macaddr;
++			bwfm_do_async(sc, bwfm_proto_flowring, &cmd, sizeof(cmd));
++			goto done;
++		}
++		goto enqueue;
++	case BWFM_E_ASSOC:
++		if (ntohl(e->msg.status) == BWFM_E_STATUS_SUCCESS &&
++		    ic->ic_state == IEEE80211_S_ASSOC) {
++			ieee80211_new_state(ic, IEEE80211_S_RUN, -1);
++		} else if (ntohl(e->msg.status) != BWFM_E_STATUS_UNSOLICITED) {
++			goto enqueue;
++		}
++		goto done;
++	case BWFM_E_LINK:
++		if (ntohl(e->msg.status) == BWFM_E_STATUS_SUCCESS &&
++		    ntohl(e->msg.reason) == 0)
++			goto done;
++		goto enqueue;
++	default:
++		goto enqueue;
++	}
++done:
++	splx(s);
++	m_freem(m);
++	return;
++enqueue:
+ 	ml_enqueue(&sc->sc_evml, m);
+ 	splx(s);
+ 
+ 	task_add(sc->sc_taskq, &sc->sc_task);
++	return;
+ }
+ 
+ void
+@@ -2572,6 +2687,7 @@ bwfm_rx_event_cb(struct bwfm_softc *sc, 
+ 		return;
+ 	}
+ 
++//printf("bwfm_rx_event_cb: e->msg.event_type=%u\n", ntohl(e->msg.event_type));
+ 	switch (ntohl(e->msg.event_type)) {
+ 	case BWFM_E_ESCAN_RESULT: {
+ 		struct bwfm_escan_results *res;
+@@ -2631,18 +2747,10 @@ bwfm_rx_event_cb(struct bwfm_softc *sc, 
+ 		break;
+ 		}
+ 	case BWFM_E_AUTH:
+-		if (ntohl(e->msg.status) == BWFM_E_STATUS_SUCCESS &&
+-		    ic->ic_state == IEEE80211_S_AUTH)
+-			ieee80211_new_state(ic, IEEE80211_S_ASSOC, -1);
+-		else
+-			ieee80211_begin_scan(ifp);
++		ieee80211_begin_scan(ifp);
+ 		break;
+ 	case BWFM_E_ASSOC:
+-		if (ntohl(e->msg.status) == BWFM_E_STATUS_SUCCESS &&
+-		    ic->ic_state == IEEE80211_S_ASSOC)
+-			ieee80211_new_state(ic, IEEE80211_S_RUN, -1);
+-		else if (ntohl(e->msg.status) != BWFM_E_STATUS_UNSOLICITED)
+-			ieee80211_begin_scan(ifp);
++		ieee80211_begin_scan(ifp);
+ 		break;
+ 	case BWFM_E_DEAUTH:
+ 	case BWFM_E_DISASSOC:
+@@ -2650,9 +2758,6 @@ bwfm_rx_event_cb(struct bwfm_softc *sc, 
+ 			ieee80211_begin_scan(ifp);
+ 		break;
+ 	case BWFM_E_LINK:
+-		if (ntohl(e->msg.status) == BWFM_E_STATUS_SUCCESS &&
+-		    ntohl(e->msg.reason) == 0)
+-			break;
+ 		/* Link status has changed */
+ 		if (ic->ic_state > IEEE80211_S_SCAN)
+ 			ieee80211_begin_scan(ifp);
+@@ -2791,6 +2896,45 @@ bwfm_do_async(struct bwfm_softc *sc,
+ 	splx(s);
+ }
+ 
++void
++bwfm_key_task(void *arg)
++{
++	struct bwfm_softc *sc = arg;
++	struct bwfm_host_cmd_ring *ring = &sc->sc_key_cmdq;
++	struct bwfm_host_cmd *cmd;
++	int s;
++
++	s = splnet();
++	while (ring->next != ring->cur) {
++		cmd = &ring->cmd[ring->next];
++		bwfm_set_key_cb(sc, cmd->data);
++		ring->queued--;
++		ring->next = (ring->next + 1) % BWFM_HOST_CMD_RING_COUNT;
++	}
++	splx(s);
++}
++
++void
++bwfm_do_async_key(struct bwfm_softc *sc, void *arg, int len)
++{
++	struct bwfm_host_cmd_ring *ring = &sc->sc_key_cmdq;
++	struct bwfm_host_cmd *cmd;
++	int s;
++
++	s = splnet();
++	KASSERT(ring->queued < BWFM_HOST_CMD_RING_COUNT);
++	if (ring->queued >= BWFM_HOST_CMD_RING_COUNT) {
++		splx(s);
++		return;
++	}
++	cmd = &ring->cmd[ring->cur];
++	KASSERT(len <= sizeof(cmd->data));
++	memcpy(cmd->data, arg, len);
++	ring->cur = (ring->cur + 1) % BWFM_HOST_CMD_RING_COUNT;
++	ring->queued++;
++	splx(s);
++}
++
+ int
+ bwfm_send_mgmt(struct ieee80211com *ic, struct ieee80211_node *ni,
+     int type, int arg1, int arg2)
+@@ -2811,7 +2955,7 @@ bwfm_set_key(struct ieee80211com *ic, st
+ 
+ 	cmd.ni = ni;
+ 	cmd.k = k;
+-	bwfm_do_async(sc, bwfm_set_key_cb, &cmd, sizeof(cmd));
++	bwfm_do_async_key(sc, &cmd, sizeof(cmd));
+ 	sc->sc_key_tasks++;
+ 	return EBUSY;
+ }
+@@ -2824,7 +2968,7 @@ bwfm_set_key_cb(struct bwfm_softc *sc, v
+ 	struct ieee80211_node *ni = cmd->ni;
+ 	struct ieee80211com *ic = &sc->sc_ic;
+ 	struct bwfm_wsec_key key;
+-	uint32_t wsec, wsec_enable;
++	uint32_t wsec = 0, wsec_enable;
+ 	int ext_key = 0;
+ 
+ 	sc->sc_key_tasks--;
+@@ -2867,13 +3011,20 @@ bwfm_set_key_cb(struct bwfm_softc *sc, v
+ 		return;
+ 	}
+ 
+-	delay(100);
+-
+-	bwfm_fwvar_var_set_data(sc, "wsec_key", &key, sizeof(key));
+-	bwfm_fwvar_var_get_int(sc, "wsec", &wsec);
++	if (bwfm_fwvar_var_get_int(sc, "wsec", &wsec)) {
++		printf("cannot get wsec\n");
++		wsec = 0;
++	}
++	if (bwfm_fwvar_var_set_data(sc, "wsec_key", &key, sizeof(key))) {
++		printf("cannot set wsec_key\n");
++		return;
++	}
+ 	wsec &= ~(BWFM_WSEC_WEP | BWFM_WSEC_TKIP | BWFM_WSEC_AES);
+ 	wsec |= wsec_enable;
+-	bwfm_fwvar_var_set_int(sc, "wsec", wsec);
++	if (bwfm_fwvar_var_set_int(sc, "wsec", wsec)) {
++		printf("cannot set wsec\n");
++		return;
++	}
+ 
+ 	if (wsec_enable != BWFM_WSEC_WEP && cmd->ni != NULL &&
+ 	    sc->sc_key_tasks == 0) {
+@@ -2906,7 +3057,8 @@ bwfm_delete_key_cb(struct bwfm_softc *sc
+ 	memset(&key, 0, sizeof(key));
+ 	key.index = htole32(k->k_id);
+ 	key.flags = htole32(BWFM_WSEC_PRIMARY_KEY);
+-	bwfm_fwvar_var_set_data(sc, "wsec_key", &key, sizeof(key));
++	if (bwfm_fwvar_var_set_data(sc, "wsec_key", &key, sizeof(key)))
++		printf("cannot set wsec_key\n");
+ }
+ 
+ int
+@@ -2920,6 +3072,7 @@ bwfm_newstate(struct ieee80211com *ic, e
+ 
+ 	switch (nstate) {
+ 	case IEEE80211_S_INIT:
++		sc->sc_eapol_frames = 0;
+ 		if (ic->ic_state == IEEE80211_S_SCAN)
+ 			bwfm_scan_abort(sc);
+ 		break;
+Index: ic/bwfmvar.h
+===================================================================
+RCS file: /cvs/src/sys/dev/ic/bwfmvar.h,v
+diff -u -p -r1.31 bwfmvar.h
+--- ic/bwfmvar.h	6 Mar 2022 18:52:47 -0000	1.31
++++ ic/bwfmvar.h	1 Aug 2025 20:18:13 -0000
+@@ -119,6 +119,8 @@ struct bwfm_proto_ops {
+ 	void (*proto_rx)(struct bwfm_softc *, struct mbuf *,
+ 	    struct mbuf_list *);
+ 	void (*proto_rxctl)(struct bwfm_softc *, char *, size_t);
++	void (*proto_flowring)(struct bwfm_softc *, void *);
++
+ };
+ extern struct bwfm_proto_ops bwfm_proto_bcdc_ops;
+ 
+@@ -138,6 +140,11 @@ struct bwfm_cmd_flowring_create {
+ 	int			 prio;
+ };
+ 
++struct bwfm_cmd_flowring_create_be {
++	char			*sa;
++	char			*da;
++};
++
+ struct bwfm_cmd_flowring_delete {
+ 	int			 flowid;
+ };
+@@ -179,8 +186,11 @@ struct bwfm_softc {
+ 	int			 (*sc_newstate)(struct ieee80211com *,
+ 				     enum ieee80211_state, int);
+ 	struct bwfm_host_cmd_ring sc_cmdq;
++	struct bwfm_host_cmd_ring sc_key_cmdq;
+ 	struct taskq		*sc_taskq;
++	struct taskq		*sc_key_taskq;
+ 	struct task		 sc_task;
++	struct task		 sc_key_task;
+ 	struct mbuf_list	 sc_evml;
+ 
+ 	int			 sc_bcdc_reqid;
+@@ -194,6 +204,7 @@ struct bwfm_softc {
+ 	u_char			*sc_cal;
+ 	size_t			 sc_calsize;
+ 	int			 sc_key_tasks;
++	int			 sc_eapol_frames;
+ 
+ 	char			 sc_board_type[128];
+ 	char			 sc_module[8];
+Index: pci/if_bwfm_pci.c
+===================================================================
+RCS file: /cvs/src/sys/dev/pci/if_bwfm_pci.c,v
+diff -u -p -r1.77 if_bwfm_pci.c
+--- pci/if_bwfm_pci.c	12 Jul 2024 08:33:25 -0000	1.77
++++ pci/if_bwfm_pci.c	2 Aug 2025 20:04:53 -0000
+@@ -22,6 +22,7 @@
+ #include <sys/device.h>
+ #include <sys/queue.h>
+ #include <sys/socket.h>
++#include <sys/time.h>
+ 
+ #if defined(__HAVE_FDT)
+ #include <machine/fdt.h>
+@@ -64,7 +65,7 @@
+ #ifdef BWFM_DEBUG
+ #define DPRINTF(x)	do { if (bwfm_debug > 0) printf x; } while (0)
+ #define DPRINTFN(n, x)	do { if (bwfm_debug >= (n)) printf x; } while (0)
+-static int bwfm_debug = 2;
++static int bwfm_debug = 3;
+ #else
+ #define DPRINTF(x)	do { ; } while (0)
+ #define DPRINTFN(n, x)	do { ; } while (0)
+@@ -184,6 +185,7 @@ struct bwfm_pci_softc {
+ 	uint8_t			 sc_mbdata_done;
+ 	uint8_t			 sc_pcireg64;
+ 	uint8_t			 sc_mb_via_ctl;
++	struct timeout		 sc_intr_to;
+ };
+ 
+ struct bwfm_pci_dmamem {
+@@ -211,6 +213,7 @@ void		 bwfm_pci_process_otp_tuple(struct
+ #endif
+ 
+ int		 bwfm_pci_intr(void *);
++void		 bwfm_pci_intr_to(void *);
+ void		 bwfm_pci_intr_enable(struct bwfm_pci_softc *);
+ void		 bwfm_pci_intr_disable(struct bwfm_pci_softc *);
+ uint32_t	 bwfm_pci_intr_status(struct bwfm_pci_softc *);
+@@ -281,6 +284,7 @@ int		 bwfm_pci_flowring_lookup(struct bw
+ void		 bwfm_pci_flowring_create(struct bwfm_pci_softc *,
+ 		     struct mbuf *);
+ void		 bwfm_pci_flowring_create_cb(struct bwfm_softc *, void *);
++void		 bwfm_pci_flowring_create_be_cb(struct bwfm_softc *, void *);
+ void		 bwfm_pci_flowring_delete(struct bwfm_pci_softc *, int);
+ void		 bwfm_pci_flowring_delete_cb(struct bwfm_softc *, void *);
+ 
+@@ -305,6 +309,10 @@ void		 bwfm_pci_msgbuf_rxioctl(struct bw
+ int		 bwfm_pci_msgbuf_h2d_mb_write(struct bwfm_pci_softc *,
+ 		    uint32_t);
+ 
++uint64_t bwfm_dt_intr, bwfm_t_intr, bwfm_dt_intr_handle;
++uint8_t bwfm_msg_hist_ring[256];
++uint8_t bwfm_msg_hist_idx;
++
+ struct bwfm_buscore_ops bwfm_pci_buscore_ops = {
+ 	.bc_read = bwfm_pci_buscore_read,
+ 	.bc_write = bwfm_pci_buscore_write,
+@@ -327,6 +335,7 @@ struct bwfm_proto_ops bwfm_pci_msgbuf_op
+ 	.proto_set_dcmd = bwfm_pci_msgbuf_set_dcmd,
+ 	.proto_rx = NULL,
+ 	.proto_rxctl = NULL,
++	.proto_flowring = bwfm_pci_flowring_create_be_cb,
+ };
+ 
+ const struct cfattach bwfm_pci_ca = {
+@@ -383,6 +392,7 @@ bwfm_pci_attach(struct device *parent, s
+ 	sc->sc_tag = pa->pa_tag;
+ 	sc->sc_id = pa->pa_id;
+ 	sc->sc_dmat = pa->pa_dmat;
++	timeout_set_flags(&sc->sc_intr_to, bwfm_pci_intr_to, sc, KCLOCK_NONE, 0); /* KCLOCK_UPTIME? */
+ 
+ 	/* Map and establish the interrupt. */
+ 	if (pci_intr_map_msi(pa, &ih) != 0 && pci_intr_map(pa, &ih) != 0) {
+@@ -1297,6 +1307,7 @@ bwfm_pci_pktid_free(struct bwfm_pci_soft
+ void
+ bwfm_pci_fill_rx_rings(struct bwfm_pci_softc *sc)
+ {
++printf("fill rx rings\n");
+ 	bwfm_pci_fill_rx_buf_ring(sc);
+ 	bwfm_pci_fill_rx_ioctl_ring(sc, &sc->sc_ioctl_ring,
+ 	    MSGBUF_TYPE_IOCTLRESP_BUF_POST);
+@@ -1347,6 +1358,7 @@ bwfm_pci_fill_rx_ioctl_ring(struct bwfm_
+ void
+ bwfm_pci_fill_rx_buf_ring(struct bwfm_pci_softc *sc)
+ {
++printf("fill rx buf ring\n");
+ 	struct msgbuf_rx_bufpost *req;
+ 	struct mbuf *m;
+ 	uint32_t pktid;
+@@ -1364,12 +1376,14 @@ bwfm_pci_fill_rx_buf_ring(struct bwfm_pc
+ 		m = MCLGETL(NULL, M_DONTWAIT, MSGBUF_MAX_PKT_SIZE);
+ 		if (m == NULL) {
+ 			bwfm_pci_ring_write_cancel(sc, &sc->sc_rxpost_submit, 1);
++printf("bwfm_pci_fill_rx_buf_ring: write calcel\n");
+ 			break;
+ 		}
+ 		m->m_len = m->m_pkthdr.len = MSGBUF_MAX_PKT_SIZE;
+ 		if (bwfm_pci_pktid_new(sc, &sc->sc_rx_pkts, m, &pktid, &paddr)) {
+ 			bwfm_pci_ring_write_cancel(sc, &sc->sc_rxpost_submit, 1);
+ 			m_freem(m);
++printf("bwfm_pci_fill_rx_buf_ring: write calcel 2\n");
+ 			break;
+ 		}
+ 		memset(req, 0, sizeof(*req));
+@@ -1642,6 +1656,7 @@ bwfm_pci_ring_rx(struct bwfm_pci_softc *
+ 
+ again:
+ 	buf = bwfm_pci_ring_read_avail(sc, ring, &avail);
++printf("bwfm_pci_ring_rx %d avail\n", avail);
+ 	if (buf == NULL)
+ 		return;
+ 
+@@ -1656,12 +1671,17 @@ again:
+ 		}
+ 		avail--;
+ 	}
+-	if (processed)
++	if (processed) {
+ 		bwfm_pci_ring_read_commit(sc, ring, processed);
+-	if (ring->r_ptr == 0)
++printf("bwfm_pci_ring_rx %d processed\n", processed);
++}
++	if (ring->r_ptr == 0) {
++printf("bwfm_pci_ring_rx goto again\n");
+ 		goto again;
+ }
+ 
++}
++
+ void
+ bwfm_pci_msg_rx(struct bwfm_pci_softc *sc, void *buf, struct mbuf_list *ml)
+ {
+@@ -1678,8 +1698,12 @@ bwfm_pci_msg_rx(struct bwfm_pci_softc *s
+ 	struct bwfm_pci_msgring *ring;
+ 	struct mbuf *m;
+ 	int flowid;
++	struct bwfm_host_cmd_ring *cmd_ring = &sc->sc_sc.sc_key_cmdq;
+ 
+ 	msg = (struct msgbuf_common_hdr *)buf;
++	bwfm_msg_hist_ring[bwfm_msg_hist_idx++] = msg->msgtype;
++	bwfm_msg_hist_idx %= 255;
++//printf("bwfm_pci_msg_rx msg->msgtype=0x%hhx\n", msg->msgtype);
+ 	switch (msg->msgtype)
+ 	{
+ 	case MSGBUF_TYPE_FLOW_RING_CREATE_CMPLT:
+@@ -1694,8 +1718,22 @@ bwfm_pci_msg_rx(struct bwfm_pci_softc *s
+ 		if (ring->status != RING_OPENING)
+ 			break;
+ 		if (fcr->compl_hdr.status) {
+-			printf("%s: failed to open flowring %d\n",
+-			    DEVNAME(sc), flowid);
++			printf("%s: failed to open flowring %d: %d\n",
++			    DEVNAME(sc), flowid, fcr->compl_hdr.status);
++			printf("da: %hhx:%hhx:%hhx:%hhx:%hhx:%hhx\n",
++			    sc->sc_flowrings[flowid].mac[0],
++			    sc->sc_flowrings[flowid].mac[1],
++			    sc->sc_flowrings[flowid].mac[2],
++			    sc->sc_flowrings[flowid].mac[3],
++			    sc->sc_flowrings[flowid].mac[4],
++			    sc->sc_flowrings[flowid].mac[5]);
++			printf("sa: %hhx:%hhx:%hhx:%hhx:%hhx:%hhx\n",
++			    sc->sc_sc.sc_ic.ic_myaddr[0],
++			    sc->sc_sc.sc_ic.ic_myaddr[1],
++			    sc->sc_sc.sc_ic.ic_myaddr[2],
++			    sc->sc_sc.sc_ic.ic_myaddr[3],
++			    sc->sc_sc.sc_ic.ic_myaddr[4],
++			    sc->sc_sc.sc_ic.ic_myaddr[5]);
+ 			ring->status = RING_CLOSED;
+ 			if (ring->m) {
+ 				m_freem(ring->m);
+@@ -1762,6 +1800,16 @@ bwfm_pci_msg_rx(struct bwfm_pci_softc *s
+ 		tx = (struct msgbuf_tx_status *)buf;
+ 		m = bwfm_pci_pktid_free(sc, &sc->sc_tx_pkts,
+ 		    letoh32(tx->msg.request_id) - 1);
++		/*
++		 * XXX could check
++		 * ni->ni_rsn_supp_state == RSNA_SUPP_PTKDONE &&
++		 * tasks are on cmd queue ring and
++		 * setkey task pending
++		 */
++		if (sc->sc_sc.sc_eapol_frames > 1 && cmd_ring->queued > 1) {
++			sc->sc_sc.sc_eapol_frames = 0;
++			task_add(sc->sc_sc.sc_key_taskq, &sc->sc_sc.sc_key_task);
++		}
+ 		if (m == NULL)
+ 			break;
+ 		m_freem(m);
+@@ -2106,6 +2154,63 @@ bwfm_pci_flowring_create_cb(struct bwfm_
+ }
+ 
+ void
++bwfm_pci_flowring_create_be_cb(struct bwfm_softc *bwfm, void *arg)
++{
++	struct bwfm_pci_softc *sc = (void *)bwfm;
++#ifndef IEEE80211_STA_ONLY
++	struct ieee80211com *ic = &sc->sc_sc.sc_ic;
++#endif
++	struct msgbuf_tx_flowring_create_req *req;
++	struct bwfm_pci_msgring *ring;
++	struct bwfm_cmd_flowring_create_be *cmd = arg;
++	int s;
++
++#ifndef IEEE80211_STA_ONLY
++        /*
++	 * Dont change the control flow of HOSTAP, open the ring
++         * asynchronously and live with the races.
++	 */
++	if (ic->ic_opmode == IEEE80211_M_HOSTAP)
++		return;
++#endif
++
++	ring = &sc->sc_flowrings[0];
++	if (bwfm_pci_setup_flowring(sc, ring, 512, 48)) {
++		printf("%s: cannot setup flowring\n", DEVNAME(sc));
++		return;
++	}
++
++	s = splnet();
++	req = bwfm_pci_ring_write_reserve(sc, &sc->sc_ctrl_submit);
++	if (req == NULL) {
++		printf("%s: cannot reserve for flowring\n", DEVNAME(sc));
++		splx(s);
++		return;
++	}
++
++	ring->status = RING_OPENING;
++	ring->fifo = bwfm_pci_prio2fifo[0];
++	ring->m = NULL;
++	memcpy(ring->mac, cmd->da, ETHER_ADDR_LEN);
++	req->msg.msgtype = MSGBUF_TYPE_FLOW_RING_CREATE;
++	req->msg.ifidx = 0;
++	req->msg.request_id = 0;
++	req->tid = bwfm_pci_prio2fifo[0];
++	req->flow_ring_id = letoh16(2);
++	memcpy(req->da, cmd->da, ETHER_ADDR_LEN);
++	memcpy(req->sa, cmd->sa, ETHER_ADDR_LEN);
++	req->flow_ring_addr.high_addr =
++	    letoh32(BWFM_PCI_DMA_DVA(ring->ring) >> 32);
++	req->flow_ring_addr.low_addr =
++	    letoh32(BWFM_PCI_DMA_DVA(ring->ring) & 0xffffffff);
++	req->max_items = letoh16(512);
++	req->len_item = letoh16(48);
++
++	bwfm_pci_ring_write_commit(sc, &sc->sc_ctrl_submit);
++	splx(s);
++}
++
++void
+ bwfm_pci_flowring_delete(struct bwfm_pci_softc *sc, int flowid)
+ {
+ 	struct msgbuf_tx_flowring_delete_req *req;
+@@ -2191,12 +2296,14 @@ bwfm_pci_txcheck(struct bwfm_softc *bwfm
+ 	return 0;
+ }
+ 
++//#include <ddb/db_output.h> /* XXX */
+ int
+ bwfm_pci_txdata(struct bwfm_softc *bwfm, struct mbuf *m)
+ {
+ 	struct bwfm_pci_softc *sc = (void *)bwfm;
+ 	struct bwfm_pci_msgring *ring;
+ 	struct msgbuf_tx_msghdr *tx;
++	uint64_t t_intr;
+ 	uint32_t pktid;
+ 	paddr_t paddr;
+ 	int flowid, ret;
+@@ -2213,6 +2320,7 @@ bwfm_pci_txdata(struct bwfm_softc *bwfm,
+ 		 * mbuf will be transmitted.
+ 		 */
+ 		bwfm_pci_flowring_create(sc, m);
++		printf("%s: deferred flowring create\n", DEVNAME(sc));
+ 		return 0;
+ 	}
+ 
+@@ -2226,8 +2334,10 @@ bwfm_pci_txdata(struct bwfm_softc *bwfm,
+ 	}
+ 
+ 	tx = bwfm_pci_ring_write_reserve(sc, ring);
+-	if (tx == NULL)
++	if (tx == NULL) {
++		printf("%s: TX write reserve\n", DEVNAME(sc));
+ 		return ENOBUFS;
++	}
+ 
+ 	memset(tx, 0, sizeof(*tx));
+ 	tx->msg.msgtype = MSGBUF_TYPE_TX_POST;
+@@ -2246,6 +2356,7 @@ bwfm_pci_txdata(struct bwfm_softc *bwfm,
+ 			sc->sc_tx_pkts_full = 1;
+ 		}
+ 		bwfm_pci_ring_write_cancel(sc, ring, 1);
++		printf("%s: TX write cancel\n", DEVNAME(sc));
+ 		return ret;
+ 	}
+ 	paddr += ETHER_HDR_LEN;
+@@ -2256,6 +2367,10 @@ bwfm_pci_txdata(struct bwfm_softc *bwfm,
+ 	tx->data_buf_addr.low_addr = htole32(paddr & 0xffffffff);
+ 
+ 	bwfm_pci_ring_write_commit(sc, ring);
++//printf("bwfm_pci_txdata done\n");
++	t_intr = nsecuptime();
++	printf("last send %llu ns after intr\n", t_intr - bwfm_t_intr);
++//db_stack_dump();
+ 	return 0;
+ }
+ 
+@@ -2316,7 +2431,6 @@ bwfm_pci_handle_mb_data(struct bwfm_pci_
+ 		printf("%s: handle MB data 0x%08x\n", DEVNAME(sc), reg);
+ }
+ 
+-#ifdef BWFM_DEBUG
+ void
+ bwfm_pci_debug_console(struct bwfm_pci_softc *sc)
+ {
+@@ -2324,7 +2438,7 @@ bwfm_pci_debug_console(struct bwfm_pci_s
+ 	    sc->sc_console_base_addr + BWFM_CONSOLE_WRITEIDX);
+ 
+ 	if (newidx != sc->sc_console_readidx)
+-		DPRINTFN(3, ("BWFM CONSOLE: "));
++		printf("BWFM CONSOLE: ");
+ 	while (newidx != sc->sc_console_readidx) {
+ 		uint8_t ch = bus_space_read_1(sc->sc_tcm_iot, sc->sc_tcm_ioh,
+ 		    sc->sc_console_buf_addr + sc->sc_console_readidx);
+@@ -2333,10 +2447,15 @@ bwfm_pci_debug_console(struct bwfm_pci_s
+ 			sc->sc_console_readidx = 0;
+ 		if (ch == '\r')
+ 			continue;
+-		DPRINTFN(3, ("%c", ch));
++		printf("%c", ch);
+ 	}
+ }
+-#endif
++
++void
++bwfm_pci_intr_to(void *v)
++{
++	bwfm_pci_intr(v);
++}
+ 
+ int
+ bwfm_pci_intr(void *v)
+@@ -2344,44 +2463,63 @@ bwfm_pci_intr(void *v)
+ 	struct bwfm_pci_softc *sc = (void *)v;
+ 	struct ifnet *ifp = &sc->sc_sc.sc_ic.ic_if;
+ 	struct mbuf_list ml = MBUF_LIST_INITIALIZER();
++	uint64_t t_intr;
+ 	uint32_t status, mask;
+ 
+ 	if (!sc->sc_initialized)
+ 		return 0;
+ 
+-	status = bwfm_pci_intr_status(sc);
+-	/* FIXME: interrupt status seems to be zero? */
+-	if (status == 0 && sc->sc_pcireg64)
+-		status |= BWFM_PCI_64_PCIE2REG_MAILBOXMASK_INT_D2H_DB;
+-	if (status == 0)
+-		return 0;
++	
++	t_intr = nsecuptime();
++	bwfm_dt_intr = t_intr - bwfm_t_intr;
++	bwfm_t_intr = t_intr;
++//printf("bwfm_pci_intr %llu\n", nsecuptime());
++
++	if (!sc->sc_pcireg64) {
++		status = bwfm_pci_intr_status(sc);
++		if (status == 0)
++			return 0;
+ 
+-	bwfm_pci_intr_disable(sc);
+-	bwfm_pci_intr_ack(sc, status);
++		bwfm_pci_intr_disable(sc);
++		bwfm_pci_intr_ack(sc, status);
+ 
+-	if (!sc->sc_pcireg64 &&
+-	    (status & (BWFM_PCI_PCIE2REG_MAILBOXMASK_INT_FN0_0 |
+-	    BWFM_PCI_PCIE2REG_MAILBOXMASK_INT_FN0_1)))
+-		bwfm_pci_handle_mb_data(sc);
++		if ((status & (BWFM_PCI_PCIE2REG_MAILBOXMASK_INT_FN0_0 |
++		    BWFM_PCI_PCIE2REG_MAILBOXMASK_INT_FN0_1)))
++			bwfm_pci_handle_mb_data(sc);
++
++		mask = BWFM_PCI_PCIE2REG_MAILBOXMASK_INT_D2H_DB;
++
++		if (status & mask) {
++			bwfm_pci_ring_rx(sc, &sc->sc_ctrl_complete, &ml);
++			bwfm_pci_ring_rx(sc, &sc->sc_rx_complete, &ml);
++			bwfm_pci_ring_rx(sc, &sc->sc_tx_complete, &ml);
+ 
+-	mask = BWFM_PCI_PCIE2REG_MAILBOXMASK_INT_D2H_DB;
+-	if (sc->sc_pcireg64)
+-		mask = BWFM_PCI_64_PCIE2REG_MAILBOXMASK_INT_D2H_DB;
++			if (ifiq_input(&ifp->if_rcv, &ml))
++				if_rxr_livelocked(&sc->sc_rxbuf_ring);
++		}
++
++	} else {
++		bwfm_pci_intr_disable(sc);
++		bwfm_pci_intr_ack(sc, 0);
+ 
+-	if (status & mask) {
++		bwfm_pci_ring_rx(sc, &sc->sc_ctrl_complete, &ml);
+ 		bwfm_pci_ring_rx(sc, &sc->sc_rx_complete, &ml);
+ 		bwfm_pci_ring_rx(sc, &sc->sc_tx_complete, &ml);
+-		bwfm_pci_ring_rx(sc, &sc->sc_ctrl_complete, &ml);
+ 
+-		if (ifiq_input(&ifp->if_rcv, &ml))
++		if (ifiq_input(&ifp->if_rcv, &ml)) {
++			printf("livelocked\n");
+ 			if_rxr_livelocked(&sc->sc_rxbuf_ring);
++		}
+ 	}
+ 
+-#ifdef BWFM_DEBUG
+ 	bwfm_pci_debug_console(sc);
+-#endif
+-
+ 	bwfm_pci_intr_enable(sc);
++
++	t_intr = nsecuptime();
++	bwfm_dt_intr_handle = t_intr - bwfm_t_intr;
++	printf("bwfm_pci_intr at %llu (dt=%llu ns) took %llu ns, last msg: 0x%hhx\n",  bwfm_t_intr, bwfm_dt_intr, bwfm_dt_intr_handle, bwfm_msg_hist_ring[(bwfm_msg_hist_idx + 255 - 1) % 255]);
++	//timeout_add_msec(&sc->sc_intr_to, 50);
++	
+ 	return 1;
+ }
+ 
+@@ -2517,7 +2655,17 @@ bwfm_pci_msgbuf_query_dcmd(struct bwfm_s
+ 	bwfm_pci_ring_write_commit(sc, &sc->sc_ctrl_submit);
+ 	splx(s);
+ 
+-	tsleep_nsec(ctl, PWAIT, "bwfm", SEC_TO_NSEC(5));
++	if (tsleep_nsec(ctl, PWAIT, "bwfm", SEC_TO_NSEC(5))) {
++		uint8_t start = bwfm_msg_hist_idx--;
++		printf("%s: timeout bwfm_dt_intr=%llu, last at %llu, msghist:\n",
++		    __func__, bwfm_dt_intr, bwfm_t_intr);
++		while (start != bwfm_msg_hist_idx &&
++		    bwfm_msg_hist_ring[bwfm_msg_hist_idx] != 0) {
++			printf("0x%hhx, ", bwfm_msg_hist_ring[bwfm_msg_hist_idx]);
++			bwfm_msg_hist_idx--;
++		}
++		printf("\n");
++	}
+ 	TAILQ_REMOVE(&sc->sc_ioctlq, ctl, next);
+ 
+ 	if (ctl->m == NULL) {
