@@ -1,0 +1,166 @@
+Index: ic/bwfm.c
+===================================================================
+RCS file: /cvs/src/sys/dev/ic/bwfm.c,v
+diff -u -p -r1.111 bwfm.c
+--- ic/bwfm.c	19 Feb 2024 21:23:02 -0000	1.111
++++ ic/bwfm.c	2 Aug 2025 22:05:18 -0000
+@@ -48,11 +48,11 @@
+ #include <dev/ic/bwfmvar.h>
+ #include <dev/ic/bwfmreg.h>
+ 
+-/* #define BWFM_DEBUG */
++#define BWFM_DEBUG
+ #ifdef BWFM_DEBUG
+ #define DPRINTF(x)	do { if (bwfm_debug > 0) printf x; } while (0)
+ #define DPRINTFN(n, x)	do { if (bwfm_debug >= (n)) printf x; } while (0)
+-static int bwfm_debug = 1;
++static int bwfm_debug = 10000;
+ #else
+ #define DPRINTF(x)	do { ; } while (0)
+ #define DPRINTFN(n, x)	do { ; } while (0)
+@@ -2025,6 +2025,22 @@ bwfm_connect(struct bwfm_softc *sc)
+ 		    ic->ic_rsngroupcipher & IEEE80211_WPA_CIPHER_CCMP)
+ 			wsec |= BWFM_WSEC_AES;
+ 
++		if (sc->sc_use_sup_wpa) {
++			struct bwfm_wsec_pmk key;
++			memset(&key, 0, sizeof(key));
++			if (bwfm_fwvar_var_set_int(sc, "sup_wpa", 1))
++				printf("setting sup_wpa failed\n");
++
++			printf("using psk=%.32s\n", sc->sc_ic.ic_psk);
++			key.key_len = htole32(IEEE80211_PMK_LEN);
++			memcpy(key.key, sc->sc_ic.ic_psk, BWFM_WSEC_MAX_PSK_LEN);
++			if (bwfm_fwvar_cmd_set_data(sc, BWFM_C_SET_WSEC_PMK,
++			    &key, sizeof(key)))
++				printf("offloading psk failed\n");
++			printf("load off!\n");
++
++		} /* else XXX */
++
+ 		bwfm_fwvar_var_set_int(sc, "wpa_auth", wpa);
+ 		bwfm_fwvar_var_set_int(sc, "wsec", wsec);
+ 	} else if (ic->ic_flags & IEEE80211_F_WEPON) {
+@@ -2363,6 +2379,7 @@ bwfm_rx(struct bwfm_softc *sc, struct mb
+ #endif
+ 
+ 	e = mtod(m, struct bwfm_event *);
++printf("bwfm_rx: e->ehdr.ether_type=0x%hx\n", ntohs(e->ehdr.ether_type));
+ 	if (m->m_len >= sizeof(e->ehdr) &&
+ 	    ntohs(e->ehdr.ether_type) == BWFM_ETHERTYPE_LINK_CTL &&
+ 	    memcmp(BWFM_BRCM_OUI, e->hdr.oui, sizeof(e->hdr.oui)) == 0 &&
+@@ -2372,10 +2389,12 @@ bwfm_rx(struct bwfm_softc *sc, struct mb
+ 	}
+ 
+ 	/* Drop network packets if we are not in RUN state. */
++/*
+ 	if (ic->ic_state != IEEE80211_S_RUN) {
+ 		m_freem(m);
+ 		return;
+ 	}
++*/
+ 
+ 	if ((ic->ic_flags & IEEE80211_F_RSNON) &&
+ 	    m->m_len >= sizeof(e->ehdr) &&
+@@ -2573,6 +2592,7 @@ bwfm_rx_event_cb(struct bwfm_softc *sc, 
+ 	}
+ 
+ 	switch (ntohl(e->msg.event_type)) {
++printf("bwfm_rx_event_cb: e->msg.event_type=%u\n", ntohl(e->msg.event_type));
+ 	case BWFM_E_ESCAN_RESULT: {
+ 		struct bwfm_escan_results *res;
+ 		struct bwfm_bss_info *bss;
+@@ -2963,12 +2983,19 @@ bwfm_newstate(struct ieee80211com *ic, e
+ 			ic->ic_bss->ni_rsn_supp_state = RSNA_SUPP_PTKSTART;
+ 		splx(s);
+ 		return 0;
+-#ifndef IEEE80211_STA_ONLY
+ 	case IEEE80211_S_RUN:
+-		if (ic->ic_opmode == IEEE80211_M_HOSTAP)
++#ifndef IEEE80211_STA_ONLY
++		if (ic->ic_opmode == IEEE80211_M_HOSTAP) {
+ 			bwfm_hostap(sc);
+-		break;
++			break;
++		}
+ #endif
++		/* fast forward, probably should wait for some link state pkt? */
++		sc->sc_ic.ic_bss->ni_rsn_supp_state = RSNA_SUPP_PTKDONE;
++		sc->sc_ic.ic_bss->ni_port_valid = 1;
++		ieee80211_set_link_state(&sc->sc_ic, LINK_STATE_UP);
++		printf("link up yolo\n");
++		break;
+ 	default:
+ 		break;
+ 	}
+Index: ic/bwfmreg.h
+===================================================================
+RCS file: /cvs/src/sys/dev/ic/bwfmreg.h,v
+diff -u -p -r1.26 bwfmreg.h
+--- ic/bwfmreg.h	4 Mar 2022 22:34:41 -0000	1.26
++++ ic/bwfmreg.h	2 Aug 2025 21:23:28 -0000
+@@ -651,7 +651,8 @@ struct bwfm_wsec_pmk {
+ #define BWFM_WSEC_MAX_PSK_LEN		32
+ 	uint16_t flags;
+ #define BWFM_WSEC_PASSPHRASE		(1 << 0)
+-	uint8_t key[2 * BWFM_WSEC_MAX_PSK_LEN + 1];
++#define BWFM_WSEC_MAX_SAE_PASSWORD_LEN	128
++	uint8_t key[BWFM_WSEC_MAX_SAE_PASSWORD_LEN];
+ };
+ 
+ /* Event handling */
+Index: ic/bwfmvar.h
+===================================================================
+RCS file: /cvs/src/sys/dev/ic/bwfmvar.h,v
+diff -u -p -r1.31 bwfmvar.h
+--- ic/bwfmvar.h	6 Mar 2022 18:52:47 -0000	1.31
++++ ic/bwfmvar.h	2 Aug 2025 20:08:37 -0000
+@@ -194,6 +194,7 @@ struct bwfm_softc {
+ 	u_char			*sc_cal;
+ 	size_t			 sc_calsize;
+ 	int			 sc_key_tasks;
++	int			 sc_use_sup_wpa;
+ 
+ 	char			 sc_board_type[128];
+ 	char			 sc_module[8];
+Index: pci/if_bwfm_pci.c
+===================================================================
+RCS file: /cvs/src/sys/dev/pci/if_bwfm_pci.c,v
+diff -u -p -r1.77 if_bwfm_pci.c
+--- pci/if_bwfm_pci.c	12 Jul 2024 08:33:25 -0000	1.77
++++ pci/if_bwfm_pci.c	2 Aug 2025 21:55:48 -0000
+@@ -61,10 +61,11 @@
+ #define BWFM_NUM_TX_DESCS			1
+ #define BWFM_NUM_RX_DESCS			1
+ 
++#define BWFM_DEBUG	1
+ #ifdef BWFM_DEBUG
+ #define DPRINTF(x)	do { if (bwfm_debug > 0) printf x; } while (0)
+ #define DPRINTFN(n, x)	do { if (bwfm_debug >= (n)) printf x; } while (0)
+-static int bwfm_debug = 2;
++static int bwfm_debug = 3;
+ #else
+ #define DPRINTF(x)	do { ; } while (0)
+ #define DPRINTFN(n, x)	do { ; } while (0)
+@@ -501,6 +502,13 @@ bwfm_pci_preinit(struct bwfm_softc *bwfm
+ 		break;
+ 	case BRCM_CC_4387_CHIP_ID:
+ 		chip = "4387c2";
++		/*
++		 * Sadly, I stop the chip from crashing on my m2 macbook.
++		 * Passing the passkey to the chip seems to work but it
++		 * possibly will haunt us when the next KRACK attack comes
++		 * and there are no more firmware updates.
++		 */
++		bwfm->sc_use_sup_wpa = 1;
+ 		break;
+ 	default:
+ 		printf("%s: unknown firmware for chip %s\n",
+@@ -1680,6 +1688,7 @@ bwfm_pci_msg_rx(struct bwfm_pci_softc *s
+ 	int flowid;
+ 
+ 	msg = (struct msgbuf_common_hdr *)buf;
++printf("bwfm_pci_msg_rx msg->msgtype=0x%hhx\n", msg->msgtype);
+ 	switch (msg->msgtype)
+ 	{
+ 	case MSGBUF_TYPE_FLOW_RING_CREATE_CMPLT:
